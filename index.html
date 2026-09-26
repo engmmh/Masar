@@ -6,6 +6,10 @@
 <meta name="color-scheme" content="light dark">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="مسار">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
@@ -179,6 +183,12 @@ tr:last-child td { border-block-end: 0; }
 .crumb { font-size: 14px; color: var(--muted); margin-block-end: 8px; }
 .linkbtn { background: none; border: 0; color: var(--teal); padding: 4px 0; font-size: 15px; }
 
+#lock { position: fixed; inset: 0; z-index: 100; background: var(--bg); display: grid; place-items: center; padding: 24px; }
+#lock[hidden] { display: none; }
+#lockform { width: 100%; max-width: 320px; display: grid; gap: 12px; text-align: center; }
+#lockform h1 { font-size: 40px; }
+#pin { font: inherit; font-size: 28px; letter-spacing: .4em; text-align: center; direction: ltr; background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 14px; min-height: 56px; width: 100%; }
+#lockmsg { min-height: 1.6em; font-size: 14px; color: var(--miss); }
 #toast { position: fixed; inset-inline: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); margin-inline: auto; max-width: 420px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
 #toast.on { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
@@ -186,6 +196,15 @@ tr:last-child td { border-block-end: 0; }
 
 </head>
 <body>
+<div id="lock" dir="rtl" lang="ar" hidden>
+  <form id="lockform" autocomplete="on">
+    <h1>مسار</h1>
+    <p class="muted">اكتب الرمز للدخول</p>
+    <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" aria-label="الرمز" required>
+    <button class="btn" type="submit" id="pinbtn">دخول</button>
+    <p id="lockmsg" role="alert"></p>
+  </form>
+</div>
 <div id="app" dir="rtl" lang="ar">
   <div id="view"></div>
 </div>
@@ -312,7 +331,13 @@ tr:last-child td { border-block-end: 0; }
   var ready = { days: false, settings: false, learn: false };
 
   /* ---------------- storage ---------------- */
-  var store = { db: null, root: null };
+  var CFG = {
+    url: "https://guorxzejmtvypiwxrogf.supabase.co",
+    key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1b3J4emVqbXR2eXBpd3hyb2dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzI2NjksImV4cCI6MjEwNTMwODY2OX0.o95p3N83NLU8ZKZG5LtwS95iR1W3eN03qixqjsnWk_8",
+    email: "masar-user@example.com",
+    prefix: "masar-"
+  };
+  var store = { db: null, root: null, sb: null, uid: null };
   var LSKEY = "masar:v1";
   function localSave() {
     try { localStorage.setItem(LSKEY, JSON.stringify({ settings: state.settings, days: state.days, learn: state.learn })); } catch (e) { }
@@ -337,11 +362,24 @@ tr:last-child td { border-block-end: 0; }
       }).then(function () { if (!timers[id]) dirty[id] = false; });
     }, delay);
   }
+  function supaCheck(r) { if (r && r.error) throw r.error; }
   function saveDay(key, delay) {
+    if (state.mode === "supa") {
+      persist("day:" + key, delay || 0, function () {
+        return store.sb.from("masar_days").upsert({ user_id: store.uid, day: key, data: state.days[key] || {}, updated_at: new Date().toISOString() }, { onConflict: "user_id,day" }).then(supaCheck);
+      });
+      return;
+    }
     if (state.mode !== "cloud") { localSave(); return; }
     persist("day:" + key, delay || 0, function () { return store.root.collection("days").doc(key).set(state.days[key] || {}); });
   }
   function saveMeta(name, delay) {
+    if (state.mode === "supa") {
+      persist("meta:" + name, delay || 0, function () {
+        return store.sb.from("masar_meta").upsert({ user_id: store.uid, name: name, data: name === "settings" ? state.settings : state.learn, updated_at: new Date().toISOString() }, { onConflict: "user_id,name" }).then(supaCheck);
+      });
+      return;
+    }
     if (state.mode !== "cloud") { localSave(); return; }
     persist("meta:" + name, delay || 0, function () { return store.root.collection("meta").doc(name).set(name === "settings" ? state.settings : state.learn); });
   }
@@ -357,6 +395,7 @@ tr:last-child td { border-block-end: 0; }
         uid = user ? await user.id() : null;
       }
     } catch (e) { db = null; }
+    if ((!db || !uid) && CFG.url && CFG.key && window.supabase) { initSupa(); return; }
     if (!db || !uid) {
       state.mode = "local"; localLoad();
       ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); return;
@@ -630,7 +669,7 @@ tr:last-child td { border-block-end: 0; }
   function head(now) {
     var banner = state.mode === "local" ? '<div class="banner">الحفظ السحابي غير متاح في هذا العرض. بياناتك تُحفظ على هذا المتصفح فقط.</div>' : "";
     var h = hijri(now.key);
-    return banner + '<div class="top"><div><h1>مسار</h1><div class="dates">' + esc(greg(now.key)) + (h ? " · " + esc(h) : "") + '</div></div><span class="chip">الرياض · أم القرى</span></div>';
+    return banner + '<div class="top"><div><h1>مسار</h1><div class="dates">' + esc(greg(now.key)) + (h ? " · " + esc(h) : "") + '</div></div><span class="row" style="gap:6px"><span class="chip">الرياض · أم القرى</span>' + (state.mode === "supa" ? '<button class="chip" data-act="lock" style="border:0;color:var(--text)">قفل</button>' : "") + "</span></div>";
   }
 
   function ringSVG(sts) {
@@ -897,6 +936,7 @@ tr:last-child td { border-block-end: 0; }
     var el = e.target.closest("[data-act]"); if (!el || el.disabled) return;
     var act = el.getAttribute("data-act"), now = nowR();
     switch (act) {
+      case "lock": lockNow(); break;
       case "tab": state.tab = el.getAttribute("data-t"); if (state.tab === "learn" && state.lv.mode !== "home") { } window.scrollTo(0, 0); render(); break;
       case "tp": togglePrayer(el.getAttribute("data-d"), Number(el.getAttribute("data-p"))); break;
       case "more": state.archiveN += 30; render(); break;
@@ -948,6 +988,67 @@ tr:last-child td { border-block-end: 0; }
     saveMeta("learn", c.i >= c.q.length ? 0 : 1500);
     render();
   }
+
+  /* ---------------- supabase + lock ---------------- */
+  function snap() { return JSON.stringify([state.days, state.settings, state.tab === "learn" ? 0 : state.learn]); }
+  function showLock(msg) {
+    $("#lock").hidden = false; $("#lockmsg").textContent = msg || "";
+    var pin = $("#pin"); pin.value = ""; setTimeout(function () { pin.focus(); }, 50);
+  }
+  function initSupa() {
+    state.mode = "supa";
+    store.sb = window.supabase.createClient(CFG.url, CFG.key, { auth: { persistSession: false, autoRefreshToken: true, detectSessionInUrl: false } });
+    showLock("");
+  }
+  async function unlock(code) {
+    var btn = $("#pinbtn"); btn.disabled = true; $("#lockmsg").textContent = "";
+    try {
+      var r = await store.sb.auth.signInWithPassword({ email: CFG.email, password: CFG.prefix + code });
+      if (r.error) {
+        var m = r.error.message || "";
+        $("#lockmsg").textContent = /invalid login/i.test(m) ? "الرمز غير صحيح" : "تعذّر الدخول: " + m;
+        btn.disabled = false; return;
+      }
+      store.uid = r.data.user.id;
+      $("#lock").hidden = true; $("#pin").value = "";
+      await loadSupa(true);
+      clearInterval(store.poll); store.poll = setInterval(function () { if (!document.hidden) loadSupa(false); }, 60000);
+    } catch (e) { $("#lockmsg").textContent = "تعذّر الاتصال. تحقق من الإنترنت."; }
+    btn.disabled = false;
+  }
+  async function loadSupa(first) {
+    if (!store.uid) return;
+    var before = snap();
+    var d = await store.sb.from("masar_days").select("day,data");
+    var m = await store.sb.from("masar_meta").select("name,data");
+    if (d.error || m.error) {
+      var err = (d.error || m.error).message || "";
+      toast("تعذّر تحميل البيانات: " + err);
+      if (first) { ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); }
+      return;
+    }
+    (d.data || []).forEach(function (r) { if (!dirty["day:" + r.day]) state.days[r.day] = r.data || {}; });
+    var hasSettings = false;
+    (m.data || []).forEach(function (r) {
+      if (r.name === "settings") { hasSettings = true; if (!dirty["meta:settings"]) Object.assign(state.settings, r.data); }
+      if (r.name === "learn" && !dirty["meta:learn"]) state.learn = Object.assign({ xp: 0, units: {}, cards: {}, mistakes: {}, study: {} }, r.data);
+    });
+    if (!hasSettings && first) { state.settings.startDate = nowR().key; saveMeta("settings"); }
+    ready.days = ready.settings = ready.learn = true;
+    var wasLoaded = state.loaded; checkLoaded();
+    if (wasLoaded && snap() !== before) render();
+  }
+  async function lockNow() {
+    clearInterval(store.poll);
+    try { await store.sb.auth.signOut(); } catch (e) { }
+    store.uid = null; state.days = {}; state.learn = { xp: 0, units: {}, cards: {}, mistakes: {}, study: {} };
+    state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1 };
+    state.loaded = false; ready.days = ready.settings = ready.learn = false;
+    state.quiz = null; state.card = null; state.lv = { mode: "home" }; state.tab = "today";
+    render(); showLock("");
+  }
+  $("#lockform").addEventListener("submit", function (e) { e.preventDefault(); var v = $("#pin").value.trim(); if (v) unlock(v); });
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && state.mode === "supa" && store.uid) loadSupa(false); });
 
   /* ---------------- boot ---------------- */
   render();
