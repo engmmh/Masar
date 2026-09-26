@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -25,6 +25,7 @@
   --teal-ink: #FFFFFF;
   --amber: #B86E0B;
   --amber-bg: #FBEBCF;
+  --blue: #3B5BA9;
   --done: #2A7D4B;
   --done-bg: #DDF0E4;
   --miss: #B5443B;
@@ -37,18 +38,26 @@
     color-scheme: dark;
     --bg: #0B1514; --surface: #132220; --surface2: #1B2E2B; --text: #E6F0ED; --muted: #9CB0AA; --line: #263A36;
     --teal: #4CC2B8; --teal-ink: #06201E; --amber: #F0B34A; --amber-bg: #3A2C10;
-    --done: #6FD09A; --done-bg: #16362A; --miss: #FF8E82; --miss-bg: #3A1E1B;
+    --done: #6FD09A; --done-bg: #16362A; --miss: #FF8E82; --miss-bg: #3A1E1B; --blue: #8FA8F0;
   }
 }
 :root[data-theme="dark"] {
   color-scheme: dark;
   --bg: #0B1514; --surface: #132220; --surface2: #1B2E2B; --text: #E6F0ED; --muted: #9CB0AA; --line: #263A36;
   --teal: #4CC2B8; --teal-ink: #06201E; --amber: #F0B34A; --amber-bg: #3A2C10;
-  --done: #6FD09A; --done-bg: #16362A; --miss: #FF8E82; --miss-bg: #3A1E1B;
+  --done: #6FD09A; --done-bg: #16362A; --miss: #FF8E82; --miss-bg: #3A1E1B; --blue: #8FA8F0;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.6; padding-inline: 16px; }
-#app { max-width: 640px; margin-inline: auto; padding-block: 14px 110px; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.6; overflow: hidden; }
+#shell { position: fixed; inset: 0; max-width: 640px; margin-inline: auto; display: flex; flex-direction: column; background: var(--bg); }
+#top { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 8px; }
+#top h1 { font-size: 26px; }
+#top .dates { font-size: 13px; color: var(--muted); line-height: 1.4; }
+#top .chip { border: 0; color: var(--text); min-height: 34px; cursor: pointer; }
+#pager { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
+#pager::-webkit-scrollbar { display: none; }
+.panel { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; overflow-y: auto; overscroll-behavior-y: contain; padding: 4px 16px 28px; -webkit-overflow-scrolling: touch; }
 h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; line-height: 1.3; text-wrap: balance; }
 p { margin: 0; }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -122,7 +131,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .bar.amber > i { background: var(--amber); }
 
 /* tabs */
-.tabs { position: fixed; inset-inline: 0; bottom: 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tabs { flex: none; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
 .tabs ul { max-width: 640px; margin: 0 auto; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
 .tabs button { width: 100%; background: none; border: 0; display: grid; place-items: center; gap: 2px; padding: 6px 0; border-radius: 12px; font-size: 13px; color: var(--muted); }
 .tabs button svg { width: 24px; height: 24px; }
@@ -150,6 +159,7 @@ tr:last-child td { border-block-end: 0; }
 
 /* quran */
 .seg2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg2.two { grid-template-columns: repeat(2, 1fr); }
 .seg2 button { min-height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface2); }
 .seg2 button[aria-pressed="true"] { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); font-weight: 600; }
 .field { display: grid; gap: 4px; margin-block: 10px; font-size: 14px; color: var(--muted); }
@@ -189,7 +199,22 @@ tr:last-child td { border-block-end: 0; }
 #lockform h1 { font-size: 40px; }
 #pin { font: inherit; font-size: 28px; letter-spacing: .4em; text-align: center; direction: ltr; background: var(--surface); color: var(--text); border: 1px solid var(--line); border-radius: 14px; min-height: 56px; width: 100%; }
 #lockmsg { min-height: 1.6em; font-size: 14px; color: var(--miss); }
-#toast { position: fixed; inset-inline: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); margin-inline: auto; max-width: 420px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.tile { position: relative; display: grid; gap: 4px; justify-items: center; align-content: start; text-align: center; background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 16px 6px 12px; }
+.tile .ic { width: 54px; height: 54px; border-radius: 16px; display: grid; place-items: center; background: var(--surface2); margin-block-end: 4px; }
+.tile .ic svg { width: 28px; height: 28px; }
+.tile.t-prayer .ic { color: var(--teal); }
+.tile.t-quran .ic { color: var(--amber); }
+.tile.t-learn .ic { color: var(--blue); }
+.tile b { font-family: var(--display); font-size: 18px; font-weight: 600; }
+.tile small { font-size: 12px; color: var(--muted); line-height: 1.45; }
+.tile .badge { position: absolute; top: 8px; inset-inline-start: 8px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--miss); color: #fff; font-size: 12px; font-weight: 600; display: grid; place-items: center; }
+.sec-h { font-family: var(--display); font-size: 17px; font-weight: 600; margin-block: 16px 8px; color: var(--muted); }
+.dual { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-block-end: 12px; }
+.dual .stat b { font-size: 22px; }
+.dual .bar { margin-block-start: 8px; height: 8px; }
+:root[data-theme="light"] { color-scheme: light; }
+#toast { position: fixed; inset-inline: 16px; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); margin-inline: auto; max-width: 420px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
 #toast.on { opacity: 1; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
 </style>
@@ -205,17 +230,29 @@ tr:last-child td { border-block-end: 0; }
     <p id="lockmsg" role="alert"></p>
   </form>
 </div>
-<div id="app" dir="rtl" lang="ar">
-  <div id="view"></div>
+<div id="shell" dir="rtl" lang="ar">
+  <header id="top">
+    <div><h1>مسار</h1><div class="dates" id="dates"></div></div>
+    <div class="row" style="gap:6px">
+      <button class="chip" id="theme" data-act="theme" aria-label="تغيير المظهر">نهاري</button>
+      <button class="chip" id="lockbtn" data-act="lock" hidden>قفل</button>
+    </div>
+  </header>
+  <main id="pager" aria-label="الأقسام، اسحب يمينًا أو يسارًا للتنقل">
+    <section class="panel" id="p-home" aria-label="الرئيسية"></section>
+    <section class="panel" id="p-prayer" aria-label="الصلاة"></section>
+    <section class="panel" id="p-quran" aria-label="القرآن"></section>
+    <section class="panel" id="p-learn" aria-label="الكورسات"></section>
+  </main>
+  <nav class="tabs" aria-label="التنقل">
+    <ul>
+      <li><button data-act="tab" data-t="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></svg>الرئيسية</button></li>
+      <li><button data-act="tab" data-t="prayer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>الصلاة</button></li>
+      <li><button data-act="tab" data-t="quran"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2H6"/></svg>القرآن</button></li>
+      <li><button data-act="tab" data-t="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg>الكورسات</button></li>
+    </ul>
+  </nav>
 </div>
-<nav class="tabs" dir="rtl" aria-label="الأقسام">
-  <ul>
-    <li><button data-act="tab" data-t="today" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>اليوم</button></li>
-    <li><button data-act="tab" data-t="archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>الأرشيف</button></li>
-    <li><button data-act="tab" data-t="quran"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2H6"/></svg>القرآن</button></li>
-    <li><button data-act="tab" data-t="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg>تعلّم</button></li>
-  </ul>
-</nav>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -255,6 +292,9 @@ tr:last-child td { border-block-end: 0; }
   }
   function ico(name) {
     var s = {
+      moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+      book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2H6"/></svg>',
+      cap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg>',
       flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5 4 5 4 9a4 4 0 0 1-8 0c0-1.5.6-2.6 1.4-3.5C9.6 9 10 10 11 10c0-3-1-5 1-8zM12 22a7 7 0 0 0 7-7c0-2-.8-3.6-1.8-5 0 3.5-2.4 5.5-5.2 5.5S6.8 13 6.8 10.5C5.6 12 5 13.4 5 15a7 7 0 0 0 7 7z"/></svg>'
     };
     return s[name] || "";
@@ -326,7 +366,7 @@ tr:last-child td { border-block-end: 0; }
     settings: { startDate: today0, unit: "page", amount: 5, startPage: 1 },
     days: {},
     learn: { xp: 0, units: {}, cards: {}, mistakes: {}, study: {} },
-    tab: "today", archiveN: 30, lv: { mode: "home" }, quiz: null, card: null
+    tab: "home", pv: "today", archiveN: 30, lv: { mode: "home" }, quiz: null, card: null
   };
   var ready = { days: false, settings: false, learn: false };
 
@@ -666,10 +706,21 @@ tr:last-child td { border-block-end: 0; }
   }
 
   /* ---------------- views ---------------- */
-  function head(now) {
-    var banner = state.mode === "local" ? '<div class="banner">الحفظ السحابي غير متاح في هذا العرض. بياناتك تُحفظ على هذا المتصفح فقط.</div>' : "";
-    var h = hijri(now.key);
-    return banner + '<div class="top"><div><h1>مسار</h1><div class="dates">' + esc(greg(now.key)) + (h ? " · " + esc(h) : "") + '</div></div><span class="row" style="gap:6px"><span class="chip">الرياض · أم القرى</span>' + (state.mode === "supa" ? '<button class="chip" data-act="lock" style="border:0;color:var(--text)">قفل</button>' : "") + "</span></div>";
+  function head() { return ""; }
+  function bannerHTML() {
+    return state.mode === "local" ? '<div class="banner">الحفظ السحابي غير متاح في هذا العرض. بياناتك تُحفظ على هذا المتصفح فقط.</div>' : "";
+  }
+  function tile(t, ic, name, sub, badge) {
+    return '<button class="tile t-' + t + '" data-act="tab" data-t="' + t + '">' + (badge ? '<span class="badge num">' + badge + "</span>" : "") + '<span class="ic">' + ico(ic) + "</span><b>" + name + "</b><small>" + sub + "</small></button>";
+  }
+  function weekBars(now) {
+    var out = "";
+    for (var i = 6; i >= 0; i--) {
+      var k = addDays(now.key, -i), n = 0;
+      for (var j = 0; j < 5; j++) if (isDone(status(k, j, now))) n++;
+      out += '<div><span class="col"><i class="' + (n === 5 ? "full" : "") + '" style="height:' + Math.round(n / 5 * 100) + '%"></i></span><b class="num" style="font-weight:500">' + n + "</b><span>" + WD_S[dowOf(k)] + "</span></div>";
+    }
+    return out;
   }
 
   function ringSVG(sts) {
@@ -749,8 +800,24 @@ tr:last-child td { border-block-end: 0; }
       '<button class="btn" data-act="tab" data-t="learn">افتح الكورس</button></div>';
   }
 
-  function todayView(now) {
-    return head(now) + heroHTML(now) + alertHTML(now) + prayersHTML(now) + quranMini(now) + learnMini(now);
+  function homeView(now) {
+    var sts = PRAYERS.map(function (p, k) { return status(now.key, k, now); }), doneN = sts.filter(isDone).length;
+    var t = target(), n = pagesOn(now.key), L = level(), due = dueCards(now).length;
+    var miss = state.loaded ? missedList(now).length : 0;
+    var alert = miss ? '<div class="card alert"><div class="row between"><div><h2 style="margin:0">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + '</h2><p style="font-size:14px">سجّل القضاء من قسم الصلاة.</p></div><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div></div>' : "";
+    return bannerHTML() + heroHTML(now) + alert +
+      '<div class="dual"><div class="stat"><b class="num">' + n + " / " + t + '</b><span>ورد اليوم (صفحة)</span><div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div></div>' +
+      '<div class="stat"><b class="num">المستوى ' + L.lv + '</b><span><span class="num">' + L.xp + '</span> نقطة</span><div class="bar amber"><i style="width:' + L.pct + '%"></i></div></div></div>' +
+      '<div class="sec-h">الأقسام</div><div class="tiles">' +
+      tile("prayer", "moon", "الصلاة", '<span class="num">' + doneN + "/5</span> اليوم", miss) +
+      tile("quran", "book", "القرآن", '<span class="num">' + n + " / " + t + "</span> صفحة", 0) +
+      tile("learn", "cap", "الكورسات", '<span class="num">' + due + "</span> كلمة للمراجعة", 0) + "</div>" +
+      '<div class="card" style="margin-block-start:12px"><h3>الصلوات آخر 7 أيام</h3><div class="week">' + weekBars(now) + "</div></div>";
+  }
+  function prayerView(now) {
+    var pv = state.pv;
+    return '<div class="seg2 two" style="margin-block:6px 12px"><button data-act="pv" data-v="today" aria-pressed="' + (pv === "today") + '">اليوم</button><button data-act="pv" data-v="archive" aria-pressed="' + (pv === "archive") + '">الأرشيف والفائت</button></div>' +
+      (pv === "archive" ? archiveView(now) : alertHTML(now) + prayersHTML(now));
   }
 
   function archiveView(now) {
@@ -902,19 +969,36 @@ tr:last-child td { border-block-end: 0; }
   }
 
   /* ---------------- render ---------------- */
-  function render() {
-    var now = nowR(), html;
-    if (state.tab === "today") html = todayView(now);
-    else if (state.tab === "archive") html = archiveView(now);
-    else if (state.tab === "quran") html = quranView(now);
-    else html = learnView(now);
-    // preserve focused input value
-    var active = document.activeElement, keepId = active && active.id, keepVal = active && active.value, keepSel = active && active.selectionStart;
-    $("#view").innerHTML = html;
+  var TABS = ["home", "prayer", "quran", "learn"], panelCache = {};
+  var THEMES = ["light", "dark", "auto"], THEME_LBL = { light: "نهاري", dark: "ليلي", auto: "تلقائي" };
+  function getTheme() { try { return localStorage.getItem("masar:theme") || "light"; } catch (e) { return "light"; } }
+  function applyTheme(t) {
+    var r = document.documentElement;
+    if (t === "auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", t);
+    var b = $("#theme"); if (b) b.textContent = THEME_LBL[t];
+  }
+  function markTabs() {
     document.querySelectorAll(".tabs button").forEach(function (b) {
       if (b.getAttribute("data-t") === state.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
     });
-    if (keepId) { var el = document.getElementById(keepId); if (el && el.tagName === "INPUT" && el.type !== "date") { el.value = keepVal; el.focus(); try { el.setSelectionRange(keepSel, keepSel); } catch (e) { } } }
+  }
+  function goTab(t) {
+    state.tab = t; markTabs();
+    var el = $("#p-" + t); if (el) el.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
+  }
+  function render() {
+    var now = nowR();
+    var views = { home: homeView(now), prayer: prayerView(now), quran: quranView(now), learn: learnView(now) };
+    var active = document.activeElement, keepId = active && active.id, keepVal = active && active.value, keepSel = active && active.selectionStart;
+    TABS.forEach(function (k) {
+      if (panelCache[k] !== views[k]) {
+        var el = $("#p-" + k), st = el.scrollTop; el.innerHTML = views[k]; el.scrollTop = st; panelCache[k] = views[k];
+      }
+    });
+    if (keepId) { var el2 = document.getElementById(keepId); if (el2 && el2.tagName === "INPUT" && el2.type !== "date") { el2.value = keepVal; el2.focus(); try { el2.setSelectionRange(keepSel, keepSel); } catch (e) { } } }
+    var h = hijri(now.key); $("#dates").textContent = greg(now.key) + (h ? " · " + h : "");
+    $("#lockbtn").hidden = state.mode !== "supa";
+    markTabs();
     lastSig = signature();
   }
   var lastSig = "";
@@ -928,7 +1012,7 @@ tr:last-child td { border-block-end: 0; }
       var now = nowR(), left = (parseFloat(el.getAttribute("data-t")) - now.h) * 3600;
       el.textContent = fmtDur(left);
     }
-    if (state.tab === "today" && signature() !== lastSig) render();
+    if (signature() !== lastSig) render();
   }
 
   /* ---------------- events ---------------- */
@@ -937,7 +1021,9 @@ tr:last-child td { border-block-end: 0; }
     var act = el.getAttribute("data-act"), now = nowR();
     switch (act) {
       case "lock": lockNow(); break;
-      case "tab": state.tab = el.getAttribute("data-t"); if (state.tab === "learn" && state.lv.mode !== "home") { } window.scrollTo(0, 0); render(); break;
+      case "theme": var cur = getTheme(), nx = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]; try { localStorage.setItem("masar:theme", nx); } catch (er) { } applyTheme(nx); break;
+      case "pv": state.pv = el.getAttribute("data-v"); render(); break;
+      case "tab": var tt = el.getAttribute("data-t"); if (tt === "archive") { state.pv = "archive"; tt = "prayer"; } goTab(tt); render(); break;
       case "tp": togglePrayer(el.getAttribute("data-d"), Number(el.getAttribute("data-p"))); break;
       case "more": state.archiveN += 30; render(); break;
       case "pg": addPages(Number(el.getAttribute("data-n"))); break;
@@ -945,7 +1031,7 @@ tr:last-child td { border-block-end: 0; }
       case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
       case "lhome": state.lv = { mode: "home" }; state.quiz = null; state.card = null; render(); break;
-      case "unit-open": state.lv = { mode: "unit", u: el.getAttribute("data-u") }; window.scrollTo(0, 0); render(); break;
+      case "unit-open": state.lv = { mode: "unit", u: el.getAttribute("data-u") }; $("#p-learn").scrollTop = 0; render(); break;
       case "quiz": var u = COURSE.units.filter(function (x) { return x.id === el.getAttribute("data-u"); })[0]; startQuiz(u.qs, u.title, u.id); break;
       case "mrev": startQuiz(mistakeIds().map(function (id) { return QINDEX[id]; }), "مراجعة الأخطاء", null); break;
       case "pick": answerMcq(el.getAttribute("data-k")); break;
@@ -1044,13 +1130,26 @@ tr:last-child td { border-block-end: 0; }
     store.uid = null; state.days = {}; state.learn = { xp: 0, units: {}, cards: {}, mistakes: {}, study: {} };
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1 };
     state.loaded = false; ready.days = ready.settings = ready.learn = false;
-    state.quiz = null; state.card = null; state.lv = { mode: "home" }; state.tab = "today";
-    render(); showLock("");
+    state.quiz = null; state.card = null; state.lv = { mode: "home" }; state.tab = "home"; state.pv = "today"; panelCache = {};
+    $("#pager").scrollTo({ left: 0 }); render(); showLock("");
   }
   $("#lockform").addEventListener("submit", function (e) { e.preventDefault(); var v = $("#pin").value.trim(); if (v) unlock(v); });
   document.addEventListener("visibilitychange", function () { if (!document.hidden && state.mode === "supa" && store.uid) loadSupa(false); });
 
+  /* ---------------- pager sync ---------------- */
+  (function () {
+    var pager = $("#pager"), tm;
+    pager.addEventListener("scroll", function () {
+      clearTimeout(tm);
+      tm = setTimeout(function () {
+        var w = pager.clientWidth || 1, i = Math.round(Math.abs(pager.scrollLeft) / w), t = TABS[i];
+        if (t && t !== state.tab) { state.tab = t; markTabs(); }
+      }, 90);
+    }, { passive: true });
+  })();
+
   /* ---------------- boot ---------------- */
+  applyTheme(getTheme());
   render();
   setInterval(tick, 1000);
   initStore();
