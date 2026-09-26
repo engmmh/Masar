@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}[hidden]{display:none!important}</style>
+<title>مسار</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<style>
+:root {
+  --bg: #F1F4F2;
+  --surface: #FFFFFF;
+  --surface2: #E6ECE9;
+  --text: #14231F;
+  --muted: #56675F;
+  --line: #D3DDD9;
+  --teal: #0F5C5A;
+  --teal-ink: #FFFFFF;
+  --amber: #B86E0B;
+  --amber-bg: #FBEBCF;
+  --done: #2A7D4B;
+  --done-bg: #DDF0E4;
+  --miss: #B5443B;
+  --miss-bg: #F8E1DE;
+  --display: "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --body: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0B1514; --surface: #132220; --surface2: #1B2E2B; --text: #E6F0ED; --muted: #9CB0AA; --line: #263A36;
+    --teal: #4CC2B8; --teal-ink: #06201E; --amber: #F0B34A; --amber-bg: #3A2C10;
+    --done: #6FD09A; --done-bg: #16362A; --miss: #FF8E82; --miss-bg: #3A1E1B;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0B1514; --surface: #132220; --surface2: #1B2E2B; --text: #E6F0ED; --muted: #9CB0AA; --line: #263A36;
+  --teal: #4CC2B8; --teal-ink: #06201E; --amber: #F0B34A; --amber-bg: #3A2C10;
+  --done: #6FD09A; --done-bg: #16362A; --miss: #FF8E82; --miss-bg: #3A1E1B;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { background: var(--bg); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.6; padding-inline: 16px; }
+#app { max-width: 640px; margin-inline: auto; padding-block: 14px 110px; }
+h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; line-height: 1.3; text-wrap: balance; }
+p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.en { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 500; }
+.num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.muted { color: var(--muted); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+
+/* top */
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-block: 6px 12px; }
+.top h1 { font-size: 26px; }
+.top .dates { font-size: 14px; color: var(--muted); }
+.chip { display: inline-flex; gap: 6px; align-items: center; background: var(--surface2); border-radius: 99px; padding: 2px 12px; font-size: 14px; white-space: nowrap; }
+.banner { background: var(--amber-bg); color: var(--text); border-radius: 12px; padding: 10px 14px; font-size: 14px; margin-block-end: 12px; }
+
+/* cards */
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-block-end: 12px; }
+.card h2 { font-size: 20px; margin-block-end: 8px; }
+.card h3 { font-size: 17px; margin-block-end: 6px; }
+.row { display: flex; gap: 10px; align-items: center; }
+.between { justify-content: space-between; }
+.wrapr { flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+
+/* hero */
+.hero { display: flex; gap: 16px; align-items: center; }
+.ringbox { position: relative; width: 132px; height: 132px; flex: none; }
+.ring { width: 100%; height: 100%; }
+.seg { stroke: var(--surface2); }
+.seg.done { stroke: var(--done); }
+.seg.late { stroke: var(--amber); }
+.seg.current { stroke: var(--teal); }
+.seg.missed { stroke: var(--miss); }
+.ringtxt { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; }
+.ringtxt b { font-family: var(--display); font-size: 34px; font-weight: 700; }
+.ringtxt span { font-size: 12px; color: var(--muted); }
+.next .lbl { font-size: 13px; color: var(--muted); }
+.next .nm { font-family: var(--display); font-size: 30px; font-weight: 700; line-height: 1.15; }
+.next .cd { font-size: 20px; font-weight: 600; color: var(--teal); }
+.next .sub { font-size: 14px; color: var(--muted); }
+.streak { display: inline-flex; gap: 6px; align-items: center; margin-block-start: 8px; color: var(--amber); font-weight: 600; font-size: 15px; }
+.streak svg { width: 18px; height: 18px; }
+
+/* alerts */
+.alert { background: var(--miss-bg); border: 1px solid var(--miss); }
+.alert h2 { color: var(--miss); font-size: 18px; }
+.miss-list { display: grid; gap: 6px; margin-block-start: 8px; }
+.miss-item { display: flex; justify-content: space-between; align-items: center; gap: 8px; background: var(--surface); border-radius: 10px; padding: 6px 12px; font-size: 15px; }
+
+/* prayers */
+.prow { display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; margin-block-end: 8px; }
+.prow .pn { font-family: var(--display); font-size: 20px; font-weight: 600; }
+.prow .pt { font-size: 15px; color: var(--muted); }
+.prow .pbtn { grid-row: 1 / span 2; grid-column: 2; min-width: 116px; min-height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface2); font-weight: 600; padding: 0 14px; }
+.prow.st-current { border-color: var(--teal); box-shadow: 0 0 0 1px var(--teal) inset; }
+.prow.st-current .pbtn { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); }
+.prow.st-done .pbtn { background: var(--done-bg); color: var(--done); border-color: var(--done); }
+.prow.st-late .pbtn, .prow.st-qada .pbtn { background: var(--amber-bg); color: var(--amber); border-color: var(--amber); }
+.prow.st-missed { border-color: var(--miss); }
+.prow.st-missed .pbtn { background: var(--miss-bg); color: var(--miss); border-color: var(--miss); }
+.prow.st-upcoming .pbtn { color: var(--muted); cursor: default; }
+.prow.st-upcoming { opacity: .85; }
+
+/* generic buttons */
+.btn { min-height: 44px; border-radius: 12px; border: 1px solid var(--teal); background: var(--teal); color: var(--teal-ink); font-weight: 600; padding: 0 18px; }
+.btn.alt { background: var(--surface2); color: var(--text); border-color: var(--line); }
+.btn.sm { min-height: 36px; padding: 0 12px; font-size: 14px; border-radius: 10px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+.bar { height: 10px; border-radius: 99px; background: var(--surface2); overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--teal); border-radius: 99px; }
+.bar.amber > i { background: var(--amber); }
+
+/* tabs */
+.tabs { position: fixed; inset-inline: 0; bottom: 0; z-index: 10; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
+.tabs ul { max-width: 640px; margin: 0 auto; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.tabs button { width: 100%; background: none; border: 0; display: grid; place-items: center; gap: 2px; padding: 6px 0; border-radius: 12px; font-size: 13px; color: var(--muted); }
+.tabs button svg { width: 24px; height: 24px; }
+.tabs button[aria-current="page"] { color: var(--teal); background: var(--surface2); font-weight: 600; }
+
+/* archive */
+.stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-block-end: 12px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 14px; }
+.stat b { display: block; font-family: var(--display); font-size: 26px; line-height: 1.2; }
+.stat span { font-size: 13px; color: var(--muted); }
+.tw { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 4px 3px; text-align: center; border-block-end: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 500; }
+td.day { text-align: start; padding-inline-start: 10px; white-space: nowrap; font-size: 14px; }
+tr.today td.day { color: var(--teal); font-weight: 600; }
+tr:last-child td { border-block-end: 0; }
+.dot { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface2); color: var(--muted); font-size: 14px; display: inline-grid; place-items: center; padding: 0; }
+.dot.done { background: var(--done-bg); color: var(--done); border-color: var(--done); }
+.dot.late, .dot.qada { background: var(--amber-bg); color: var(--amber); border-color: var(--amber); }
+.dot.missed { background: var(--miss-bg); color: var(--miss); border-color: var(--miss); }
+.dot.upcoming, .dot.future, .dot.na { opacity: .5; cursor: default; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13px; color: var(--muted); margin-block: 10px; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; margin-inline-end: 4px; vertical-align: -1px; }
+
+/* quran */
+.seg2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.seg2 button { min-height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface2); }
+.seg2 button[aria-pressed="true"] { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); font-weight: 600; }
+.field { display: grid; gap: 4px; margin-block: 10px; font-size: 14px; color: var(--muted); }
+.field input, .field select, .inp { font: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-height: 44px; width: 100%; }
+.stepper { display: flex; align-items: center; gap: 10px; }
+.stepper b { min-width: 2.5ch; text-align: center; font-family: var(--display); font-size: 24px; }
+.week { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-items: end; height: 120px; margin-block-start: 8px; }
+.week div { display: grid; grid-template-rows: 1fr auto auto; gap: 2px; height: 100%; text-align: center; font-size: 12px; color: var(--muted); }
+.week .col { display: flex; align-items: flex-end; }
+.week .col i { display: block; width: 100%; background: var(--teal); border-radius: 6px 6px 2px 2px; min-height: 3px; }
+.week .col i.full { background: var(--done); }
+
+/* learn */
+.units { display: grid; gap: 8px; }
+.unit { display: flex; gap: 12px; align-items: center; text-align: start; width: 100%; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.unit .no { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--surface2); display: grid; place-items: center; font-family: var(--display); font-weight: 700; }
+.unit.done .no { background: var(--done); color: var(--teal-ink); }
+.pts { display: grid; gap: 8px; margin-block: 8px 14px; padding: 0; list-style: none; }
+.pts li { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 14px; }
+.opts { display: grid; gap: 8px; margin-block: 12px; }
+.opt { min-height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); padding: 0 14px; text-align: start; direction: ltr; font-weight: 500; }
+.opt.ok { background: var(--done-bg); border-color: var(--done); color: var(--done); }
+.opt.bad { background: var(--miss-bg); border-color: var(--miss); color: var(--miss); }
+.qtext { font-size: 20px; font-family: var(--display); direction: ltr; text-align: start; unicode-bidi: plaintext; }
+.qtext.ar { direction: rtl; }
+.fb { border-radius: 12px; padding: 10px 14px; margin-block: 8px; font-size: 15px; }
+.fb.ok { background: var(--done-bg); color: var(--done); }
+.fb.bad { background: var(--miss-bg); color: var(--miss); }
+.flash { min-height: 170px; display: grid; place-content: center; text-align: center; gap: 6px; cursor: pointer; }
+.flash .w { font-family: var(--display); font-size: 34px; direction: ltr; }
+.crumb { font-size: 14px; color: var(--muted); margin-block-end: 8px; }
+.linkbtn { background: none; border: 0; color: var(--teal); padding: 4px 0; font-size: 15px; }
+
+#toast { position: fixed; inset-inline: 16px; bottom: calc(84px + env(safe-area-inset-bottom, 0px)); margin-inline: auto; max-width: 420px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; }
+#toast.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+</style>
+
+</head>
+<body>
+<div id="app" dir="rtl" lang="ar">
+  <div id="view"></div>
+</div>
+<nav class="tabs" dir="rtl" aria-label="الأقسام">
+  <ul>
+    <li><button data-act="tab" data-t="today" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>اليوم</button></li>
+    <li><button data-act="tab" data-t="archive"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 10h18"/></svg>الأرشيف</button></li>
+    <li><button data-act="tab" data-t="quran"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2H6"/></svg>القرآن</button></li>
+    <li><button data-act="tab" data-t="learn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg>تعلّم</button></li>
+  </ul>
+</nav>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- constants ---------------- */
+  var LAT = 24.7136, LNG = 46.6753, TZ = 3;
+  var PRAYERS = [
+    { k: "fajr", n: "الفجر" }, { k: "dhuhr", n: "الظهر" }, { k: "asr", n: "العصر" },
+    { k: "maghrib", n: "المغرب" }, { k: "isha", n: "العشاء" }
+  ];
+  var WD = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+  var WD_S = ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
+  var UNITS = { page: { n: "صفحات", f: 1 }, half: { n: "نصف جزء", f: 10 }, juz: { n: "أجزاء", f: 20 } };
+
+  /* ---------------- helpers ---------------- */
+  function $(s) { return document.querySelector(s); }
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function fmtEn(s) { return esc(s).replace(/\{([^}]+)\}/g, '<span class="en">$1</span>'); }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function keyOf(d) { return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); }
+  function addDays(key, n) { var p = key.split("-").map(Number); return keyOf(new Date(Date.UTC(p[0], p[1] - 1, p[2] + n))); }
+  function nowR() {
+    var ms = Date.now(), d = new Date(ms + TZ * 3600e3);
+    return { ms: ms, key: keyOf(d), dow: d.getUTCDay(), h: d.getUTCHours() + d.getUTCMinutes() / 60 + d.getUTCSeconds() / 3600 };
+  }
+  function dowOf(key) { var p = key.split("-").map(Number); return new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay(); }
+  function fmtTime(h) {
+    var m = Math.round(h * 60), hh = Math.floor(m / 60) % 24, mm = m % 60;
+    return '<span class="num">' + (hh % 12 || 12) + ":" + pad(mm) + "</span> " + (hh >= 12 ? "م" : "ص");
+  }
+  function fmtDur(sec) {
+    sec = Math.max(0, Math.floor(sec));
+    var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+    return pad(h) + ":" + pad(m) + ":" + pad(s);
+  }
+  function ico(name) {
+    var s = {
+      flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5 4 5 4 9a4 4 0 0 1-8 0c0-1.5.6-2.6 1.4-3.5C9.6 9 10 10 11 10c0-3-1-5 1-8zM12 22a7 7 0 0 0 7-7c0-2-.8-3.6-1.8-5 0 3.5-2.4 5.5-5.2 5.5S6.8 13 6.8 10.5C5.6 12 5 13.4 5 15a7 7 0 0 0 7 7z"/></svg>'
+    };
+    return s[name] || "";
+  }
+
+  /* ---------------- prayer times (Umm al-Qura, Riyadh) ---------------- */
+  var rad = Math.PI / 180, deg = 180 / Math.PI;
+  function sin(d) { return Math.sin(d * rad); } function cos(d) { return Math.cos(d * rad); } function tan(d) { return Math.tan(d * rad); }
+  function asin(x) { return deg * Math.asin(x); } function acos(x) { return deg * Math.acos(x); }
+  function atan2(y, x) { return deg * Math.atan2(y, x); } function arccot(x) { return deg * Math.atan(1 / x); }
+  function fixA(a) { return a - 360 * Math.floor(a / 360); } function fixH(a) { return a - 24 * Math.floor(a / 24); }
+  function julian(y, m, d) { if (m <= 2) { y -= 1; m += 12; } var A = Math.floor(y / 100), B = 2 - A + Math.floor(A / 4); return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + B - 1524.5; }
+  function sunPos(jd) {
+    var D = jd - 2451545.0, g = fixA(357.529 + 0.98560028 * D), q = fixA(280.459 + 0.98564736 * D);
+    var L = fixA(q + 1.915 * sin(g) + 0.020 * sin(2 * g)), e = 23.439 - 0.00000036 * D;
+    var RA = fixH(atan2(cos(e) * sin(L), cos(L)) / 15);
+    return { decl: asin(sin(e) * sin(L)), eq: q / 15 - RA };
+  }
+  function midDay(jd, t) { return fixH(12 - sunPos(jd + t).eq); }
+  function angleTime(jd, ang, t, ccw) {
+    var decl = sunPos(jd + t).decl, noon = midDay(jd, t);
+    var x = (-sin(ang) - sin(decl) * sin(LAT)) / (cos(decl) * cos(LAT));
+    return noon + (ccw ? -1 : 1) * acos(x) / 15;
+  }
+  function asrTime(jd, f, t) {
+    var decl = sunPos(jd + t).decl;
+    return angleTime(jd, -arccot(f + tan(Math.abs(LAT - decl))), t, false);
+  }
+  function isRamadan(y, m, d) {
+    try { return new Intl.DateTimeFormat("en-u-ca-islamic-umalqura", { month: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(y, m - 1, d, 12))) === "9"; }
+    catch (e) { return false; }
+  }
+  var schedCache = {};
+  function sched(key) {
+    if (schedCache[key]) return schedCache[key];
+    var p = key.split("-").map(Number), jd = julian(p[0], p[1], p[2]) - LNG / (15 * 24);
+    var t = { fajr: 5 / 24, sunrise: 6 / 24, dhuhr: 12 / 24, asr: 13 / 24, sunset: 18 / 24 }, r, k;
+    for (var i = 0; i < 2; i++) {
+      r = { fajr: angleTime(jd, 18.5, t.fajr, true), sunrise: angleTime(jd, 0.833, t.sunrise, true), dhuhr: midDay(jd, t.dhuhr), asr: asrTime(jd, 1, t.asr), sunset: angleTime(jd, 0.833, t.sunset, false) };
+      t = {}; for (k in r) t[k] = r[k] / 24;
+    }
+    var adj = TZ - LNG / 15; for (k in r) r[k] += adj;
+    var isha = r.sunset + (isRamadan(p[0], p[1], p[2]) ? 120 : 90) / 60;
+    var out = { times: [r.fajr, r.dhuhr, r.asr, r.sunset, isha], sunrise: r.sunrise };
+    schedCache[key] = out; return out;
+  }
+  function windowOf(key, i) {
+    var s = sched(key), start = s.times[i], end;
+    if (i === 0) end = s.sunrise; else if (i === 1) end = s.times[2]; else if (i === 2) end = s.times[3];
+    else if (i === 3) end = s.times[4]; else end = 24 + sched(addDays(key, 1)).times[0];
+    return { start: start, end: end };
+  }
+  function pname(key, i) { return (i === 1 && dowOf(key) === 5) ? "الجمعة" : PRAYERS[i].n; }
+  function hijri(key) {
+    try {
+      var p = key.split("-").map(Number);
+      return new Intl.DateTimeFormat("ar-u-nu-latn-ca-islamic-umalqura", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(Date.UTC(p[0], p[1] - 1, p[2], 12)));
+    } catch (e) { return ""; }
+  }
+  function greg(key) {
+    var p = key.split("-").map(Number);
+    return WD[dowOf(key)] + " " + p[2] + "/" + p[1] + "/" + p[0];
+  }
+
+  /* ---------------- state ---------------- */
+  var today0 = nowR().key;
+  var state = {
+    loaded: false, mode: "local",
+    settings: { startDate: today0, unit: "page", amount: 5, startPage: 1 },
+    days: {},
+    learn: { xp: 0, units: {}, cards: {}, mistakes: {}, study: {} },
+    tab: "today", archiveN: 30, lv: { mode: "home" }, quiz: null, card: null
+  };
+  var ready = { days: false, settings: false, learn: false };
+
+  /* ---------------- storage ---------------- */
+  var store = { db: null, root: null };
+  var LSKEY = "masar:v1";
+  function localSave() {
+    try { localStorage.setItem(LSKEY, JSON.stringify({ settings: state.settings, days: state.days, learn: state.learn })); } catch (e) { }
+  }
+  function localLoad() {
+    try {
+      var raw = localStorage.getItem(LSKEY); if (!raw) return;
+      var o = JSON.parse(raw);
+      if (o.settings) Object.assign(state.settings, o.settings);
+      if (o.days) state.days = o.days;
+      if (o.learn) Object.assign(state.learn, o.learn);
+    } catch (e) { }
+  }
+  var timers = {}, dirty = {}, chains = {};
+  function persist(id, delay, write) {
+    dirty[id] = true;
+    clearTimeout(timers[id]);
+    timers[id] = setTimeout(function () {
+      timers[id] = null;
+      chains[id] = (chains[id] || Promise.resolve()).then(write).catch(function () {
+        toast("تعذّر الحفظ. تأكد من الاتصال وحاول مرة أخرى.");
+      }).then(function () { if (!timers[id]) dirty[id] = false; });
+    }, delay);
+  }
+  function saveDay(key, delay) {
+    if (state.mode !== "cloud") { localSave(); return; }
+    persist("day:" + key, delay || 0, function () { return store.root.collection("days").doc(key).set(state.days[key] || {}); });
+  }
+  function saveMeta(name, delay) {
+    if (state.mode !== "cloud") { localSave(); return; }
+    persist("meta:" + name, delay || 0, function () { return store.root.collection("meta").doc(name).set(name === "settings" ? state.settings : state.learn); });
+  }
+  function checkLoaded() {
+    if (!state.loaded && ready.days && ready.settings && ready.learn) { state.loaded = true; render(); }
+  }
+  async function initStore() {
+    var db = null, uid = null;
+    try {
+      if (window.claude && window.claude.use) {
+        db = await window.claude.use("db");
+        var user = await window.claude.use("user");
+        uid = user ? await user.id() : null;
+      }
+    } catch (e) { db = null; }
+    if (!db || !uid) {
+      state.mode = "local"; localLoad();
+      ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); return;
+    }
+    state.mode = "cloud"; store.db = db;
+    store.root = db.doc("data/users/" + uid + "/app");
+    var fail = function () { state.mode = "local"; localLoad(); ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); };
+    try {
+      store.root.collection("days").onSnapshot(function (snap) {
+        snap.docChanges().forEach(function (c) {
+          if (dirty["day:" + c.doc.id]) return;
+          if (c.type === "removed") delete state.days[c.doc.id]; else state.days[c.doc.id] = c.doc.data() || {};
+        });
+        ready.days = true; checkLoaded(); if (state.loaded) render();
+      }, fail);
+      store.root.collection("meta").doc("settings").onSnapshot(function (s) {
+        if (s.exists) { if (!dirty["meta:settings"]) Object.assign(state.settings, s.data()); }
+        else if (!ready.settings) { state.settings.startDate = nowR().key; saveMeta("settings"); }
+        ready.settings = true; checkLoaded(); if (state.loaded) render();
+      }, fail);
+      store.root.collection("meta").doc("learn").onSnapshot(function (s) {
+        if (s.exists && !dirty["meta:learn"]) {
+          var d = s.data();
+          state.learn = Object.assign({ xp: 0, units: {}, cards: {}, mistakes: {}, study: {} }, d);
+        }
+        ready.learn = true; checkLoaded(); if (state.loaded && state.tab !== "learn") render();
+      }, fail);
+    } catch (e) { fail(); }
+    setTimeout(function () { if (!state.loaded) { ready.days = ready.settings = ready.learn = true; checkLoaded(); } }, 6000);
+  }
+
+  /* ---------------- prayer logic ---------------- */
+  function rec(key, i) { var d = state.days[key]; return d && d[PRAYERS[i].k]; }
+  function status(key, i, now) {
+    var r = rec(key, i);
+    if (r && r.t) return r.late ? "late" : (r.qada ? "qada" : "done");
+    if (key < state.settings.startDate) return "na";
+    if (key > now.key) return "future";
+    if (key < now.key) return "missed";
+    var w = windowOf(key, i);
+    if (now.h < w.start) return "upcoming";
+    if (now.h < w.end) return "current";
+    return "missed";
+  }
+  function isDone(st) { return st === "done" || st === "late" || st === "qada"; }
+  function dayComplete(key) { var d = state.days[key]; return !!d && PRAYERS.every(function (p) { return d[p.k] && d[p.k].t; }); }
+  function streak(now) {
+    var k = now.key, n = 0;
+    if (!dayComplete(k)) k = addDays(k, -1);
+    while (dayComplete(k) && n < 5000) { n++; k = addDays(k, -1); }
+    return n;
+  }
+  function bestStreak() {
+    var keys = Object.keys(state.days).sort(), best = 0, cur = 0, prev = null;
+    keys.forEach(function (k) {
+      if (dayComplete(k)) { cur = (prev && addDays(prev, 1) === k) ? cur + 1 : 1; prev = k; if (cur > best) best = cur; }
+      else { cur = 0; prev = null; }
+    });
+    return best;
+  }
+  function togglePrayer(key, i) {
+    var now = nowR(), st = status(key, i, now), d = state.days[key] || (state.days[key] = {}), k = PRAYERS[i].k;
+    if (isDone(st)) { delete d[k]; saveDay(key); toast("تم التراجع عن تسجيل " + pname(key, i)); render(); return; }
+    if (st === "upcoming" || st === "future" || st === "na") return;
+    var late = (key === now.key && st === "missed");
+    d[k] = { t: now.ms };
+    if (key < now.key) d[k].qada = 1; else if (late) d[k].late = 1;
+    saveDay(key); render();
+    toast(key < now.key ? "سُجّل قضاء " + pname(key, i) : (late ? "سُجّلت " + pname(key, i) + " بعد وقتها" : "تقبّل الله طاعتك"));
+  }
+  function missedList(now) {
+    var out = [], k = state.settings.startDate, guard = 0;
+    while (k <= now.key && guard++ < 800) {
+      for (var i = 0; i < 5; i++) if (status(k, i, now) === "missed") out.push({ key: k, i: i });
+      k = addDays(k, 1);
+    }
+    return out;
+  }
+
+  /* ---------------- quran logic ---------------- */
+  function target() { var u = UNITS[state.settings.unit] || UNITS.page; return Math.max(1, Math.round(state.settings.amount * u.f)); }
+  function pagesOn(key) { var d = state.days[key]; return d && d.q ? d.q : 0; }
+  function totalPages() { var t = 0; for (var k in state.days) t += (state.days[k].q || 0); return t; }
+  function juzOf(p) { return Math.min(30, p <= 21 ? 1 : Math.floor((p - 2) / 20) + 1); }
+  function addPages(n) {
+    var key = nowR().key, d = state.days[key] || (state.days[key] = {});
+    d.q = Math.max(0, (d.q || 0) + n);
+    saveDay(key, 500); render();
+  }
+  function setPages(n) { var key = nowR().key, d = state.days[key] || (state.days[key] = {}); d.q = Math.max(0, n); saveDay(key, 500); render(); }
+
+  /* ---------------- learning content ---------------- */
+  var COURSE = {
+    id: "en1", title: "الإنجليزية للمبتدئين", desc: "من كشكولك: 7 وحدات وتدريبات وكروت مفردات.",
+    units: [
+      {
+        id: "u0", icon: "0", title: "الأساسيات",
+        pts: [
+          "الجملة: الفاعل + الفعل + المفعول به. مثال: {I know you}",
+          "الحروف المتحركة خمسة: {A E I O U}",
+          "قبل الصوت المتحرك نكتب {an}: {an apple}, {an engineer}, {an Italian}",
+          "قبل الصوت الساكن نكتب {a}: {a car}, {a boy}, {a teacher}",
+          "الحكم بالنطق مش بالكتابة: {an hour} لكن {a university}"
+        ],
+        qs: [
+          { t: "mcq", q: "___ engineer", o: ["a", "an", "the a"], a: "an" },
+          { t: "mcq", q: "___ boy", o: ["a", "an", "one an"], a: "a" },
+          { t: "fill", q: "I have ___ apple.", a: ["an"], why: "apple تبدأ بحرف متحرك." },
+          { t: "mcq", q: "___ hour", o: ["a", "an", "the a"], a: "an", why: "الـ h صامتة في hour." },
+          { t: "mcq", q: "Which sentence is in the right order?", o: ["I know you", "Know I you", "You I know"], a: "I know you", why: "فاعل + فعل + مفعول." },
+          { t: "fill", q: "___ university is big.", a: ["a"], why: "تنطق يو (صوت ساكن) فنستخدم a." }
+        ]
+      },
+      {
+        id: "u1", icon: "1", title: "الفعل be (يكون)",
+        pts: [
+          "{I am} · {you are} · {he / she / it is} · {we / they are}",
+          "النفي بإضافة not: {I am not} · {He isn't} · {They aren't}",
+          "السؤال: نقدّم be على الفاعل: {Are you a teacher?}",
+          "كلمات الاستفهام: {What} ماذا · {How} كيف · {Where} أين + be: {Where are you?}",
+          "الجنسية بحرف كبير: {Egyptian}, {Italian}. و{at} للمكان: {I am at home}"
+        ],
+        qs: [
+          { t: "mcq", q: "She ___ a teacher.", o: ["am", "is", "are"], a: "is" },
+          { t: "mcq", q: "They ___ at home.", o: ["is", "am", "are"], a: "are" },
+          { t: "mcq", q: "___ you Egyptian?", o: ["Is", "Are", "Am"], a: "Are" },
+          { t: "fill", q: "I ___ not late.", a: ["am"], why: "مع I نستخدم am." },
+          { t: "fill", q: "Where ___ you?", a: ["are"] },
+          { t: "mcq", q: "Choose the correct spelling.", o: ["Egyptian", "Egypition", "Egyption"], a: "Egyptian" },
+          { t: "mcq", q: "He ___ Italian.", o: ["are", "is", "am"], a: "is" }
+        ]
+      },
+      {
+        id: "u2", icon: "2", title: "الجمع",
+        pts: [
+          "الأصل نضيف s: {boy → boys}, {car → cars}",
+          "لو تنتهي بـ {ch, sh, o, s, x} نضيف es: {watch → watches}, {box → boxes}, {tomato → tomatoes}",
+          "حرف ساكن + y نقلب y إلى ies: {baby → babies}, {city → cities}",
+          "حرف علة + y نضيف s فقط: {boy → boys}, {day → days}",
+          "نفس الفكرة مع الفعل بعد he/she/it: {He plays}, {She watches}, {It studies}"
+        ],
+        qs: [
+          { t: "mcq", q: "Plural of baby", o: ["babys", "babies", "babyes"], a: "babies" },
+          { t: "mcq", q: "Plural of box", o: ["boxs", "boxes", "boxies"], a: "boxes" },
+          { t: "mcq", q: "Plural of boy", o: ["boys", "boies", "boyes"], a: "boys", why: "حرف علة قبل y." },
+          { t: "fill", q: "watch → ___ (plural)", a: ["watches"] },
+          { t: "fill", q: "He ___ hard. (study)", a: ["studies"] },
+          { t: "mcq", q: "Plural of city", o: ["citys", "cities", "cityes"], a: "cities" }
+        ]
+      },
+      {
+        id: "u3", icon: "3", title: "هذا وذاك وهناك",
+        pts: [
+          "{this} هذا (قريب، مفرد) · {these} هؤلاء (قريب، جمع)",
+          "{that} ذاك (بعيد، مفرد) · {those} أولئك (بعيد، جمع)",
+          "{There is} + مفرد = يوجد: {There is a car on the street}",
+          "{There are} + جمع = يوجد: {There are two boys here}",
+          "{here} هنا (قريب) · {there} هناك (بعيد)"
+        ],
+        qs: [
+          { t: "mcq", q: "___ are my books. (near)", o: ["This", "These", "That"], a: "These" },
+          { t: "fill", q: "___ is my pen. (near, one)", a: ["this"] },
+          { t: "fill", q: "There ___ two cars.", a: ["are"] },
+          { t: "mcq", q: "There ___ a car on the street.", o: ["is", "are", "am"], a: "is" },
+          { t: "mcq", q: "___ are their shirts. (far)", o: ["That", "Those", "This"], a: "Those" },
+          { t: "mcq", q: "\"هنا\" =", o: ["here", "there", "where"], a: "here" }
+        ]
+      },
+      {
+        id: "u4", icon: "4", title: "الضمائر (4 عائلات)",
+        pts: [
+          "{I → me → my → mine}",
+          "{you → you → your → yours}",
+          "{he → him → his → his} · {she → her → her → hers}",
+          "{it → it → its} · {we → us → our → ours} · {they → them → their → theirs}",
+          "بعد الفعل نستخدم المفعول: {I know him}. قبل الاسم نستخدم الملكية: {my pen}. الضمير لوحده: {The pen is mine}",
+          "{its} ملكية بدون فاصلة، و{it's} = it is"
+        ],
+        qs: [
+          { t: "mcq", q: "I know ___. (they)", o: ["they", "their", "them"], a: "them" },
+          { t: "mcq", q: "This is ___ pen. (we)", o: ["our", "ours", "us"], a: "our" },
+          { t: "fill", q: "This book is ___. (I)", a: ["mine"] },
+          { t: "mcq", q: "She knows ___. (he)", o: ["he", "his", "him"], a: "him" },
+          { t: "fill", q: "That phone is ___. (you)", a: ["yours"] },
+          { t: "fill", q: "This is ___ shirt. (she)", a: ["her"] },
+          { t: "mcq", q: "This is ___ cover. (it)", o: ["its", "it's", "it"], a: "its" }
+        ]
+      },
+      {
+        id: "u5", icon: "5", title: "have / has / have got",
+        pts: [
+          "{I / you / we / they have} · {he / she / it has}",
+          "اسم مفرد: {Ahmed has a car}. اسمان: {Ahmed and Mohamed have a car}",
+          "{have got} بنفس معنى {have}: {I have got a call}, {He has got a car}",
+          "اختصار: {I've} · {have not → haven't} · {has not → hasn't}",
+          "{There is} = يوجد · {I have} = عندي"
+        ],
+        qs: [
+          { t: "mcq", q: "Ahmed ___ a car.", o: ["have", "has", "haves"], a: "has" },
+          { t: "mcq", q: "My friends ___ a car.", o: ["has", "have", "is"], a: "have" },
+          { t: "fill", q: "She has ___ a call.", a: ["got"] },
+          { t: "mcq", q: "have not =", o: ["haven't", "have'nt", "havent'"], a: "haven't" },
+          { t: "fill", q: "He ___ a new phone. (have)", a: ["has"] },
+          { t: "mcq", q: "\"عندي سيارة\" =", o: ["There is a car", "I have a car", "I am a car"], a: "I have a car" }
+        ]
+      },
+      {
+        id: "u6", icon: "6", title: "do / does",
+        pts: [
+          "{I / you / we / they do} · {he / she / it does}",
+          "النفي: {don't / doesn't} + فعل بصيغة المصدر: {He doesn't know her}",
+          "السؤال: {Do / Does} + فاعل + فعل مصدر: {Does he know her?}",
+          "القاعدة الذهبية: الفعل المساعد يأخذ s، والفعل الأساسي يرجع للمصدر",
+          "{do} فعل أساسي أيضًا: {I do my homework} · {He doesn't do his homework}"
+        ],
+        qs: [
+          { t: "mcq", q: "___ he know her?", o: ["Do", "Does", "Is"], a: "Does" },
+          { t: "mcq", q: "She doesn't ___ her homework.", o: ["does", "do", "did"], a: "do" },
+          { t: "mcq", q: "I ___ know you. (negative)", o: ["don't", "doesn't", "isn't"], a: "don't" },
+          { t: "fill", q: "He ___ his homework. (do)", a: ["does"] },
+          { t: "mcq", q: "Which is correct?", o: ["He doesn't knows", "He doesn't know", "He don't know"], a: "He doesn't know" },
+          { t: "fill", q: "She doesn't ___ football. (play)", a: ["play"] },
+          { t: "mcq", q: "Do you ___ me?", o: ["know", "knows", "knowing"], a: "know" }
+        ]
+      }
+    ],
+    vocab: [
+      ["know", "يعرف", "I know your brother."], ["do", "يفعل", "I do my homework at night."], ["have", "يمتلك / عندي", "We have a big house."],
+      ["have got", "حصل على / عنده", "I have got a call from Sara."], ["be", "يكون", "I want to be an engineer."], ["play", "يلعب", "They play football on Friday."],
+      ["football", "كرة القدم", "He doesn't play football."], ["homework", "واجب منزلي", "She does her homework."], ["car", "سيارة", "Ahmed has a new car."],
+      ["call", "مكالمة", "I have got a call."], ["pen", "قلم", "This is my pen."], ["phone", "هاتف", "That is your phone."],
+      ["cover", "غطاء / غلاف", "This is its cover."], ["shirt", "قميص", "This is our shirt."], ["boy", "ولد", "The boys play here."],
+      ["baby", "طفل رضيع", "The babies are at home."], ["street", "شارع", "There is a car on the street."], ["teacher", "معلم", "Are you a teacher?"],
+      ["Egyptian", "مصري", "He is Egyptian."], ["Italian", "إيطالي", "Rome is an Italian city."], ["here", "هنا", "Are they here?"],
+      ["there", "هناك", "The books are there."], ["at", "في (مكان)", "I am at work."], ["what", "ماذا", "What is this?"],
+      ["how", "كيف", "How are you?"], ["where", "أين", "Where are you?"], ["vowel", "حرف علة", "An apple starts with a vowel."]
+    ].map(function (v, i) { return { id: "v" + i, en: v[0], ar: v[1], ex: v[2] }; })
+  };
+  var QINDEX = {};
+  COURSE.units.forEach(function (u) { u.qs.forEach(function (q, i) { q.id = u.id + "-q" + i; q.u = u.id; QINDEX[q.id] = q; }); });
+  var INTERVALS = [0, 1, 3, 7];
+
+  function level() {
+    var xp = state.learn.xp || 0, lv = Math.floor(Math.sqrt(xp / 40)) + 1, base = 40 * (lv - 1) * (lv - 1), next = 40 * lv * lv;
+    return { lv: lv, xp: xp, pct: Math.round((xp - base) / (next - base) * 100), need: next - xp };
+  }
+  function addXp(n, now) {
+    state.learn.xp = (state.learn.xp || 0) + n;
+    var k = (now || nowR()).key;
+    state.learn.study[k] = (state.learn.study[k] || 0) + n;
+  }
+  function studyStreak(now) {
+    var k = now.key, n = 0;
+    if (!state.learn.study[k]) k = addDays(k, -1);
+    while (state.learn.study[k] && n < 5000) { n++; k = addDays(k, -1); }
+    return n;
+  }
+  function dueCards(now) { return COURSE.vocab.filter(function (v) { var c = state.learn.cards[v.id]; return !c || c.due <= now.key; }); }
+  function mistakeIds() { return Object.keys(state.learn.mistakes).filter(function (id) { return state.learn.mistakes[id] > 0 && QINDEX[id]; }); }
+  function norm(s) { return String(s).toLowerCase().replace(/[‘’ʼ`]/g, "'").replace(/[.!?]+$/g, "").replace(/\s+/g, " ").trim(); }
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  /* ---------------- toast ---------------- */
+  var toastT;
+  function toast(msg) {
+    var el = $("#toast"); el.textContent = msg; el.classList.add("on");
+    clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove("on"); }, 2600);
+  }
+
+  /* ---------------- views ---------------- */
+  function head(now) {
+    var banner = state.mode === "local" ? '<div class="banner">الحفظ السحابي غير متاح في هذا العرض. بياناتك تُحفظ على هذا المتصفح فقط.</div>' : "";
+    var h = hijri(now.key);
+    return banner + '<div class="top"><div><h1>مسار</h1><div class="dates">' + esc(greg(now.key)) + (h ? " · " + esc(h) : "") + '</div></div><span class="chip">الرياض · أم القرى</span></div>';
+  }
+
+  function ringSVG(sts) {
+    var r = 58, C = 2 * Math.PI * r, gap = 9, seg = C / 5 - gap, s = '<svg viewBox="0 0 140 140" class="ring" aria-hidden="true">';
+    sts.forEach(function (st, i) {
+      var cls = st === "done" || st === "qada" ? "done" : (st === "late" ? "late" : (st === "current" ? "current" : (st === "missed" ? "missed" : "")));
+      s += '<circle class="seg ' + cls + '" cx="70" cy="70" r="' + r + '" fill="none" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + seg.toFixed(2) + " " + (C - seg).toFixed(2) + '" transform="rotate(' + (-90 + i * 72 + (gap / 2) / C * 360).toFixed(2) + ' 70 70)"/>';
+    });
+    return s + "</svg>";
+  }
+
+  function heroHTML(now) {
+    var key = now.key, sts = PRAYERS.map(function (p, i) { return status(key, i, now); });
+    var doneN = sts.filter(isDone).length, cur = -1, i;
+    for (i = 0; i < 5; i++) if (sts[i] === "current") { cur = i; break; }
+    var lbl, nm, sub, target;
+    if (cur >= 0) {
+      var w = windowOf(key, cur); lbl = "الآن وقت"; nm = pname(key, cur); target = w.end; sub = "ينتهي وقتها بعد";
+    } else {
+      var nx = -1, tk = key;
+      for (i = 0; i < 5; i++) if (sched(key).times[i] > now.h) { nx = i; break; }
+      if (nx < 0) { nx = 0; tk = addDays(key, 1); }
+      lbl = "الصلاة القادمة"; nm = pname(tk, nx); target = sched(tk).times[nx] + (tk === key ? 0 : 24); sub = "بعد";
+    }
+    var st = streak(now);
+    return '<div class="card"><div class="hero"><div class="ringbox">' + ringSVG(sts) +
+      '<div class="ringtxt"><b class="num">' + doneN + '/5</b><span>صلوات اليوم</span></div></div>' +
+      '<div class="next grow"><div class="lbl">' + lbl + '</div><div class="nm">' + esc(nm) + '</div>' +
+      '<div class="sub">' + sub + ' <span class="cd num" id="cd" data-t="' + target + '">' + fmtDur((target - now.h) * 3600) + '</span></div>' +
+      '<div class="streak">' + ico("flame") + (st > 0 ? "سلسلة " + st + (st === 1 ? " يوم" : " أيام") : "ابدأ سلسلتك اليوم") + '</div></div></div></div>';
+  }
+
+  function alertHTML(now) {
+    if (!state.loaded) return "";
+    var list = missedList(now);
+    if (!list.length) return "";
+    var shown = list.slice(-6).reverse();
+    var items = shown.map(function (m) {
+      var lbl = m.key === now.key ? "اليوم" : WD[dowOf(m.key)] + " " + m.key.slice(8) + "/" + m.key.slice(5, 7);
+      return '<div class="miss-item"><span>' + esc(pname(m.key, m.i)) + " · " + esc(lbl) + '</span><button class="btn sm" data-act="tp" data-d="' + m.key + '" data-p="' + m.i + '">قضيتها</button></div>';
+    }).join("");
+    var more = list.length > shown.length ? '<p class="muted" style="margin-block-start:8px;font-size:14px">و ' + (list.length - shown.length) + ' أخرى في <button class="linkbtn" data-act="tab" data-t="archive">الأرشيف</button></p>' : "";
+    return '<div class="card alert"><h2>فاتتك ' + list.length + (list.length > 10 ? " صلاة" : (list.length === 1 ? " صلاة" : " صلوات")) + '</h2><p style="font-size:14px">سجّل القضاء بعد ما تصلّيها.</p><div class="miss-list">' + items + "</div>" + more + "</div>";
+  }
+
+  function prayersHTML(now) {
+    var key = now.key;
+    return PRAYERS.map(function (p, i) {
+      var st = status(key, i, now), w = windowOf(key, i), r = rec(key, i), label, sub;
+      if (st === "upcoming") label = "لم يحن وقتها";
+      else if (st === "current") label = "سجّلت الصلاة";
+      else if (st === "done") label = "✓ تمت";
+      else if (st === "late") label = "✓ بعد الوقت";
+      else if (st === "qada") label = "✓ قضاء";
+      else label = "فاتت · سجّل قضاء";
+      sub = "من " + fmtTime(w.start) + " إلى " + fmtTime(w.end % 24);
+      if (r && r.t) { var lt = new Date(r.t + TZ * 3600e3); sub = "سُجّلت " + fmtTime(lt.getUTCHours() + lt.getUTCMinutes() / 60); }
+      return '<div class="prow st-' + st + '"><div class="pn">' + esc(pname(key, i)) + ' <span style="font-size:16px;color:var(--muted);font-family:var(--body);font-weight:400">' + fmtTime(w.start) + '</span></div><div class="pt">' + sub + '</div>' +
+        '<button class="pbtn" data-act="tp" data-d="' + key + '" data-p="' + i + '"' + (st === "upcoming" ? " disabled" : "") + ">" + label + "</button></div>";
+    }).join("");
+  }
+
+  function quranMini(now) {
+    var t = target(), n = pagesOn(now.key), pct = Math.min(100, Math.round(n / t * 100));
+    return '<div class="card"><div class="row between"><h2>وردي اليوم</h2><span class="chip num">' + n + " / " + t + ' صفحة</span></div>' +
+      '<div class="bar ' + (n >= t ? "" : "") + '"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="row wrapr" style="margin-block-start:12px">' +
+      '<button class="btn sm" data-act="pg" data-n="1">+1 صفحة</button><button class="btn sm" data-act="pg" data-n="5">+5</button>' +
+      (n < t ? '<button class="btn sm alt" data-act="pgdone">أتممت وردي</button>' : '<span class="chip" style="color:var(--done)">✓ أتممت وردك</span>') +
+      '<button class="btn sm alt" data-act="pg" data-n="-1">−1</button></div></div>';
+  }
+
+  function learnMini(now) {
+    var due = dueCards(now).length, ms = mistakeIds().length, L = level();
+    return '<div class="card"><div class="row between"><h2>تعلّم</h2><span class="chip">المستوى <span class="num">' + L.lv + '</span></span></div>' +
+      '<p class="muted" style="font-size:14px;margin-block-end:10px">' + due + " كلمة مستحقة للمراجعة" + (ms ? " · " + ms + " سؤال من أخطائك" : "") + '</p>' +
+      '<button class="btn" data-act="tab" data-t="learn">افتح الكورس</button></div>';
+  }
+
+  function todayView(now) {
+    return head(now) + heroHTML(now) + alertHTML(now) + prayersHTML(now) + quranMini(now) + learnMini(now);
+  }
+
+  function archiveView(now) {
+    var s7 = 0, p7 = 0, ontime = 0, total = 0, allp = 0, qada = 0, key;
+    var start = state.settings.startDate;
+    for (var d = 0; d < 30; d++) {
+      key = addDays(now.key, -d);
+      for (var i = 0; i < 5; i++) {
+        var st = status(key, i, now);
+        if (st === "na" || st === "future" || st === "upcoming" || st === "current") continue;
+        allp++; if (isDone(st)) total++;
+        if (st === "done") ontime++;
+        if (d < 7) { p7++; if (isDone(st)) s7++; }
+      }
+    }
+    for (var k in state.days) for (var j = 0; j < 5; j++) { var r = state.days[k][PRAYERS[j].k]; if (r && r.qada) qada++; }
+    var pct7 = p7 ? Math.round(s7 / p7 * 100) : 0, pct30 = allp ? Math.round(total / allp * 100) : 0;
+    var rows = "", tgt = target();
+    for (var n = 0; n < state.archiveN; n++) {
+      key = addDays(now.key, -n);
+      if (key < start && n > 0) break;
+      var cells = "";
+      for (var q = 0; q < 5; q++) {
+        var s = status(key, q, now), sym = isDone(s) ? "✓" : (s === "missed" ? "✕" : "·");
+        cells += '<td><button class="dot ' + s + '" data-act="tp" data-d="' + key + '" data-p="' + q + '" aria-label="' + esc(pname(key, q)) + '"' + (s === "upcoming" || s === "future" || s === "na" ? " disabled" : "") + ">" + sym + "</button></td>";
+      }
+      var pq = pagesOn(key), qcls = pq >= tgt ? "done" : (pq > 0 ? "late" : (key < start || key > now.key ? "na" : "missed"));
+      cells += '<td><span class="dot ' + qcls + '" style="cursor:default">' + (pq > 0 ? pq : (qcls === "missed" ? "✕" : "·")) + "</span></td>";
+      var pp = key.split("-");
+      rows += '<tr class="' + (key === now.key ? "today" : "") + '"><td class="day">' + WD_S[dowOf(key)] + " " + Number(pp[2]) + "/" + Number(pp[1]) + "</td>" + cells + "</tr>";
+    }
+    var canMore = addDays(now.key, -state.archiveN) >= start;
+    return head(now) +
+      '<div class="stats"><div class="stat"><b class="num">' + streak(now) + '</b><span>سلسلة الأيام الكاملة</span></div>' +
+      '<div class="stat"><b class="num">' + bestStreak() + '</b><span>أفضل سلسلة</span></div>' +
+      '<div class="stat"><b class="num">' + pct7 + '%</b><span>التزام آخر 7 أيام</span></div>' +
+      '<div class="stat"><b class="num">' + pct30 + '%</b><span>التزام آخر 30 يومًا</span></div>' +
+      '<div class="stat"><b class="num">' + (allp ? Math.round(ontime / allp * 100) : 0) + '%</b><span>في الوقت (30 يومًا)</span></div>' +
+      '<div class="stat"><b class="num">' + qada + '</b><span>صلوات قضاء</span></div></div>' +
+      '<div class="tw"><table><thead><tr><th style="text-align:start;padding-inline-start:10px">اليوم</th><th>فجر</th><th>ظهر</th><th>عصر</th><th>مغرب</th><th>عشاء</th><th>ورد</th></tr></thead><tbody>' + rows + "</tbody></table></div>" +
+      '<div class="legend"><span><i style="background:var(--done)"></i>في وقتها</span><span><i style="background:var(--amber)"></i>قضاء أو بعد الوقت</span><span><i style="background:var(--miss)"></i>فاتت</span></div>' +
+      '<p class="muted" style="font-size:14px">اضغط أي خانة فاتت لتسجيل قضائها. واضغط خانة مسجّلة للتراجع.</p>' +
+      (canMore ? '<div class="row" style="margin-block:10px"><button class="btn alt" data-act="more">عرض أيام أقدم</button></div>' : "") +
+      '<div class="card" style="margin-block-start:12px"><h3>بداية التتبع</h3><p class="muted" style="font-size:14px">الصلوات قبل هذا التاريخ لا تُحسب فائتة. غيّره لو عايز تراجع أيام أقدم.</p>' +
+      '<label class="field">التاريخ<input type="date" id="startdate" value="' + esc(start) + '" max="' + now.key + '"></label></div>';
+  }
+
+  function quranView(now) {
+    var S = state.settings, u = UNITS[S.unit] || UNITS.page, t = target(), n = pagesOn(now.key);
+    var tot = totalPages(), absolute = (S.startPage - 1) + tot, cur = (absolute % 604) + 1, khat = Math.floor(absolute / 604);
+    var remain = 604 - (cur - 1), eta = Math.ceil(remain / t), wk = "", i, max = t;
+    var days = [];
+    for (i = 6; i >= 0; i--) { var k = addDays(now.key, -i); days.push({ k: k, v: pagesOn(k) }); if (pagesOn(k) > max) max = pagesOn(k); }
+    days.forEach(function (d) {
+      wk += '<div><span class="col"><i class="' + (d.v >= t ? "full" : "") + '" style="height:' + Math.round(d.v / max * 100) + '%"></i></span><b class="num" style="font-weight:500">' + d.v + "</b><span>" + WD_S[dowOf(d.k)] + "</span></div>";
+    });
+    var opts = Object.keys(UNITS).map(function (k) { return '<button data-act="unit" data-u="' + k + '" aria-pressed="' + (S.unit === k) + '">' + UNITS[k].n + "</button>"; }).join("");
+    return head(now) +
+      '<div class="card"><div class="row between"><h2>وردي اليوم</h2><span class="chip num">' + n + " / " + t + ' صفحة</span></div>' +
+      '<div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div>' +
+      '<div class="row wrapr" style="margin-block-start:12px"><button class="btn sm" data-act="pg" data-n="1">+1 صفحة</button><button class="btn sm" data-act="pg" data-n="5">+5</button><button class="btn sm" data-act="pg" data-n="10">+10</button>' +
+      '<button class="btn sm alt" data-act="pgdone">أتممت وردي</button><button class="btn sm alt" data-act="pg" data-n="-1">−1</button></div></div>' +
+      '<div class="stats"><div class="stat"><b class="num">' + cur + '</b><span>وصلت لصفحة (الجزء ' + juzOf(cur) + ')</span></div>' +
+      '<div class="stat"><b class="num">' + khat + '</b><span>ختمات مكتملة</span></div>' +
+      '<div class="stat"><b class="num">' + tot + '</b><span>مجموع الصفحات المقروءة</span></div>' +
+      '<div class="stat"><b class="num">' + eta + '</b><span>يوم لإتمام الختمة الحالية</span></div></div>' +
+      '<div class="card"><h3>آخر 7 أيام</h3><div class="week">' + wk + "</div></div>" +
+      '<div class="card"><h2>إعداد الورد</h2><div class="seg2">' + opts + "</div>" +
+      '<div class="field">الكمية اليومية (' + u.n + ")<div class=\"stepper\"><button class=\"btn sm alt\" data-act=\"amt\" data-n=\"-1\">−</button><b class=\"num\">" + S.amount + "</b><button class=\"btn sm alt\" data-act=\"amt\" data-n=\"1\">+</button><span class=\"muted\">= " + t + " صفحة</span></div></div>" +
+      '<label class="field">بدأت من صفحة<input type="number" id="startpage" min="1" max="604" value="' + S.startPage + '" inputmode="numeric"></label></div>';
+  }
+
+  /* learn */
+  function learnView(now) {
+    var v = state.lv, L = level();
+    var top = head(now);
+    if (v.mode === "quiz") return top + quizHTML();
+    if (v.mode === "cards") return top + cardsHTML();
+    if (v.mode === "unit") return top + unitHTML(v.u);
+    // home
+    var due = dueCards(now).length, ms = mistakeIds().length, done = COURSE.units.filter(function (u) { return (state.learn.units[u.id] || {}).done; }).length;
+    var units = COURSE.units.map(function (u) {
+      var p = state.learn.units[u.id] || {};
+      return '<button class="unit ' + (p.done ? "done" : "") + '" data-act="unit-open" data-u="' + u.id + '"><span class="no">' + (p.done ? "✓" : u.icon) + '</span><span class="grow"><b>' + esc(u.title) + '</b><br><span class="muted" style="font-size:13px">' + (p.best != null ? "أفضل نتيجة " + p.best + "%" : "لم تبدأ بعد") + "</span></span></button>";
+    }).join("");
+    return top +
+      '<div class="card"><div class="row between"><h2>المستوى <span class="num">' + L.lv + '</span></h2><span class="chip"><span class="num">' + L.xp + '</span> نقطة</span></div>' +
+      '<div class="bar amber"><i style="width:' + L.pct + '%"></i></div><p class="muted" style="font-size:14px;margin-block-start:6px">تبقى <span class="num">' + L.need + '</span> نقطة للمستوى التالي' + (studyStreak(now) ? " · مذاكرة متواصلة " + studyStreak(now) + " يوم" : "") + "</p></div>" +
+      '<div class="card"><h3>المراجعة اليومية</h3><div class="row wrapr">' +
+      '<button class="btn" data-act="cards"' + (due ? "" : " disabled") + ">كروت المفردات (" + due + ')</button>' +
+      '<button class="btn alt" data-act="mrev"' + (ms ? "" : " disabled") + ">راجع أخطائي (" + ms + ")</button></div></div>" +
+      '<div class="card"><div class="row between"><h2>' + esc(COURSE.title) + '</h2><span class="chip num">' + done + "/" + COURSE.units.length + '</span></div><p class="muted" style="font-size:14px;margin-block-end:10px">' + esc(COURSE.desc) + '</p><div class="units">' + units + "</div></div>";
+  }
+  function unitHTML(id) {
+    var u = COURSE.units.filter(function (x) { return x.id === id; })[0], p = state.learn.units[id] || {};
+    return '<button class="linkbtn" data-act="lhome">← رجوع للكورس</button><div class="card"><h2>' + esc(u.icon + ". " + u.title) + '</h2><ul class="pts">' +
+      u.pts.map(function (t) { return "<li>" + fmtEn(t) + "</li>"; }).join("") + "</ul>" +
+      '<button class="btn" data-act="quiz" data-u="' + id + '">ابدأ التدريب (' + u.qs.length + " أسئلة)</button>" +
+      (p.best != null ? '<p class="muted" style="font-size:14px;margin-block-start:8px">أفضل نتيجة: ' + p.best + "%</p>" : "") + "</div>";
+  }
+  function startQuiz(qs, title, unitId) {
+    state.quiz = { qs: shuffle(qs), i: 0, ok: 0, ans: null, title: title, unit: unitId, wrong: [], right: [] };
+    state.lv = { mode: "quiz" }; render();
+  }
+  function quizHTML() {
+    var z = state.quiz; if (!z) return "";
+    if (z.i >= z.qs.length) return quizEnd(z);
+    var q = z.qs[z.i], a = z.ans, body;
+    var arQ = /[؀-ۿ]/.test(q.q);
+    if (q.t === "mcq") {
+      body = '<div class="opts">' + q.o.map(function (o, k) {
+        var c = "opt"; if (a) { if (o === q.a) c += " ok"; else if (o === a.sel) c += " bad"; }
+        return '<button class="' + c + '" data-act="pick" data-k="' + k + '"' + (a ? " disabled" : "") + ">" + esc(o) + "</button>";
+      }).join("") + "</div>";
+    } else {
+      body = '<div class="opts"><input class="inp" id="ans" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="اكتب الإجابة" value="' + (a ? esc(a.sel) : "") + '"' + (a ? " disabled" : "") + ">" +
+        (a ? "" : '<button class="btn" data-act="submit">تحقق</button>') + "</div>";
+    }
+    var fb = "";
+    if (a) fb = '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(Array.isArray(q.a) ? q.a[0] : q.a) + "</span>") + (q.why ? "<br>" + esc(q.why) : "") + "</div>" +
+      '<button class="btn" data-act="qnext">' + (z.i + 1 >= z.qs.length ? "النتيجة" : "التالي") + "</button>";
+    return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">' + esc(z.title) + " · " + (z.i + 1) + " من " + z.qs.length + '</div><div class="bar"><i style="width:' + Math.round(z.i / z.qs.length * 100) + '%"></i></div>' +
+      '<p class="qtext' + (arQ ? " ar" : "") + '" style="margin-block-start:14px">' + esc(q.q) + "</p>" + body + fb + "</div>";
+  }
+  function quizEnd(z) {
+    var pct = Math.round(z.ok / z.qs.length * 100);
+    return '<div class="card"><h2>' + (pct >= 80 ? "ممتاز" : (pct >= 50 ? "جيد" : "كمّل وراجع")) + '</h2><p style="font-size:20px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p><p class="muted" style="margin-block:6px 12px">حصلت على <span class="num">' + z.gain + "</span> نقطة." + (z.wrong.length ? " الأسئلة الخاطئة ستظهر في مراجعة الأخطاء." : "") + '</p><div class="row wrapr"><button class="btn" data-act="lhome">رجوع</button>' +
+      (z.unit ? '<button class="btn alt" data-act="quiz" data-u="' + z.unit + '">أعد التدريب</button>' : "") + "</div></div>";
+  }
+  function finishQuiz() {
+    var z = state.quiz, now = nowR(), pct = Math.round(z.ok / z.qs.length * 100), gain = z.ok * 10;
+    z.wrong.forEach(function (id) { state.learn.mistakes[id] = (state.learn.mistakes[id] || 0) + 1; });
+    z.right.forEach(function (id) { if (state.learn.mistakes[id]) { state.learn.mistakes[id]--; if (state.learn.mistakes[id] <= 0) delete state.learn.mistakes[id]; } });
+    if (z.unit) {
+      var p = state.learn.units[z.unit] || {};
+      p.best = Math.max(p.best || 0, pct); p.tries = (p.tries || 0) + 1;
+      if (pct >= 80 && !p.done) { p.done = true; gain += 30; }
+      state.learn.units[z.unit] = p;
+    }
+    z.gain = gain; addXp(gain, now); saveMeta("learn", 0);
+  }
+  function cardsHTML() {
+    var c = state.card; if (!c) return "";
+    if (c.i >= c.q.length) return '<div class="card"><h2>خلّصت مراجعة اليوم</h2><p class="muted" style="margin-block:6px 12px">عرفت <span class="num">' + c.known + "</span> من <span class=\"num\">" + c.q.length + '</span>. الكلمات اللي لم تعرفها ترجع لك غدًا.</p><button class="btn" data-act="lhome">رجوع</button></div>';
+    var w = c.q[c.i];
+    var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" : '<div class="w">' + esc(w.en) + '</div><div class="muted">اضغط لإظهار المعنى</div>';
+    return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
+      (c.flip ? '<div class="row"><button class="btn grow" data-act="know" data-v="1">عرفتها</button><button class="btn alt grow" data-act="know" data-v="0">لم أعرفها</button></div>' : "") + "</div>";
+  }
+
+  /* ---------------- render ---------------- */
+  function render() {
+    var now = nowR(), html;
+    if (state.tab === "today") html = todayView(now);
+    else if (state.tab === "archive") html = archiveView(now);
+    else if (state.tab === "quran") html = quranView(now);
+    else html = learnView(now);
+    // preserve focused input value
+    var active = document.activeElement, keepId = active && active.id, keepVal = active && active.value, keepSel = active && active.selectionStart;
+    $("#view").innerHTML = html;
+    document.querySelectorAll(".tabs button").forEach(function (b) {
+      if (b.getAttribute("data-t") === state.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
+    });
+    if (keepId) { var el = document.getElementById(keepId); if (el && el.tagName === "INPUT" && el.type !== "date") { el.value = keepVal; el.focus(); try { el.setSelectionRange(keepSel, keepSel); } catch (e) { } } }
+    lastSig = signature();
+  }
+  var lastSig = "";
+  function signature() {
+    var now = nowR();
+    return now.key + ":" + PRAYERS.map(function (p, i) { return status(now.key, i, now); }).join(",");
+  }
+  function tick() {
+    var el = $("#cd");
+    if (el) {
+      var now = nowR(), left = (parseFloat(el.getAttribute("data-t")) - now.h) * 3600;
+      el.textContent = fmtDur(left);
+    }
+    if (state.tab === "today" && signature() !== lastSig) render();
+  }
+
+  /* ---------------- events ---------------- */
+  document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-act]"); if (!el || el.disabled) return;
+    var act = el.getAttribute("data-act"), now = nowR();
+    switch (act) {
+      case "tab": state.tab = el.getAttribute("data-t"); if (state.tab === "learn" && state.lv.mode !== "home") { } window.scrollTo(0, 0); render(); break;
+      case "tp": togglePrayer(el.getAttribute("data-d"), Number(el.getAttribute("data-p"))); break;
+      case "more": state.archiveN += 30; render(); break;
+      case "pg": addPages(Number(el.getAttribute("data-n"))); break;
+      case "pgdone": setPages(Math.max(pagesOn(now.key), target())); toast("تقبّل الله ورد اليوم"); break;
+      case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
+      case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
+      case "lhome": state.lv = { mode: "home" }; state.quiz = null; state.card = null; render(); break;
+      case "unit-open": state.lv = { mode: "unit", u: el.getAttribute("data-u") }; window.scrollTo(0, 0); render(); break;
+      case "quiz": var u = COURSE.units.filter(function (x) { return x.id === el.getAttribute("data-u"); })[0]; startQuiz(u.qs, u.title, u.id); break;
+      case "mrev": startQuiz(mistakeIds().map(function (id) { return QINDEX[id]; }), "مراجعة الأخطاء", null); break;
+      case "pick": answerMcq(el.getAttribute("data-k")); break;
+      case "submit": answerFill(); break;
+      case "qnext": state.quiz.i++; state.quiz.ans = null; if (state.quiz.i >= state.quiz.qs.length) finishQuiz(); render(); break;
+      case "cards": state.card = { q: shuffle(dueCards(now)).slice(0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards" }; render(); break;
+      case "flip": if (state.card) { state.card.flip = true; render(); } break;
+      case "know": knowCard(el.getAttribute("data-v") === "1"); break;
+    }
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && e.target && e.target.id === "ans") { e.preventDefault(); answerFill(); }
+    if ((e.key === "Enter" || e.key === " ") && e.target && e.target.getAttribute && e.target.getAttribute("data-act") === "flip") { e.preventDefault(); if (state.card) { state.card.flip = true; render(); } }
+  });
+  document.addEventListener("change", function (e) {
+    var t = e.target;
+    if (t.id === "startdate" && t.value) { state.settings.startDate = t.value; saveMeta("settings"); render(); toast("تم تحديث بداية التتبع"); }
+    if (t.id === "startpage") { var n = Math.max(1, Math.min(604, parseInt(t.value, 10) || 1)); state.settings.startPage = n; saveMeta("settings", 300); render(); }
+  });
+
+  function answerMcq(k) {
+    var z = state.quiz, q = z.qs[z.i]; if (z.ans) return;
+    var sel = q.o[Number(k)], ok = sel === q.a;
+    z.ans = { sel: sel, ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+    render();
+  }
+  function answerFill() {
+    var z = state.quiz, q = z.qs[z.i], inp = $("#ans"); if (z.ans || !inp) return;
+    var v = inp.value; if (!norm(v)) return;
+    var ok = q.a.map(norm).indexOf(norm(v)) !== -1;
+    z.ans = { sel: v, ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+    render();
+  }
+  function knowCard(yes) {
+    var c = state.card, w = c.q[c.i], now = nowR(), cur = state.learn.cards[w.id] || { box: 0 };
+    if (yes) { cur.box = Math.min(3, cur.box + 1); cur.due = addDays(now.key, INTERVALS[cur.box]); c.known++; addXp(3, now); }
+    else { cur.box = 0; cur.due = now.key; }
+    state.learn.cards[w.id] = cur;
+    c.i++; c.flip = false;
+    saveMeta("learn", c.i >= c.q.length ? 0 : 1500);
+    render();
+  }
+
+  /* ---------------- boot ---------------- */
+  render();
+  setInterval(tick, 1000);
+  initStore();
+})();
+</script>
+
+</body>
+</html>
