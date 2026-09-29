@@ -189,6 +189,13 @@ tr:last-child td { border-block-end: 0; }
 .fb { border-radius: 12px; padding: 10px 14px; margin-block: 8px; font-size: 15px; }
 .fb.ok { background: var(--done-bg); color: var(--done); }
 .fb.bad { background: var(--miss-bg); color: var(--miss); }
+.rule { border-radius: 12px; padding: 10px 14px; margin-block: 0 8px; font-size: 14px; line-height: 1.6; background: var(--surface2); border: 1px dashed var(--line); color: var(--text); }
+.rule b { color: var(--teal); }
+.spk { flex: none; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface); color: var(--teal); display: inline-grid; place-items: center; cursor: pointer; padding: 0; }
+.spk svg { width: 18px; height: 18px; }
+.spk:active { transform: scale(.92); }
+.qtext-row { display: flex; align-items: center; gap: 10px; }
+.qtext-row .qtext { flex: 1; }
 .flash { min-height: 170px; display: grid; place-content: center; text-align: center; gap: 6px; cursor: pointer; }
 .flash .w { font-family: var(--display); font-size: 34px; direction: ltr; }
 .crumb { font-size: 14px; color: var(--muted); margin-block-end: 8px; }
@@ -222,7 +229,10 @@ tr:last-child td { border-block-end: 0; }
 /* dialogue */
 .chat { display: grid; gap: 10px; margin-block: 8px 14px; }
 .bub { max-width: 82%; border-radius: 16px; padding: 10px 14px; }
-.bub .en { direction: ltr; unicode-bidi: plaintext; font-family: var(--display); font-size: 16px; }
+.bub .en { direction: ltr; unicode-bidi: plaintext; font-family: var(--display); font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.bub .en .spk { width: 26px; height: 26px; background: transparent; border-color: currentColor; color: var(--text); opacity: .8; }
+.bub .en .spk svg { width: 15px; height: 15px; }
+.bub.b .en .spk { color: var(--teal-ink); }
 .bub .ar { font-size: 13px; color: var(--muted); margin-block-start: 3px; }
 .bub.a { background: var(--surface2); border-start-start-radius: 4px; justify-self: start; }
 .bub.b { background: var(--teal); color: var(--teal-ink); border-start-end-radius: 4px; justify-self: end; }
@@ -254,8 +264,6 @@ tr:last-child td { border-block-end: 0; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
 </style>
 
-</head>
-<body>
 <div id="lock" dir="rtl" lang="ar" hidden>
   <form id="lockform" autocomplete="on">
     <h1>مسار</h1>
@@ -333,9 +341,22 @@ tr:last-child td { border-block-end: 0; }
       cert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 13.5 7 22l5-3 5 3-2-8.5"/></svg>',
       lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
       chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
-      flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5 4 5 4 9a4 4 0 0 1-8 0c0-1.5.6-2.6 1.4-3.5C9.6 9 10 10 11 10c0-3-1-5 1-8zM12 22a7 7 0 0 0 7-7c0-2-.8-3.6-1.8-5 0 3.5-2.4 5.5-5.2 5.5S6.8 13 6.8 10.5C5.6 12 5 13.4 5 15a7 7 0 0 0 7 7z"/></svg>'
+      flame: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c1 3.5 4 5 4 9a4 4 0 0 1-8 0c0-1.5.6-2.6 1.4-3.5C9.6 9 10 10 11 10c0-3-1-5 1-8zM12 22a7 7 0 0 0 7-7c0-2-.8-3.6-1.8-5 0 3.5-2.4 5.5-5.2 5.5S6.8 13 6.8 10.5C5.6 12 5 13.4 5 15a7 7 0 0 0 7 7z"/></svg>',
+      vol: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>'
     };
     return s[name] || "";
+  }
+  function speak(text) {
+    try {
+      if (!("speechSynthesis" in window) || !text) return;
+      window.speechSynthesis.cancel();
+      var u = new SpeechSynthesisUtterance(text);
+      u.lang = "en-US"; u.rate = 0.92;
+      window.speechSynthesis.speak(u);
+    } catch (er) { }
+  }
+  function spkBtn(text) {
+    return '<button class="spk" data-act="speak" data-txt="' + esc(text) + '" aria-label="استمع للنطق" onclick="event.stopPropagation()">' + ico("vol") + "</button>";
   }
 
   /* ---------------- prayer times (Umm al-Qura, Riyadh) ---------------- */
@@ -580,8 +601,8 @@ tr:last-child td { border-block-end: 0; }
             "الحكم بالنطق مش بالكتابة: {an hour} لكن {a university}"
           ],
           qs: [
-            { t: "mcq", q: "___ engineer", o: ["a", "an", "the a"], a: "an" },
-            { t: "mcq", q: "___ boy", o: ["a", "an", "one an"], a: "a" },
+            { t: "mcq", q: "___ engineer", o: ["a", "an", "the a"], a: "an" , why: "engineer تبدأ بصوت متحرك فنستخدم an." },
+            { t: "mcq", q: "___ boy", o: ["a", "an", "one an"], a: "a" , why: "boy تبدأ بصوت ساكن (b) فنستخدم a." },
             { t: "fill", q: "I have ___ apple.", a: ["an"], why: "apple تبدأ بحرف متحرك." },
             { t: "mcq", q: "___ hour", o: ["a", "an", "the a"], a: "an", why: "الـ h صامتة في hour." },
             { t: "mcq", q: "Which sentence is in the right order?", o: ["I know you", "Know I you", "You I know"], a: "I know you", why: "فاعل + فعل + مفعول." },
@@ -598,13 +619,13 @@ tr:last-child td { border-block-end: 0; }
             "الجنسية بحرف كبير: {Egyptian}, {Italian}. و{at} للمكان: {I am at home}"
           ],
           qs: [
-            { t: "mcq", q: "She ___ a teacher.", o: ["am", "is", "are"], a: "is" },
-            { t: "mcq", q: "They ___ at home.", o: ["is", "am", "are"], a: "are" },
-            { t: "mcq", q: "___ you Egyptian?", o: ["Is", "Are", "Am"], a: "Are" },
+            { t: "mcq", q: "She ___ a teacher.", o: ["am", "is", "are"], a: "is" , why: "مع he/she/it نستخدم is." },
+            { t: "mcq", q: "They ___ at home.", o: ["is", "am", "are"], a: "are" , why: "مع we/they نستخدم are." },
+            { t: "mcq", q: "___ you Egyptian?", o: ["Is", "Are", "Am"], a: "Are" , why: "مع you نستخدم are، والسؤال يبدأ بالفعل be." },
             { t: "fill", q: "I ___ not late.", a: ["am"], why: "مع I نستخدم am." },
-            { t: "fill", q: "Where ___ you?", a: ["are"] },
-            { t: "mcq", q: "Choose the correct spelling.", o: ["Egyptian", "Egypition", "Egyption"], a: "Egyptian" },
-            { t: "mcq", q: "He ___ Italian.", o: ["are", "is", "am"], a: "is" }
+            { t: "fill", q: "Where ___ you?", a: ["are"] , why: "مع you نستخدم are حتى في السؤال." },
+            { t: "mcq", q: "Choose the correct spelling.", o: ["Egyptian", "Egypition", "Egyption"], a: "Egyptian" , why: "الإملاء الصحيح: Egyptian بحرف g واحد وحرف y." },
+            { t: "mcq", q: "He ___ Italian.", o: ["are", "is", "am"], a: "is" , why: "مع he نستخدم is." }
           ]
         },
         {
@@ -617,12 +638,12 @@ tr:last-child td { border-block-end: 0; }
             "نفس الفكرة مع الفعل بعد he/she/it: {He plays}, {She watches}, {It studies}"
           ],
           qs: [
-            { t: "mcq", q: "Plural of baby", o: ["babys", "babies", "babyes"], a: "babies" },
-            { t: "mcq", q: "Plural of box", o: ["boxs", "boxes", "boxies"], a: "boxes" },
+            { t: "mcq", q: "Plural of baby", o: ["babys", "babies", "babyes"], a: "babies" , why: "baby تنتهي بحرف ساكن + y، فتتحول y إلى ies." },
+            { t: "mcq", q: "Plural of box", o: ["boxs", "boxes", "boxies"], a: "boxes" , why: "box تنتهي بـ x فنضيف es." },
             { t: "mcq", q: "Plural of boy", o: ["boys", "boies", "boyes"], a: "boys", why: "حرف علة قبل y." },
-            { t: "fill", q: "watch → ___ (plural)", a: ["watches"] },
-            { t: "fill", q: "He ___ hard. (study)", a: ["studies"] },
-            { t: "mcq", q: "Plural of city", o: ["citys", "cities", "cityes"], a: "cities" }
+            { t: "fill", q: "watch → ___ (plural)", a: ["watches"] , why: "watch تنتهي بـ ch فنضيف es." },
+            { t: "fill", q: "He ___ hard. (study)", a: ["studies"] , why: "study تنتهي بحرف ساكن + y، ومع he/she/it تتحول لـ ies." },
+            { t: "mcq", q: "Plural of city", o: ["citys", "cities", "cityes"], a: "cities" , why: "city تنتهي بحرف ساكن + y فتتحول إلى ies." }
           ]
         },
         {
@@ -637,16 +658,16 @@ tr:last-child td { border-block-end: 0; }
             "{here} هنا (قريب) · {there} هناك (بعيد)"
           ],
           qs: [
-            { t: "mcq", q: "___ are my books. (near)", o: ["This", "These", "That"], a: "These" },
-            { t: "fill", q: "___ is my pen. (near, one)", a: ["this"] },
-            { t: "fill", q: "There ___ two chairs in the room.", a: ["are"] },
-            { t: "mcq", q: "There ___ a book on the table.", o: ["is", "are", "am"], a: "is" },
-            { t: "mcq", q: "___ are their shirts. (far)", o: ["That", "Those", "This"], a: "Those" },
-            { t: "mcq", q: "\"هنا\" =", o: ["here", "there", "where"], a: "here" },
-            { t: "fill", q: "___ a supermarket near my house. (يوجد)", a: ["There is"] },
-            { t: "mcq", q: "Negative: There is a car outside. →", o: ["There isn't a car outside.", "There not a car outside.", "There don't a car outside."], a: "There isn't a car outside." },
-            { t: "mcq", q: "Question: a bank / near your house →", o: ["Is there a bank near your house?", "There is a bank near your house?", "Has there a bank near your house?"], a: "Is there a bank near your house?" },
-            { t: "fill", q: "___ five students in the classroom. (يوجد، جمع)", a: ["There are"] }
+            { t: "mcq", q: "___ are my books. (near)", o: ["This", "These", "That"], a: "These" , why: "قريب + جمع = these." },
+            { t: "fill", q: "___ is my pen. (near, one)", a: ["this"] , why: "قريب + مفرد = this." },
+            { t: "fill", q: "There ___ two chairs in the room.", a: ["are"] , why: "بعد There مع اسم جمع نستخدم are." },
+            { t: "mcq", q: "There ___ a book on the table.", o: ["is", "are", "am"], a: "is" , why: "بعد There مع اسم مفرد نستخدم is." },
+            { t: "mcq", q: "___ are their shirts. (far)", o: ["That", "Those", "This"], a: "Those" , why: "بعيد + جمع = those." },
+            { t: "mcq", q: "\"هنا\" =", o: ["here", "there", "where"], a: "here" , why: "here = هنا (قريب)، there = هناك (بعيد)." },
+            { t: "fill", q: "___ a supermarket near my house. (يوجد)", a: ["There is"] , why: "يوجد + اسم مفرد = There is." },
+            { t: "mcq", q: "Negative: There is a car outside. →", o: ["There isn't a car outside.", "There not a car outside.", "There don't a car outside."], a: "There isn't a car outside." , why: "ننفي is بإضافة not: isn't." },
+            { t: "mcq", q: "Question: a bank / near your house →", o: ["Is there a bank near your house?", "There is a bank near your house?", "Has there a bank near your house?"], a: "Is there a bank near your house?" , why: "السؤال بمفرد يبدأ بـ Is there...؟" },
+            { t: "fill", q: "___ five students in the classroom. (يوجد، جمع)", a: ["There are"] , why: "يوجد + اسم جمع = There are." }
           ]
         },
         {
@@ -662,18 +683,18 @@ tr:last-child td { border-block-end: 0; }
             "أخطاء شائعة: لا نقول {mine book} (الصح: {my book} أو {This is mine}) ولا نقول {her's} (الصح: {hers})"
           ],
           qs: [
-            { t: "mcq", q: "I know ___. (they)", o: ["they", "their", "them"], a: "them" },
-            { t: "mcq", q: "This is ___ pen. (we)", o: ["our", "ours", "us"], a: "our" },
-            { t: "fill", q: "This book is ___. (I)", a: ["mine"] },
-            { t: "mcq", q: "She knows ___. (he)", o: ["he", "his", "him"], a: "him" },
-            { t: "fill", q: "That phone is ___. (you)", a: ["yours"] },
-            { t: "fill", q: "This is ___ shirt. (she)", a: ["her"] },
-            { t: "mcq", q: "This is ___ cover. (it)", o: ["its", "it's", "it"], a: "its" },
-            { t: "mcq", q: "Ahmed has a brother. ___ brother is 20.", o: ["Her", "His", "Their"], a: "His" },
-            { t: "mcq", q: "This is Sara's bag. It is ___.", o: ["her", "hers", "she"], a: "hers" },
+            { t: "mcq", q: "I know ___. (they)", o: ["they", "their", "them"], a: "them" , why: "بعد الفعل نستخدم ضمير المفعول them." },
+            { t: "mcq", q: "This is ___ pen. (we)", o: ["our", "ours", "us"], a: "our" , why: "قبل الاسم نستخدم صفة الملكية our." },
+            { t: "fill", q: "This book is ___. (I)", a: ["mine"] , why: "بدون اسم بعدها نستخدم ضمير الملكية mine." },
+            { t: "mcq", q: "She knows ___. (he)", o: ["he", "his", "him"], a: "him" , why: "بعد الفعل نستخدم ضمير المفعول him." },
+            { t: "fill", q: "That phone is ___. (you)", a: ["yours"] , why: "بدون اسم بعدها نستخدم ضمير الملكية yours." },
+            { t: "fill", q: "This is ___ shirt. (she)", a: ["her"] , why: "قبل الاسم نستخدم صفة الملكية her." },
+            { t: "mcq", q: "This is ___ cover. (it)", o: ["its", "it's", "it"], a: "its" , why: "its بدون فاصلة = صفة ملكية، بينما it's = اختصار it is." },
+            { t: "mcq", q: "Ahmed has a brother. ___ brother is 20.", o: ["Her", "His", "Their"], a: "His" , why: "قبل الاسم brother نستخدم صفة الملكية His." },
+            { t: "mcq", q: "This is Sara's bag. It is ___.", o: ["her", "hers", "she"], a: "hers" , why: "بدون اسم بعدها نستخدم ضمير الملكية hers." },
             { t: "mcq", q: "Correct the mistake: \"This is mine book.\"", o: ["This is my book.", "This is book mine.", "This mine is book."], a: "This is my book.", why: "قبل الاسم نستخدم صفة الملكية my لا ضمير الملكية mine." },
             { t: "mcq", q: "Correct the mistake: \"This book is my.\"", o: ["This book is mine.", "This book is me.", "This book my is."], a: "This book is mine.", why: "بدون اسم بعدها نستخدم ضمير الملكية mine." },
-            { t: "fill", q: "The dog has a ball. ___ ball is red. (it)", a: ["Its"] }
+            { t: "fill", q: "The dog has a ball. ___ ball is red. (it)", a: ["Its"] , why: "قبل الاسم ball نستخدم صفة الملكية Its (بدون فاصلة)." }
           ]
         },
         {
@@ -689,18 +710,18 @@ tr:last-child td { border-block-end: 0; }
             "{There is} = يوجد (شيء موجود بشكل عام) · {I have} = عندي (ملكية شخصية)"
           ],
           qs: [
-            { t: "mcq", q: "Ahmed ___ a car.", o: ["have", "has", "haves"], a: "has" },
-            { t: "mcq", q: "My friends ___ a car.", o: ["has", "have", "is"], a: "have" },
-            { t: "fill", q: "She has ___ a new computer. (got)", a: ["got"] },
-            { t: "mcq", q: "have not =", o: ["haven't", "have'nt", "havent'"], a: "haven't" },
-            { t: "fill", q: "He ___ a new phone. (have)", a: ["has"] },
-            { t: "mcq", q: "\"عندي سيارة\" =", o: ["There is a car", "I have a car", "I am a car"], a: "I have a car" },
-            { t: "mcq", q: "Negative (no got): I ___ a car.", o: ["don't have", "doesn't have", "haven't"], a: "don't have" },
-            { t: "mcq", q: "Negative (no got): She ___ a brother.", o: ["don't have", "doesn't have", "not have"], a: "doesn't have" },
-            { t: "mcq", q: "Negative (with got): He ___ a computer.", o: ["haven't got", "hasn't got", "don't got"], a: "hasn't got" },
-            { t: "mcq", q: "Correct the mistake: \"She have a car.\"", o: ["She has a car.", "She haves a car.", "She having a car."], a: "She has a car." },
-            { t: "mcq", q: "Correct the mistake: \"My father have got a new car.\"", o: ["My father has got a new car.", "My father haves got a new car.", "My father have get a new car."], a: "My father has got a new car." },
-            { t: "fill", q: "We ___ a big house. (have)", a: ["have"] }
+            { t: "mcq", q: "Ahmed ___ a car.", o: ["have", "has", "haves"], a: "has" , why: "مع اسم مفرد (he/she/it) نستخدم has." },
+            { t: "mcq", q: "My friends ___ a car.", o: ["has", "have", "is"], a: "have" , why: "مع اسم جمع (they) نستخدم have." },
+            { t: "fill", q: "She has ___ a new computer. (got)", a: ["got"] , why: "have/has got بنفس معنى have/has." },
+            { t: "mcq", q: "have not =", o: ["haven't", "have'nt", "havent'"], a: "haven't" , why: "الاختصار الصحيح haven't وليس have'nt." },
+            { t: "fill", q: "He ___ a new phone. (have)", a: ["has"] , why: "مع he نستخدم has." },
+            { t: "mcq", q: "\"عندي سيارة\" =", o: ["There is a car", "I have a car", "I am a car"], a: "I have a car" , why: "عندي = I have، أما There is فتعني يوجد بشكل عام." },
+            { t: "mcq", q: "Negative (no got): I ___ a car.", o: ["don't have", "doesn't have", "haven't"], a: "don't have" , why: "مع I ننفي بـ don't have." },
+            { t: "mcq", q: "Negative (no got): She ___ a brother.", o: ["don't have", "doesn't have", "not have"], a: "doesn't have" , why: "مع she ننفي بـ doesn't have." },
+            { t: "mcq", q: "Negative (with got): He ___ a computer.", o: ["haven't got", "hasn't got", "don't got"], a: "hasn't got" , why: "مع he ومع got ننفي بـ hasn't got." },
+            { t: "mcq", q: "Correct the mistake: \"She have a car.\"", o: ["She has a car.", "She haves a car.", "She having a car."], a: "She has a car." , why: "She مفرد غائب (he/she/it) فيلزم has مش have." },
+            { t: "mcq", q: "Correct the mistake: \"My father have got a new car.\"", o: ["My father has got a new car.", "My father haves got a new car.", "My father have get a new car."], a: "My father has got a new car." , why: "father مفرد غائب فيلزم has got مش have got." },
+            { t: "fill", q: "We ___ a big house. (have)", a: ["have"] , why: "مع we نستخدم have." }
           ]
         },
         {
@@ -715,18 +736,18 @@ tr:last-child td { border-block-end: 0; }
             "إجابة قصيرة: {Do you have a car? — Yes, I do. / No, I don't.} · {Does she have a car? — Yes, she does. / No, she doesn't.}"
           ],
           qs: [
-            { t: "mcq", q: "___ he know her?", o: ["Do", "Does", "Is"], a: "Does" },
-            { t: "mcq", q: "She doesn't ___ her homework.", o: ["does", "do", "did"], a: "do" },
-            { t: "mcq", q: "I ___ know you. (negative)", o: ["don't", "doesn't", "isn't"], a: "don't" },
-            { t: "fill", q: "He ___ his homework. (do)", a: ["does"] },
-            { t: "mcq", q: "Which is correct?", o: ["He doesn't knows", "He doesn't know", "He don't know"], a: "He doesn't know" },
-            { t: "fill", q: "She doesn't ___ football. (play)", a: ["play"] },
-            { t: "mcq", q: "___ you have a car?", o: ["Have", "Do", "Does"], a: "Do" },
-            { t: "mcq", q: "___ your mother have a car?", o: ["Do", "Does", "Have"], a: "Does" },
-            { t: "mcq", q: "Correct the mistake: \"Does you have a phone?\"", o: ["Do you have a phone?", "Does you has a phone?", "Do you has a phone?"], a: "Do you have a phone?" },
-            { t: "mcq", q: "Correct the mistake: \"He don't have a job.\"", o: ["He doesn't have a job.", "He not have a job.", "He don't has a job."], a: "He doesn't have a job." },
-            { t: "mcq", q: "Short answer: Does she have a car? Yes, she ___.", o: ["do", "does", "has"], a: "does" },
-            { t: "fill", q: "___ your friends have pets? (Do/Does)", a: ["Do"] }
+            { t: "mcq", q: "___ he know her?", o: ["Do", "Does", "Is"], a: "Does" , why: "مع he/she/it نستخدم Does في السؤال." },
+            { t: "mcq", q: "She doesn't ___ her homework.", o: ["does", "do", "did"], a: "do" , why: "بعد doesn't يرجع الفعل لصورته الأصلية do." },
+            { t: "mcq", q: "I ___ know you. (negative)", o: ["don't", "doesn't", "isn't"], a: "don't" , why: "مع I ننفي بـ don't." },
+            { t: "fill", q: "He ___ his homework. (do)", a: ["does"] , why: "مع he نستخدم does." },
+            { t: "mcq", q: "Which is correct?", o: ["He doesn't knows", "He doesn't know", "He don't know"], a: "He doesn't know" , why: "بعد doesn't يرجع الفعل لصورته الأصلية بدون s." },
+            { t: "fill", q: "She doesn't ___ football. (play)", a: ["play"] , why: "بعد doesn't يرجع الفعل play لصورته الأصلية بدون s." },
+            { t: "mcq", q: "___ you have a car?", o: ["Have", "Do", "Does"], a: "Do" , why: "السؤال مع have يُبنى بـ Do/Does وليس بقلب have." },
+            { t: "mcq", q: "___ your mother have a car?", o: ["Do", "Does", "Have"], a: "Does" , why: "mother = هي، فنستخدم Does." },
+            { t: "mcq", q: "Correct the mistake: \"Does you have a phone?\"", o: ["Do you have a phone?", "Does you has a phone?", "Do you has a phone?"], a: "Do you have a phone?" , why: "مع you نستخدم Do مش Does، وبعدها الفعل الأساسي يفضل have بدون s." },
+            { t: "mcq", q: "Correct the mistake: \"He don't have a job.\"", o: ["He doesn't have a job.", "He not have a job.", "He don't has a job."], a: "He doesn't have a job." , why: "He مفرد غائب فيلزم doesn't مش don't." },
+            { t: "mcq", q: "Short answer: Does she have a car? Yes, she ___.", o: ["do", "does", "has"], a: "does" , why: "الإجابة القصيرة تكرر الفعل المساعد اللي في السؤال (Does) مش الفعل الأساسي." },
+            { t: "fill", q: "___ your friends have pets? (Do/Does)", a: ["Do"] , why: "friends جمع فنستخدم Do." }
           ]
         },
         {
@@ -746,12 +767,12 @@ tr:last-child td { border-block-end: 0; }
           ],
           qs: [
             { t: "mcq", q: "What is Sara's job?", o: ["Teacher", "Student", "We don't know"], a: "We don't know", why: "الحوار ذكر وظيفة أخ أحمد ومهنة أخوات سارة، لكن مهنة سارة نفسها لم تُذكر." },
-            { t: "mcq", q: "How many brothers does Ahmed have?", o: ["One", "Two", "None"], a: "One" },
-            { t: "mcq", q: "Where is Sara from?", o: ["Riyadh", "Jeddah", "Cairo"], a: "Jeddah" },
-            { t: "fill", q: "Ahmed's brother ___ a teacher. (is/are)", a: ["is"] },
-            { t: "mcq", q: "\"فيه كافيه قريب من هنا؟\" بالإنجليزي", o: ["Is there a coffee shop near here?", "There is a coffee shop near here.", "Have a coffee shop near here?"], a: "Is there a coffee shop near here?" },
-            { t: "fill", q: "Sara has two ___. (sisters)", a: ["sisters"] },
-            { t: "mcq", q: "\"تشرفت بيك\" بالإنجليزي", o: ["Nice to meet you", "How are you", "See you later"], a: "Nice to meet you" }
+            { t: "mcq", q: "How many brothers does Ahmed have?", o: ["One", "Two", "None"], a: "One" , why: "قال في الحوار: I have one brother." },
+            { t: "mcq", q: "Where is Sara from?", o: ["Riyadh", "Jeddah", "Cairo"], a: "Jeddah" , why: "قالت سارة: I'm from Jeddah." },
+            { t: "fill", q: "Ahmed's brother ___ a teacher. (is/are)", a: ["is"] , why: "brother مفرد غائب (he) فيلزم is مش are." },
+            { t: "mcq", q: "\"فيه كافيه قريب من هنا؟\" بالإنجليزي", o: ["Is there a coffee shop near here?", "There is a coffee shop near here.", "Have a coffee shop near here?"], a: "Is there a coffee shop near here?" , why: "سؤال عن وجود شيء مفرد يبدأ بـ Is there...؟" },
+            { t: "fill", q: "Sara has two ___. (sisters)", a: ["sisters"] , why: "قالت في الحوار: I have two sisters." },
+            { t: "mcq", q: "\"تشرفت بيك\" بالإنجليزي", o: ["Nice to meet you", "How are you", "See you later"], a: "Nice to meet you" , why: "العبارة القياسية عند التعارف لأول مرة." }
           ]
         }
       ],
@@ -781,11 +802,11 @@ tr:last-child td { border-block-end: 0; }
             "هيكل المعيار مقسم لبنود رئيسية من 4 إلى 10: السياق، القيادة، التخطيط، الدعم، التشغيل، تقييم الأداء، التحسين — كل بند مبني على اللي قبله."
           ],
           qs: [
-            { t: "mcq", q: "ماذا تعني {PDCA}؟", o: ["خطّط - نفّذ - تحقّق - حسّن", "خطّط - نفّذ - كرّر - أغلق", "قِس - راقب - حلّل - قرّر"], a: "خطّط - نفّذ - تحقّق - حسّن" },
-            { t: "mcq", q: "{Risk-based thinking} تعني", o: ["توقّع المشاكل والفرص مسبقًا والتعامل معها", "تجاهل المخاطر تمامًا", "الاعتماد فقط على التدقيق الخارجي"], a: "توقّع المشاكل والفرص مسبقًا والتعامل معها" },
-            { t: "mcq", q: "{QMS} اختصار لـ", o: ["Quality Management System", "Quick Management Service", "Quality Marketing Standard"], a: "Quality Management System" },
-            { t: "fill", q: "المعيار الذي يحدد متطلبات نظام إدارة الجودة اسمه آيزو ___.", a: ["9001"] },
-            { t: "mcq", q: "بنود المعيار الرئيسية (4-10) مبنية على", o: ["بعضها البعض بترتيب منطقي متسلسل", "كل بند منفصل تمامًا عن الباقي", "الترتيب لا يهم إطلاقًا"], a: "بعضها البعض بترتيب منطقي متسلسل" }
+            { t: "mcq", q: "ماذا تعني {PDCA}؟", o: ["خطّط - نفّذ - تحقّق - حسّن", "خطّط - نفّذ - كرّر - أغلق", "قِس - راقب - حلّل - قرّر"], a: "خطّط - نفّذ - تحقّق - حسّن" , why: "PDCA هي دورة التحسين الأساسية في كل أنظمة الإدارة: Plan-Do-Check-Act." },
+            { t: "mcq", q: "{Risk-based thinking} تعني", o: ["توقّع المشاكل والفرص مسبقًا والتعامل معها", "تجاهل المخاطر تمامًا", "الاعتماد فقط على التدقيق الخارجي"], a: "توقّع المشاكل والفرص مسبقًا والتعامل معها" , why: "التفكير القائم على المخاطر يجمع بين توقع المشاكل واستغلال الفرص معًا." },
+            { t: "mcq", q: "{QMS} اختصار لـ", o: ["Quality Management System", "Quick Management Service", "Quality Marketing Standard"], a: "Quality Management System" , why: "QMS هو الاختصار الرسمي لـ Quality Management System." },
+            { t: "fill", q: "المعيار الذي يحدد متطلبات نظام إدارة الجودة اسمه آيزو ___.", a: ["9001"] , why: "آيزو 9001 هو المعيار العالمي لأنظمة إدارة الجودة." },
+            { t: "mcq", q: "بنود المعيار الرئيسية (4-10) مبنية على", o: ["بعضها البعض بترتيب منطقي متسلسل", "كل بند منفصل تمامًا عن الباقي", "الترتيب لا يهم إطلاقًا"], a: "بعضها البعض بترتيب منطقي متسلسل" , why: "كل بند من 4 إلى 10 يعتمد على مخرجات البند اللي قبله، فمثلاً التخطيط (6) مبني على فهم السياق (4)." }
           ]
         },
         {
@@ -798,11 +819,11 @@ tr:last-child td { border-block-end: 0; }
             "مثال شامل: شركة توصيل طلبات تحدد سياقها (المنافسة الشديدة، توقعات سرعة التوصيل)، تحدد أطرافها المعنية (العملاء، المطاعم الشريكة، السائقون)، تحدد نطاق شهادتها (خدمة التوصيل في مدينة واحدة فقط)، وتصمم عملياتها (استلام الطلب → التحضير → التوصيل → التقييم)."
           ],
           qs: [
-            { t: "mcq", q: "{Interested party} تعني", o: ["أي طرف له تأثير أو تتأثر مصلحته بالمؤسسة", "العميل فقط", "الموظفين فقط"], a: "أي طرف له تأثير أو تتأثر مصلحته بالمؤسسة" },
-            { t: "mcq", q: "بند {4.3} يتعلق بـ", o: ["تحديد نطاق نظام إدارة الجودة", "تحديد المنافسين", "تحديد الميزانية"], a: "تحديد نطاق نظام إدارة الجودة" },
-            { t: "mcq", q: "النظر للمؤسسة كسلسلة عمليات مترابطة بدل إدارات منفصلة هو جوهر بند", o: ["4.4", "4.1", "4.2"], a: "4.4" },
-            { t: "fill", q: "العوامل المؤثرة على المؤسسة تُقسّم إلى داخلية و___.", a: ["خارجية"] },
-            { t: "mcq", q: "مثال على \"طرف معني\" خارجي", o: ["جهة رقابية تشترط تراخيص", "قسم الإنتاج الداخلي", "مدير الجودة"], a: "جهة رقابية تشترط تراخيص" }
+            { t: "mcq", q: "{Interested party} تعني", o: ["أي طرف له تأثير أو تتأثر مصلحته بالمؤسسة", "العميل فقط", "الموظفين فقط"], a: "أي طرف له تأثير أو تتأثر مصلحته بالمؤسسة" , why: "أي جهة تتأثر بالمؤسسة أو تؤثر فيها تُعتبر طرفًا معنيًا، مش العميل بس." },
+            { t: "mcq", q: "بند {4.3} يتعلق بـ", o: ["تحديد نطاق نظام إدارة الجودة", "تحديد المنافسين", "تحديد الميزانية"], a: "تحديد نطاق نظام إدارة الجودة" , why: "بند 4.3 يحدد بالضبط أي منتجات/خدمات ومواقع يغطيها نظام الجودة." },
+            { t: "mcq", q: "النظر للمؤسسة كسلسلة عمليات مترابطة بدل إدارات منفصلة هو جوهر بند", o: ["4.4", "4.1", "4.2"], a: "4.4" , why: "بند 4.4 يربط كل عمليات المؤسسة كسلسلة متكاملة بمدخلات ومخرجات." },
+            { t: "fill", q: "العوامل المؤثرة على المؤسسة تُقسّم إلى داخلية و___.", a: ["خارجية"] , why: "العوامل المؤثرة على المؤسسة إما داخلية (موارد، ثقافة) أو خارجية (منافسة، تشريعات)." },
+            { t: "mcq", q: "مثال على \"طرف معني\" خارجي", o: ["جهة رقابية تشترط تراخيص", "قسم الإنتاج الداخلي", "مدير الجودة"], a: "جهة رقابية تشترط تراخيص" , why: "الجهة الرقابية خارج حدود المؤسسة، فهي طرف معني خارجي." }
           ]
         },
         {
@@ -816,11 +837,11 @@ tr:last-child td { border-block-end: 0; }
             "مثال: مدير مصنع يخصص وقتًا أسبوعيًا لمراجعة مؤشرات الجودة مع فريقه بنفسه (التزام حقيقي)، وينشر سياسة الجودة على لوحة الإعلانات بلغة بسيطة يفهمها كل الموظفين."
           ],
           qs: [
-            { t: "mcq", q: "{Top management} تعني", o: ["الإدارة العليا المسؤولة عن نظام الجودة", "قسم المبيعات فقط", "المدقق الخارجي"], a: "الإدارة العليا المسؤولة عن نظام الجودة" },
-            { t: "mcq", q: "المفهوم الجديد في نسخة 2026 الذي يربط الجودة بالسلوك اليومي هو", o: ["ثقافة الجودة والسلوك الأخلاقي", "التدقيق الداخلي", "تحليل البيانات"], a: "ثقافة الجودة والسلوك الأخلاقي" },
-            { t: "mcq", q: "{Quality policy} هي", o: ["بيان مكتوب لالتزام المؤسسة بالجودة", "قائمة أسعار المنتجات", "جدول مواعيد التسليم"], a: "بيان مكتوب لالتزام المؤسسة بالجودة" },
-            { t: "fill", q: "بند 5.3 يحدد الأدوار والمسؤوليات و___.", a: ["الصلاحيات"] },
-            { t: "mcq", q: "القيادة الحقيقية حسب المعيار تعني", o: ["مشاركة فعلية وتوفير موارد، لا مجرد توقيع", "التوقيع على المستندات فقط", "تفويض كل شيء للموظفين"], a: "مشاركة فعلية وتوفير موارد، لا مجرد توقيع" }
+            { t: "mcq", q: "{Top management} تعني", o: ["الإدارة العليا المسؤولة عن نظام الجودة", "قسم المبيعات فقط", "المدقق الخارجي"], a: "الإدارة العليا المسؤولة عن نظام الجودة" , why: "الإدارة العليا هي المسؤولة مباشرة عن قيادة نظام الجودة، مش أي قسم فرعي." },
+            { t: "mcq", q: "المفهوم الجديد في نسخة 2026 الذي يربط الجودة بالسلوك اليومي هو", o: ["ثقافة الجودة والسلوك الأخلاقي", "التدقيق الداخلي", "تحليل البيانات"], a: "ثقافة الجودة والسلوك الأخلاقي" , why: "هذا المفهوم أُضيف في 2026 ليربط الجودة بسلوك الأفراد اليومي، مش بس بالإجراءات." },
+            { t: "mcq", q: "{Quality policy} هي", o: ["بيان مكتوب لالتزام المؤسسة بالجودة", "قائمة أسعار المنتجات", "جدول مواعيد التسليم"], a: "بيان مكتوب لالتزام المؤسسة بالجودة" , why: "سياسة الجودة بيان مكتوب معلن يوضح التزام المؤسسة." },
+            { t: "fill", q: "بند 5.3 يحدد الأدوار والمسؤوليات و___.", a: ["الصلاحيات"] , why: "بند 5.3 يوضح من المسؤول عن كل شيء ومين له صلاحية القرار." },
+            { t: "mcq", q: "القيادة الحقيقية حسب المعيار تعني", o: ["مشاركة فعلية وتوفير موارد، لا مجرد توقيع", "التوقيع على المستندات فقط", "تفويض كل شيء للموظفين"], a: "مشاركة فعلية وتوفير موارد، لا مجرد توقيع" , why: "القيادة الفعالة تعني مشاركة ومتابعة حقيقية، مش توقيع شكلي." }
           ]
         },
         {
@@ -833,11 +854,11 @@ tr:last-child td { border-block-end: 0; }
             "مثال شامل: مطعم يحدد كمخاطر \"نقص مورد أساسي\" فيضع خطة بديلة (مورد احتياطي)، ويحدد كفرصة \"طلب توصيل متزايد\" فيخطط للتوسع فيه، ويضع هدفًا قابلًا للقياس \"تقليل وقت التحضير لـ 15 دقيقة\"."
           ],
           qs: [
-            { t: "mcq", q: "في نسخة 2026، المخاطر والفرص", o: ["فُصلتا في بندين مستقلين 6.1.2 و6.1.3", "بقيتا مدمجتين كما كانتا", "أُلغيتا من المعيار"], a: "فُصلتا في بندين مستقلين 6.1.2 و6.1.3" },
-            { t: "mcq", q: "أهداف الجودة يجب أن تكون", o: ["قابلة للقياس ومتوافقة مع السياسة قدر الإمكان", "عامة وغير محددة", "سرية لا تُبلّغ لأحد"], a: "قابلة للقياس ومتوافقة مع السياسة قدر الإمكان" },
-            { t: "mcq", q: "بند 6.3 يتعلق بـ", o: ["تخطيط التغييرات", "تحديد الميزانية السنوية", "توظيف الموظفين الجدد"], a: "تخطيط التغييرات" },
-            { t: "fill", q: "بند ___ يحدد المخاطر والفرص قبل التخطيط. (رقم)", a: ["6.1", "6.1.1"] },
-            { t: "mcq", q: "مثال على \"فرصة\" وليس \"خطر\"", o: ["زيادة الطلب على خدمة التوصيل", "نقص مورد أساسي", "تعطل معدة إنتاج"], a: "زيادة الطلب على خدمة التوصيل" }
+            { t: "mcq", q: "في نسخة 2026، المخاطر والفرص", o: ["فُصلتا في بندين مستقلين 6.1.2 و6.1.3", "بقيتا مدمجتين كما كانتا", "أُلغيتا من المعيار"], a: "فُصلتا في بندين مستقلين 6.1.2 و6.1.3" , why: "هذا أبرز تغيير في بند التخطيط بين 2015 و2026." },
+            { t: "mcq", q: "أهداف الجودة يجب أن تكون", o: ["قابلة للقياس ومتوافقة مع السياسة قدر الإمكان", "عامة وغير محددة", "سرية لا تُبلّغ لأحد"], a: "قابلة للقياس ومتوافقة مع السياسة قدر الإمكان" , why: "الأهداف غير القابلة للقياس يصعب تقييم مدى تحقيقها." },
+            { t: "mcq", q: "بند 6.3 يتعلق بـ", o: ["تخطيط التغييرات", "تحديد الميزانية السنوية", "توظيف الموظفين الجدد"], a: "تخطيط التغييرات" , why: "بند 6.3 يخص تخطيط أي تغيير يطرأ على نظام الجودة." },
+            { t: "fill", q: "بند ___ يحدد المخاطر والفرص قبل التخطيط. (رقم)", a: ["6.1", "6.1.1"] , why: "بند 6.1 (ومنه 6.1.1) هو نقطة البداية لتحديد المخاطر والفرص قبل التخطيط." },
+            { t: "mcq", q: "مثال على \"فرصة\" وليس \"خطر\"", o: ["زيادة الطلب على خدمة التوصيل", "نقص مورد أساسي", "تعطل معدة إنتاج"], a: "زيادة الطلب على خدمة التوصيل" , why: "زيادة الطلب ظرف إيجابي يمكن استغلاله، فهو فرصة لا خطر." }
           ]
         },
         {
@@ -851,11 +872,11 @@ tr:last-child td { border-block-end: 0; }
             "مثال شامل: مصنع أغذية يدرب عامل جديد على معايير النظافة (كفاءة)، يعلّق لوحات إرشادية توضح سياسة الجودة (وعي)، يستخدم مجموعة واتساب لتنبيهات فورية عن مشاكل الإنتاج (اتصال)، ويحتفظ بسجلات فحص المواد الخام موقّعة ومؤرخة (معلومات موثقة)."
           ],
           qs: [
-            { t: "mcq", q: "{Competence} تعني", o: ["المهارات والتدريب والخبرة اللازمة للعمل", "عدد ساعات العمل", "الراتب الشهري"], a: "المهارات والتدريب والخبرة اللازمة للعمل" },
-            { t: "mcq", q: "{Documented information} تحل محل مصطلحي 2015 القديمين", o: ["المستندات والسجلات", "الأهداف والسياسات", "المخاطر والفرص"], a: "المستندات والسجلات" },
-            { t: "mcq", q: "بند 7.3 (الوعي) يعني أن الموظف يفهم", o: ["سياسة الجودة وكيف يساهم عمله فيها", "راتبه فقط", "مواعيد الإجازات فقط"], a: "سياسة الجودة وكيف يساهم عمله فيها" },
-            { t: "fill", q: "الموارد تشمل الأفراد والبنية التحتية و___ العمل. (بيئة)", a: ["بيئة"] },
-            { t: "mcq", q: "مثال على \"معلومات موثقة\"", o: ["سجل فحص المواد الخام موقّع ومؤرخ", "محادثة شفهية عابرة", "فكرة في ذهن المدير"], a: "سجل فحص المواد الخام موقّع ومؤرخ" }
+            { t: "mcq", q: "{Competence} تعني", o: ["المهارات والتدريب والخبرة اللازمة للعمل", "عدد ساعات العمل", "الراتب الشهري"], a: "المهارات والتدريب والخبرة اللازمة للعمل" , why: "الكفاءة تشمل المهارة والتدريب والخبرة معًا، مش عنصر واحد بس." },
+            { t: "mcq", q: "{Documented information} تحل محل مصطلحي 2015 القديمين", o: ["المستندات والسجلات", "الأهداف والسياسات", "المخاطر والفرص"], a: "المستندات والسجلات" , why: "المصطلح الجديد documented information يجمع بين المستندات والسجلات القديمين في مفهوم واحد." },
+            { t: "mcq", q: "بند 7.3 (الوعي) يعني أن الموظف يفهم", o: ["سياسة الجودة وكيف يساهم عمله فيها", "راتبه فقط", "مواعيد الإجازات فقط"], a: "سياسة الجودة وكيف يساهم عمله فيها" , why: "الوعي يعني فهم الموظف لدوره وتأثيره على الجودة، مش مجرد معرفة عامة." },
+            { t: "fill", q: "الموارد تشمل الأفراد والبنية التحتية و___ العمل. (بيئة)", a: ["بيئة"] , why: "بيئة العمل من ضمن الموارد اللازمة لتحقيق نتائج العمليات." },
+            { t: "mcq", q: "مثال على \"معلومات موثقة\"", o: ["سجل فحص المواد الخام موقّع ومؤرخ", "محادثة شفهية عابرة", "فكرة في ذهن المدير"], a: "سجل فحص المواد الخام موقّع ومؤرخ" , why: "المعلومات الموثقة لازم تكون مسجّلة وقابلة للرجوع إليها، مش شفهية." }
           ]
         },
         {
@@ -871,11 +892,11 @@ tr:last-child td { border-block-end: 0; }
             "مثال شامل: مصنع أثاث يستلم طلب عميل بمواصفات دقيقة (8.2)، يصمم نموذجًا ويختبره قبل الإنتاج الكامل (8.3)، يشتري الخشب من مورد معتمد ويراجع جودته (8.4)، يضع رقم تسلسلي لكل قطعة أثاث لتتبعها (8.5)، يفحص القطعة النهائية قبل الشحن (8.6)، ولو وجد خدشًا يعزل القطعة ويصلحها قبل التسليم (8.7)."
           ],
           qs: [
-            { t: "mcq", q: "الفرق بين {verification} و{validation}", o: ["الأولى تطابق المواصفات، والثانية تحقق الغرض عند الاستخدام الفعلي", "لا فرق بينهما إطلاقًا", "الأولى للمنتجات والثانية للخدمات فقط"], a: "الأولى تطابق المواصفات، والثانية تحقق الغرض عند الاستخدام الفعلي" },
-            { t: "mcq", q: "بند 8.4 يوضح أن مسؤولية مطابقة المخرجات من مورد خارجي", o: ["تبقى على عاتق المؤسسة نفسها", "تنتقل بالكامل للمورد", "لا تخص أحدًا"], a: "تبقى على عاتق المؤسسة نفسها" },
-            { t: "mcq", q: "عند اكتشاف مخرج غير مطابق (8.7)، من الخيارات المتاحة", o: ["التصحيح أو العزل أو إبلاغ العميل أو الحصول على تنازل", "تجاهله وتسليمه كما هو", "إيقاف المصنع نهائيًا"], a: "التصحيح أو العزل أو إبلاغ العميل أو الحصول على تنازل" },
-            { t: "fill", q: "بند {8.5.2} يتعلق بالتعريف و___. (traceability)", a: ["التتبع"] },
-            { t: "mcq", q: "بند 8.6 (الإفراج عن المنتجات) يعني", o: ["التأكد من المطابقة قبل التسليم للعميل", "بدء الإنتاج", "توظيف عمال جدد"], a: "التأكد من المطابقة قبل التسليم للعميل" }
+            { t: "mcq", q: "الفرق بين {verification} و{validation}", o: ["الأولى تطابق المواصفات، والثانية تحقق الغرض عند الاستخدام الفعلي", "لا فرق بينهما إطلاقًا", "الأولى للمنتجات والثانية للخدمات فقط"], a: "الأولى تطابق المواصفات، والثانية تحقق الغرض عند الاستخدام الفعلي" , why: "verification = تطابق المواصفات المكتوبة، validation = يعمل فعلاً كما هو مقصود عند الاستخدام." },
+            { t: "mcq", q: "بند 8.4 يوضح أن مسؤولية مطابقة المخرجات من مورد خارجي", o: ["تبقى على عاتق المؤسسة نفسها", "تنتقل بالكامل للمورد", "لا تخص أحدًا"], a: "تبقى على عاتق المؤسسة نفسها" , why: "التعاقد مع مورد خارجي لا يُعفي المؤسسة من مسؤولية جودة المخرج النهائي." },
+            { t: "mcq", q: "عند اكتشاف مخرج غير مطابق (8.7)، من الخيارات المتاحة", o: ["التصحيح أو العزل أو إبلاغ العميل أو الحصول على تنازل", "تجاهله وتسليمه كما هو", "إيقاف المصنع نهائيًا"], a: "التصحيح أو العزل أو إبلاغ العميل أو الحصول على تنازل" , why: "بند 8.7 يعطي عدة خيارات للتعامل مع المخرج غير المطابق حسب الموقف." },
+            { t: "fill", q: "بند {8.5.2} يتعلق بالتعريف و___. (traceability)", a: ["التتبع"] , why: "بند 8.5.2 يخص معرفة حالة كل منتج ومساره (تعريف وتتبع)." },
+            { t: "mcq", q: "بند 8.6 (الإفراج عن المنتجات) يعني", o: ["التأكد من المطابقة قبل التسليم للعميل", "بدء الإنتاج", "توظيف عمال جدد"], a: "التأكد من المطابقة قبل التسليم للعميل" , why: "الإفراج عن المنتج معناه التأكد من مطابقته قبل تسليمه فعليًا للعميل." }
           ]
         },
         {
@@ -888,11 +909,11 @@ tr:last-child td { border-block-end: 0; }
             "مثال شامل: شركة خدمات توزع استبيان رضا عملاء ربع سنوي (9.1)، تُجري تدقيقًا داخليًا كل 6 أشهر على قسم المبيعات (9.2)، وفي اجتماع الإدارة السنوي تراجع نتائج التدقيق والشكاوى وتقرر تخصيص ميزانية لتدريب إضافي (9.3)."
           ],
           qs: [
-            { t: "mcq", q: "{Internal audit} تعني", o: ["فحص دوري داخلي للتأكد من مطابقة النظام", "شكوى عميل", "إعلان تسويقي"], a: "فحص دوري داخلي للتأكد من مطابقة النظام" },
-            { t: "mcq", q: "{Management review} من مسؤولية", o: ["الإدارة العليا", "العميل", "المورد الخارجي"], a: "الإدارة العليا" },
-            { t: "mcq", q: "من مصادر معلومات رضا العميل", o: ["الاستبيانات والشكاوى وتحليل حصة السوق", "تقرير الأرباح فقط", "عدد الموظفين"], a: "الاستبيانات والشكاوى وتحليل حصة السوق" },
-            { t: "fill", q: "بند 9 كله بعنوان تقييم ___.", a: ["الأداء"] },
-            { t: "mcq", q: "مدخلات مراجعة الإدارة تشمل", o: ["نتائج التدقيق ورضا العميل والمخاطر والفرص", "قائمة أسعار السوق فقط", "جدول إجازات الموظفين"], a: "نتائج التدقيق ورضا العميل والمخاطر والفرص" }
+            { t: "mcq", q: "{Internal audit} تعني", o: ["فحص دوري داخلي للتأكد من مطابقة النظام", "شكوى عميل", "إعلان تسويقي"], a: "فحص دوري داخلي للتأكد من مطابقة النظام" , why: "التدقيق الداخلي فحص دوري مخطط له من داخل المؤسسة نفسها." },
+            { t: "mcq", q: "{Management review} من مسؤولية", o: ["الإدارة العليا", "العميل", "المورد الخارجي"], a: "الإدارة العليا" , why: "مراجعة الإدارة من اختصاص الإدارة العليا حصريًا حسب بند 9.3." },
+            { t: "mcq", q: "من مصادر معلومات رضا العميل", o: ["الاستبيانات والشكاوى وتحليل حصة السوق", "تقرير الأرباح فقط", "عدد الموظفين"], a: "الاستبيانات والشكاوى وتحليل حصة السوق" , why: "رضا العميل يُقاس من مصادر متعددة زي الاستبيانات والشكاوى وتحليل السوق." },
+            { t: "fill", q: "بند 9 كله بعنوان تقييم ___.", a: ["الأداء"] , why: "بند 9 كله يخص قياس وتقييم أداء نظام الجودة." },
+            { t: "mcq", q: "مدخلات مراجعة الإدارة تشمل", o: ["نتائج التدقيق ورضا العميل والمخاطر والفرص", "قائمة أسعار السوق فقط", "جدول إجازات الموظفين"], a: "نتائج التدقيق ورضا العميل والمخاطر والفرص" , why: "مراجعة الإدارة تجمع كل هذه المدخلات لاتخاذ قرارات مبنية على بيانات فعلية." }
           ]
         },
         {
@@ -905,11 +926,11 @@ tr:last-child td { border-block-end: 0; }
             "مثال عملي: مطعم يكتشف تكرار شكاوى \"الطعام بارد عند الوصول\". التصحيح الفوري: إعادة تسخين وإرسال الطلب البديل مجانًا. الإجراء التصحيحي: تحليل السبب (تأخر السائقين) وتغيير مسار التوصيل أو استخدام عبوات حرارية أفضل حتى لا تتكرر الشكوى."
           ],
           qs: [
-            { t: "mcq", q: "الفرق بين {continual} و{continuous}", o: ["continual = مستمر بفترات متقطعة، continuous = بلا انقطاع إطلاقًا", "لا فرق بينهما إطلاقًا", "continuous تخص الجودة فقط"], a: "continual = مستمر بفترات متقطعة، continuous = بلا انقطاع إطلاقًا" },
-            { t: "mcq", q: "الفرق بين {correction} و{corrective action}", o: ["الأولى تعالج المشكلة فورًا، والثانية تعالج السبب الجذري لمنع التكرار", "لا فرق بينهما", "الثانية أرخص دائمًا"], a: "الأولى تعالج المشكلة فورًا، والثانية تعالج السبب الجذري لمنع التكرار" },
-            { t: "mcq", q: "عند حدوث عدم مطابقة، أول خطوة حسب 10.2", o: ["التفاعل معها والسيطرة عليها فورًا", "تحديث الميزانية", "فصل الموظف المسؤول مباشرة"], a: "التفاعل معها والسيطرة عليها فورًا" },
-            { t: "fill", q: "التحسين قد يكون تدريجيًا أو عبر تغيير جذري/___.", a: ["ابتكار"] },
-            { t: "mcq", q: "مثال \"إجراء تصحيحي\" حقيقي", o: ["تغيير مسار التوصيل لمنع تكرار شكوى \"الطعام بارد\"", "الاعتذار للعميل فقط دون تغيير أي شيء", "تجاهل الشكوى لأنها نادرة"], a: "تغيير مسار التوصيل لمنع تكرار شكوى \"الطعام بارد\"" }
+            { t: "mcq", q: "الفرق بين {continual} و{continuous}", o: ["continual = مستمر بفترات متقطعة، continuous = بلا انقطاع إطلاقًا", "لا فرق بينهما إطلاقًا", "continuous تخص الجودة فقط"], a: "continual = مستمر بفترات متقطعة، continuous = بلا انقطاع إطلاقًا" , why: "المعيار يستخدم continual لأن التحسين يحدث على شكل خطوات ودورات، مش بشكل متصل بلا توقف." },
+            { t: "mcq", q: "الفرق بين {correction} و{corrective action}", o: ["الأولى تعالج المشكلة فورًا، والثانية تعالج السبب الجذري لمنع التكرار", "لا فرق بينهما", "الثانية أرخص دائمًا"], a: "الأولى تعالج المشكلة فورًا، والثانية تعالج السبب الجذري لمنع التكرار" , why: "التصحيح يعالج الأثر الظاهر فورًا، بينما الإجراء التصحيحي يعالج السبب الجذري." },
+            { t: "mcq", q: "عند حدوث عدم مطابقة، أول خطوة حسب 10.2", o: ["التفاعل معها والسيطرة عليها فورًا", "تحديث الميزانية", "فصل الموظف المسؤول مباشرة"], a: "التفاعل معها والسيطرة عليها فورًا" , why: "بند 10.2.1 يبدأ دائمًا بالتفاعل مع المشكلة والسيطرة عليها قبل أي تحليل." },
+            { t: "fill", q: "التحسين قد يكون تدريجيًا أو عبر تغيير جذري/___.", a: ["ابتكار"] , why: "التحسين المستمر يشمل خطوات صغيرة تدريجية أو قفزات ابتكارية كبيرة." },
+            { t: "mcq", q: "مثال \"إجراء تصحيحي\" حقيقي", o: ["تغيير مسار التوصيل لمنع تكرار شكوى \"الطعام بارد\"", "الاعتذار للعميل فقط دون تغيير أي شيء", "تجاهل الشكوى لأنها نادرة"], a: "تغيير مسار التوصيل لمنع تكرار شكوى \"الطعام بارد\"" , why: "تغيير المسار يعالج السبب الجذري (تأخر السائقين) فهو إجراء تصحيحي حقيقي." }
           ]
         },
         {
@@ -924,11 +945,11 @@ tr:last-child td { border-block-end: 0; }
             "المضمون الأساسي (البنود 4-10) ظل هو نفس الهيكل العام في 2015 و2026 — التغييرات الأكبر في التوضيح والتفصيل وليس في هدم البنية بالكامل، وهذا يسهّل الانتقال بين الإصدارين لمن يعرف 2015 بالفعل."
           ],
           qs: [
-            { t: "mcq", q: "أكبر تغيير في بند التخطيط (6) بين 2015 و2026", o: ["فصل المخاطر عن الفرص في بندين مستقلين", "حذف بند التخطيط بالكامل", "دمج التخطيط مع القيادة"], a: "فصل المخاطر عن الفرص في بندين مستقلين" },
-            { t: "mcq", q: "المفهوم الجديد المرتبط ببند القيادة في 2026", o: ["ثقافة الجودة والسلوك الأخلاقي", "التدقيق الخارجي الإجباري", "إلغاء سياسة الجودة"], a: "ثقافة الجودة والسلوك الأخلاقي" },
-            { t: "mcq", q: "الملحق التوضيحي الذي تم توسيعه في 2026", o: ["Annex A", "Annex B", "Annex C"], a: "Annex A" },
-            { t: "mcq", q: "هيكل البنود الرئيسية (4-10) في 2026 مقارنة بـ 2015", o: ["ظل نفس الهيكل العام مع تفصيل أعمق", "تغيّر بالكامل من الصفر", "أصبح 5 بنود فقط"], a: "ظل نفس الهيكل العام مع تفصيل أعمق" },
-            { t: "fill", q: "الملحق الذي حُذف في نسخة 2026 اسمه Annex ___.", a: ["B"] }
+            { t: "mcq", q: "أكبر تغيير في بند التخطيط (6) بين 2015 و2026", o: ["فصل المخاطر عن الفرص في بندين مستقلين", "حذف بند التخطيط بالكامل", "دمج التخطيط مع القيادة"], a: "فصل المخاطر عن الفرص في بندين مستقلين" , why: "فصل المخاطر عن الفرص في 6.1.2 و6.1.3 هو أبرز تغيير في بند 6." },
+            { t: "mcq", q: "المفهوم الجديد المرتبط ببند القيادة في 2026", o: ["ثقافة الجودة والسلوك الأخلاقي", "التدقيق الخارجي الإجباري", "إلغاء سياسة الجودة"], a: "ثقافة الجودة والسلوك الأخلاقي" , why: "ثقافة الجودة والسلوك الأخلاقي أُضيفا صراحة في نسخة 2026." },
+            { t: "mcq", q: "الملحق التوضيحي الذي تم توسيعه في 2026", o: ["Annex A", "Annex B", "Annex C"], a: "Annex A" , why: "Annex A هو الملحق التوضيحي الذي توسّع ليشرح المصطلحات والبنية بعمق أكبر." },
+            { t: "mcq", q: "هيكل البنود الرئيسية (4-10) في 2026 مقارنة بـ 2015", o: ["ظل نفس الهيكل العام مع تفصيل أعمق", "تغيّر بالكامل من الصفر", "أصبح 5 بنود فقط"], a: "ظل نفس الهيكل العام مع تفصيل أعمق" , why: "التغييرات الأكبر كانت في التوضيح والتفصيل، مش في إعادة هيكلة البنود من الصفر." },
+            { t: "fill", q: "الملحق الذي حُذف في نسخة 2026 اسمه Annex ___.", a: ["B"] , why: "Annex B كان في بعض إصدارات 2015 وتم حذفه في 2026." }
           ]
         },
         {
@@ -946,12 +967,12 @@ tr:last-child td { border-block-end: 0; }
             "الإجابة: بند {9.3 - مراجعة الإدارة} — لأنه اجتماع دوري للإدارة العليا يراجع فيه أداء النظام ككل ويتخذ قرارات."
           ],
           qs: [
-            { t: "mcq", q: "استبدال قطعة معيبة فورًا للعميل دون تحديد السبب هو", o: ["Correction", "Corrective action", "Management review"], a: "Correction" },
-            { t: "mcq", q: "تغيير طريقة التحميل في المخزن لمنع تكرار الخدش هو", o: ["Correction", "Corrective action", "Internal audit"], a: "Corrective action" },
-            { t: "mcq", q: "التوسع في خط الإنتاج بسبب زيادة الطلب المتوقعة هو", o: ["Risk", "Opportunity", "Nonconformity"], a: "Opportunity" },
-            { t: "mcq", q: "الاعتماد على مورد وحيد لقطع الغيار الحرجة يُصنَّف", o: ["Risk", "Opportunity", "Corrective action"], a: "Risk" },
-            { t: "mcq", q: "اجتماع دوري للإدارة العليا يراجع فيه أداء النظام ككل يندرج تحت بند", o: ["9.3", "8.7", "5.1"], a: "9.3" },
-            { t: "fill", q: "معالجة السبب الجذري لمنع تكرار مشكلة تسمى corrective ___.", a: ["action"] }
+            { t: "mcq", q: "استبدال قطعة معيبة فورًا للعميل دون تحديد السبب هو", o: ["Correction", "Corrective action", "Management review"], a: "Correction" , why: "عالج الأثر الظاهر فقط دون معرفة السبب، فهو تصحيح وليس إجراء تصحيحي." },
+            { t: "mcq", q: "تغيير طريقة التحميل في المخزن لمنع تكرار الخدش هو", o: ["Correction", "Corrective action", "Internal audit"], a: "Corrective action" , why: "عالج السبب الجذري لمنع تكرار المشكلة، فهو إجراء تصحيحي." },
+            { t: "mcq", q: "التوسع في خط الإنتاج بسبب زيادة الطلب المتوقعة هو", o: ["Risk", "Opportunity", "Nonconformity"], a: "Opportunity" , why: "ظرف إيجابي قابل للاستغلال، فهو فرصة." },
+            { t: "mcq", q: "الاعتماد على مورد وحيد لقطع الغيار الحرجة يُصنَّف", o: ["Risk", "Opportunity", "Corrective action"], a: "Risk" , why: "احتمال يهدد استمرارية الخدمة، فهو خطر يحتاج خطة بديلة." },
+            { t: "mcq", q: "اجتماع دوري للإدارة العليا يراجع فيه أداء النظام ككل يندرج تحت بند", o: ["9.3", "8.7", "5.1"], a: "9.3" , why: "هذا وصف مباشر لمراجعة الإدارة في بند 9.3." },
+            { t: "fill", q: "معالجة السبب الجذري لمنع تكرار مشكلة تسمى corrective ___.", a: ["action"] , why: "المصطلح الكامل هو corrective action." }
           ]
         }
       ],
@@ -1288,7 +1309,7 @@ tr:last-child td { border-block-end: 0; }
   function dialogueHTML(cid, id) {
     var u = unitOf(cid, id), p = state.learn.units[cid + ":" + id] || {};
     var bubbles = u.dialogue.map(function (t) {
-      return '<div class="bub ' + t.who + '"><div class="en">' + esc(t.en) + '</div><div class="ar">' + esc(t.ar) + "</div></div>";
+      return '<div class="bub ' + t.who + '"><div class="en"><span>' + esc(t.en) + "</span>" + spkBtn(t.en) + '</div><div class="ar">' + esc(t.ar) + "</div></div>";
     }).join("");
     return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button><div class="card"><h2>' + esc(u.title) + '</h2>' +
       '<p class="muted" style="font-size:14px;margin-block-end:6px">' + fmtEn(u.pts[0]) + '</p>' +
@@ -1314,11 +1335,15 @@ tr:last-child td { border-block-end: 0; }
       body = '<div class="opts"><input class="inp" id="ans" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="اكتب الإجابة" value="' + (a ? esc(a.sel) : "") + '"' + (a ? " disabled" : "") + ">" +
         (a ? "" : '<button class="btn" data-act="submit">تحقق</button>') + "</div>";
     }
+    var correctTxt = Array.isArray(q.a) ? q.a[0] : q.a;
     var fb = "";
-    if (a) fb = '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(Array.isArray(q.a) ? q.a[0] : q.a) + "</span>") + (q.why ? "<br>" + esc(q.why) : "") + "</div>" +
+    if (a) fb = '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(correctTxt) + "</span>" + spkBtn(correctTxt)) + "</div>" +
+      (q.why ? '<div class="rule"><b>📘 القاعدة:</b> ' + esc(q.why) + "</div>" : "") +
       '<button class="btn" data-act="qnext">' + (z.i + 1 >= z.qs.length ? "النتيجة" : "التالي") + "</button>";
+    var qRow = '<p class="qtext' + (arQ ? " ar" : "") + '" style="margin-block-start:14px">' + esc(q.q) + "</p>";
+    if (!arQ) qRow = '<div class="qtext-row" style="margin-block-start:14px">' + '<p class="qtext" style="margin:0">' + esc(q.q) + "</p>" + spkBtn(q.q.replace(/___/g, "")) + "</div>";
     return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">' + esc(z.title) + " · " + (z.i + 1) + " من " + z.qs.length + '</div><div class="bar"><i style="width:' + Math.round(z.i / z.qs.length * 100) + '%"></i></div>' +
-      '<p class="qtext' + (arQ ? " ar" : "") + '" style="margin-block-start:14px">' + esc(q.q) + "</p>" + body + fb + "</div>";
+      qRow + body + fb + "</div>";
   }
   function quizEnd(z) {
     var pct = Math.round(z.ok / z.qs.length * 100);
@@ -1343,7 +1368,7 @@ tr:last-child td { border-block-end: 0; }
     var c = state.card; if (!c) return "";
     if (c.i >= c.q.length) return '<div class="card"><h2>خلّصت مراجعة اليوم</h2><p class="muted" style="margin-block:6px 12px">عرفت <span class="num">' + c.known + "</span> من <span class=\"num\">" + c.q.length + '</span>. الكلمات اللي لم تعرفها ترجع لك غدًا.</p><button class="btn" data-act="lhome">رجوع</button></div>';
     var w = c.q[c.i];
-    var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" : '<div class="w">' + esc(w.en) + '</div><div class="muted">اضغط لإظهار المعنى</div>';
+    var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + spkBtn(w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
     return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
       (c.flip ? '<div class="row"><button class="btn grow" data-act="know" data-v="1">عرفتها</button><button class="btn alt grow" data-act="know" data-v="0">لم أعرفها</button></div>' : "") + "</div>";
   }
@@ -1401,6 +1426,7 @@ tr:last-child td { border-block-end: 0; }
     var act = el.getAttribute("data-act"), now = nowR();
     switch (act) {
       case "lock": lockNow(); break;
+      case "speak": speak(el.getAttribute("data-txt")); break;
       case "theme": var cur = getTheme(), nx = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]; try { localStorage.setItem("masar:theme", nx); } catch (er) { } applyTheme(nx); break;
       case "pv": state.pv = el.getAttribute("data-v"); render(); break;
       case "tab": var tt = el.getAttribute("data-t"); if (tt === "archive") { state.pv = "archive"; tt = "prayer"; } goTab(tt); render(); break;
