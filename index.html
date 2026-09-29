@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#0F5C5A">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -200,6 +196,15 @@ tr:last-child td { border-block-end: 0; }
 .spk:active { transform: scale(.92); }
 .qtext-row { display: flex; align-items: center; gap: 10px; }
 .qtext-row .qtext { flex: 1; }
+.ordstrip { min-height: 44px; border: 1px dashed var(--line); border-radius: 12px; padding: 8px; display: flex; flex-wrap: wrap; gap: 8px; margin-block: 10px 8px; background: var(--surface2); }
+.ordph { color: var(--muted); font-size: 13px; align-self: center; }
+.ordbank { display: flex; flex-wrap: wrap; gap: 8px; }
+.ordchip { border: 1px solid var(--line); background: var(--surface); border-radius: 20px; padding: 8px 14px; font-family: var(--display); direction: ltr; font-size: 15px; cursor: pointer; }
+.ordchip.on { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); }
+.ordchip.used { opacity: .35; }
+.ordchip:disabled { cursor: default; }
+.chipbtn { border: 1px solid var(--line); background: var(--surface); color: var(--muted); border-radius: 20px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+.chipbtn.on { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); font-weight: 600; }
 .flash { min-height: 170px; display: grid; place-content: center; text-align: center; gap: 6px; cursor: pointer; }
 .flash .w { font-family: var(--display); font-size: 34px; direction: ltr; }
 .crumb { font-size: 14px; color: var(--muted); margin-block-end: 8px; }
@@ -755,6 +760,47 @@ tr:last-child td { border-block-end: 0; }
           ]
         },
         {
+          id: "u7", icon: "7", title: "المستقبل (will / going to)",
+          pts: [
+            "{will} + مصدر بدون to لكل الضمائر: {I will go} · {She will come} · {They will win}",
+            "الاختصار: {I'll, you'll, he'll, she'll, we'll, they'll} — والنفي: {will not = won't}: {He won't come}",
+            "نستخدم will للقرار اللحظي، التوقع، والوعد: {The phone is ringing — I will answer it}",
+            "{going to} + مصدر: لخطة أو نية مرتّبة مسبقًا: {I am going to travel next week}",
+            "الفرق: will لقرار فوري وقت الكلام، وgoing to لخطة قررتها قبل كده: {I will answer it} (قرار الآن) مقابل {I am going to visit my family this weekend} (خطة مرتبة)",
+            "كلمات تدل على المستقبل: {tomorrow} غدًا · {tonight} الليلة · {next week} الأسبوع القادم · {soon} قريبًا"
+          ],
+          qs: [
+            { t: "mcq", q: "I ___ call you tomorrow. (وعد)", o: ["will", "am", "do"], a: "will", why: "will + مصدر بدون to تُستخدم للوعد أو القرار اللحظي." },
+            { t: "mcq", q: "I am ___ to travel next week. (خطة مرتبة مسبقًا)", o: ["will", "going", "go"], a: "going", why: "going to + مصدر تُستخدم للخطط المرتّبة مسبقًا، وليس will." },
+            { t: "mcq", q: "أي جملة تدل على قرار لحظي (مش خطة)؟", o: ["I will answer the phone.", "I am going to visit Cairo next month.", "I go to work every day."], a: "I will answer the phone.", why: "will تُستخدم لقرار يُتّخذ في لحظة الكلام نفسها." },
+            { t: "fill", q: "اختصار \"I will\" = ___", a: ["I'll"], why: "I will تُختصر إلى I'll." },
+            { t: "fill", q: "النفي: He will not come. بالاختصار: He ___ come.", a: ["won't"], why: "will not تُختصر إلى won't، وهي حالة شاذة (مش willn't)." },
+            { t: "mcq", q: "أي كلمة تدل على المستقبل؟", o: ["yesterday", "tomorrow", "ago"], a: "tomorrow", why: "tomorrow = غدًا، من أشهر كلمات المستقبل." },
+            { t: "mcq", q: "She ___ come today. (توقع بسيط)", o: ["will", "is", "does"], a: "will", why: "will + مصدر بدون to لكل الضمائر ومنها she." },
+            { t: "order", q: "رتّب الكلمات لتكوين جملة صحيحة", words: ["will", "tomorrow", "call", "I", "you"], a: ["I", "will", "call", "you", "tomorrow"], why: "الترتيب: فاعل + will + مصدر + مفعول + ظرف زمان." },
+            { t: "order", q: "رتّب الكلمات لتكوين جملة صحيحة", words: ["next", "travel", "to", "going", "I", "am", "week"], a: ["I", "am", "going", "to", "travel", "next", "week"], why: "الترتيب: فاعل + am/is/are + going to + مصدر + ظرف زمان." }
+          ]
+        },
+        {
+          id: "u8", icon: "8", title: "الملكية بـ 's (Possessive)",
+          pts: [
+            "نضيف 's للاسم المفرد للدلالة على الملكية: {Ahmed's book} = كتاب أحمد",
+            "لو الاسم جمع ينتهي أصلًا بـ s، نضيف فاصلة عليا فقط من غير s إضافية: {the students' books} كتب الطلاب",
+            "لو الاسم جمع غير منتظم (لا ينتهي بـ s)، نضيف 's زي المفرد بالظبط: {the children's toys} لعب الأطفال",
+            "لا تلخبط بين {its} (ضمير ملكية لغير العاقل، بدون فاصلة) و{it's} (اختصار it is/it has): {The cat licked its paw} مقابل {It's raining}",
+            "نستخدم 's غالبًا مع الأشخاص والحيوانات؛ ومع الأشياء غير الحية نفضّل {of}: {the door of the car} بدل {the car's door}"
+          ],
+          qs: [
+            { t: "mcq", q: "\"كتاب أحمد\" بالإنجليزي =", o: ["Ahmed's book", "Ahmeds book", "Ahmed book's"], a: "Ahmed's book", why: "نضيف 's بعد الاسم المفرد مباشرة للدلالة على الملكية." },
+            { t: "fill", q: "This is my ___ phone. (sister، ملكية)", a: ["sister's"], why: "نضيف 's لاسم sister المفرد." },
+            { t: "mcq", q: "\"كتب الطلاب\" (جمع منتهٍ بـ s) =", o: ["the students' books", "the students's books", "the student's books"], a: "the students' books", why: "الجمع المنتهي بـ s نضيف له فاصلة عليا فقط بدون s إضافية." },
+            { t: "mcq", q: "\"لعب الأطفال\" (جمع غير منتظم، children) =", o: ["the childrens' toys", "the children's toys", "the children toys"], a: "the children's toys", why: "children جمع غير منتظم (لا ينتهي بـ s) فنضيف له 's زي المفرد." },
+            { t: "mcq", q: "___ raining today.", o: ["Its", "It's"], a: "It's", why: "It's هنا اختصار It is، مناسبة لوصف حالة الطقس." },
+            { t: "fill", q: "The cat licked ___ paw. (ملكية it، بدون فاصلة)", a: ["its"], why: "its (بدون فاصلة) = ضمير ملكية لـ it، بعكس it's التي هي اختصار." },
+            { t: "order", q: "رتّب الكلمات لتكوين جملة صحيحة", words: ["book", "Ahmed's", "is", "this"], a: ["This", "is", "Ahmed's", "book"], why: "الترتيب: this/that + is + الاسم بالملكية 's + الشيء المملوك." }
+          ]
+        },
+        {
           id: "dlg1", icon: "D", kind: "dialogue", unlockAfter: 4, title: "محادثة: التعارف",
           pts: ["كمّلت أهم القواعد الأساسية، جاهز تشوفها شغالة في محادثة حقيقية. اقرأ الحوار بعناية، وبعدين هتجاوب أسئلة عليه."],
           dialogue: [
@@ -781,17 +827,21 @@ tr:last-child td { border-block-end: 0; }
         }
       ],
       vocab: [
-        ["know", "يعرف", "I know your brother."], ["do", "يفعل", "I do my homework at night."], ["have", "يمتلك / عندي", "We have a big house."],
-        ["have got", "حصل على / عنده", "I have got a new computer."], ["be", "يكون", "I want to be an engineer."], ["play", "يلعب", "They play football on Friday."],
-        ["football", "كرة القدم", "He doesn't play football."], ["homework", "واجب منزلي", "She does her homework."], ["car", "سيارة", "Ahmed has a new car."],
-        ["job", "وظيفة", "My father has a job."], ["pen", "قلم", "This is my pen."], ["phone", "هاتف", "That is your phone."],
-        ["cover", "غطاء / غلاف", "This is its cover."], ["shirt", "قميص", "This is our shirt."], ["boy", "ولد", "The boys play here."],
-        ["baby", "طفل رضيع", "The babies are at home."], ["street", "شارع", "There is a car on the street."], ["teacher", "معلم", "Are you a teacher?"],
-        ["Egyptian", "مصري", "He is Egyptian."], ["Italian", "إيطالي", "Rome is an Italian city."], ["here", "هنا", "Are they here?"],
-        ["there", "هناك", "The books are there."], ["at", "في (مكان)", "I am at work."], ["what", "ماذا", "What is this?"],
-        ["how", "كيف", "How are you?"], ["where", "أين", "Where are you?"], ["vowel", "حرف علة", "An apple starts with a vowel."],
-        ["mine", "ملكي (ضمير)", "This book is mine."], ["yours", "ملكك (ضمير)", "That phone is yours."], ["theirs", "ملكهم (ضمير)", "The books are theirs."]
-      ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2] }; })
+        ["know", "يعرف", "I know your brother.", 1], ["do", "يفعل", "I do my homework at night.", 1], ["have", "يمتلك / عندي", "We have a big house.", 1],
+        ["have got", "حصل على / عنده", "I have got a new computer.", 2], ["be", "يكون", "I want to be an engineer.", 1], ["play", "يلعب", "They play football on Friday.", 1],
+        ["football", "كرة القدم", "He doesn't play football.", 1], ["homework", "واجب منزلي", "She does her homework.", 1], ["car", "سيارة", "Ahmed has a new car.", 1],
+        ["job", "وظيفة", "My father has a job.", 1], ["pen", "قلم", "This is my pen.", 1], ["phone", "هاتف", "That is your phone.", 1],
+        ["cover", "غطاء / غلاف", "This is its cover.", 2], ["shirt", "قميص", "This is our shirt.", 1], ["boy", "ولد", "The boys play here.", 1],
+        ["baby", "طفل رضيع", "The babies are at home.", 1], ["street", "شارع", "There is a car on the street.", 1], ["teacher", "معلم", "Are you a teacher?", 1],
+        ["Egyptian", "مصري", "He is Egyptian.", 2], ["Italian", "إيطالي", "Rome is an Italian city.", 2], ["here", "هنا", "Are they here?", 1],
+        ["there", "هناك", "The books are there.", 1], ["at", "في (مكان)", "I am at work.", 1], ["what", "ماذا", "What is this?", 1],
+        ["how", "كيف", "How are you?", 1], ["where", "أين", "Where are you?", 1], ["vowel", "حرف علة", "An apple starts with a vowel.", 3],
+        ["mine", "ملكي (ضمير)", "This book is mine.", 2], ["yours", "ملكك (ضمير)", "That phone is yours.", 2], ["theirs", "ملكهم (ضمير)", "The books are theirs.", 2],
+        ["will", "سوف (فعل مساعد للمستقبل)", "I will call you tomorrow.", 2], ["tomorrow", "غدًا", "I will see you tomorrow.", 1],
+        ["tonight", "الليلة", "We are going to watch a movie tonight.", 1], ["next week", "الأسبوع القادم", "She is going to travel next week.", 2],
+        ["soon", "قريبًا", "He will finish soon.", 2], ["plan", "خطة / يخطط", "We plan to visit Jeddah.", 2],
+        ["its", "ملكه / ملكها (لغير العاقل)", "The dog wagged its tail.", 2]
+      ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
     },
     iso: {
       id: "iso", title: "آيزو 9001:2026", desc: "دليلك المبسّط لنظام إدارة الجودة: البنود، المصطلحات ثنائية اللغة، والفروق عن نسخة 2015.",
@@ -1033,8 +1083,9 @@ tr:last-child td { border-block-end: 0; }
     while (state.learn.study[k] && n < 5000) { n++; k = addDays(k, -1); }
     return n;
   }
-  function dueCards(now, cid) {
+  function dueCards(now, cid, lvl) {
     var list = cid ? COURSES[cid].vocab : COURSE_ORDER.reduce(function (a, c) { return a.concat(COURSES[c].vocab); }, []);
+    if (lvl) list = list.filter(function (v) { return (v.lvl || 1) === lvl; });
     return list.filter(function (v) { var c = state.learn.cards[v.id]; return !c || c.due <= now.key; });
   }
   function mistakeIds(cid) {
@@ -1259,12 +1310,16 @@ tr:last-child td { border-block-end: 0; }
       '<div class="bar amber"><i style="width:' + L.pct + '%"></i></div><p class="muted" style="font-size:14px;margin-block-start:6px">تبقى <span class="num">' + L.need + '</span> نقطة للمستوى التالي' + (studyStreak(now) ? " · مذاكرة متواصلة " + studyStreak(now) + " يوم" : "") + "</p></div>" +
       '<div class="sec-h">اختر الكورس</div><div class="units">' + cards + "</div>";
   }
+  var LVL_LBL = { 0: "الكل", 1: "مبتدئ", 2: "متوسط", 3: "متقدم" };
   function courseHomeHTML(cid, now) {
-    var c = COURSES[cid], due = dueCards(now, cid).length, ms = mistakeIds(cid).length, done = courseDone(cid);
+    var c = COURSES[cid], lvl = state.cardLvl || 0, due = dueCards(now, cid, lvl).length, ms = mistakeIds(cid).length, done = courseDone(cid);
+    var lvlChips = c.vocab && c.vocab.length ? '<div class="row wrapr" style="margin-block-start:8px">' + [0, 1, 2, 3].map(function (l) {
+      return '<button class="chipbtn' + (lvl === l ? " on" : "") + '" data-act="cardlvl" data-lvl="' + l + '">' + LVL_LBL[l] + "</button>";
+    }).join("") + "</div>" : "";
     return '<button class="linkbtn" data-act="lcourses">← الكورسات</button>' +
       '<div class="card"><h3>المراجعة اليومية</h3><div class="row wrapr">' +
       '<button class="btn" data-act="cards" data-c="' + cid + '"' + (due ? "" : " disabled") + ">كروت المفردات (" + due + ')</button>' +
-      '<button class="btn alt" data-act="mrev" data-c="' + cid + '"' + (ms ? "" : " disabled") + ">راجع أخطائي (" + ms + ")</button></div></div>" +
+      '<button class="btn alt" data-act="mrev" data-c="' + cid + '"' + (ms ? "" : " disabled") + ">راجع أخطائي (" + ms + ")</button></div>" + lvlChips + "</div>" +
       '<div class="row between" style="margin-block:14px 4px"><h2>' + esc(c.title) + '</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
       pathHTML(cid, c.units, done);
   }
@@ -1322,8 +1377,20 @@ tr:last-child td { border-block-end: 0; }
       (p.best != null ? '<p class="muted" style="font-size:14px;margin-block-start:8px">أفضل نتيجة: ' + p.best + "%</p>" : "") + "</div>";
   }
   function startQuiz(qs, title, unitId) {
-    state.quiz = { qs: shuffle(qs), i: 0, ok: 0, ans: null, title: title, unit: unitId, wrong: [], right: [] };
+    state.quiz = { qs: shuffle(qs), i: 0, ok: 0, ans: null, title: title, unit: unitId, wrong: [], right: [], pick: [] };
     state.lv = { mode: "quiz", c: state.lv.c }; render();
+  }
+  function orderBody(q, z, a) {
+    var pick = z.pick || [];
+    var strip = '<div class="ordstrip">' + (pick.length ? pick.map(function (wi, pos) {
+      return '<button class="ordchip on" data-act="ord-rm" data-p="' + pos + '"' + (a ? " disabled" : "") + ">" + esc(q.words[wi]) + "</button>";
+    }).join("") : '<span class="ordph">اضغط على الكلمات بالترتيب الصح</span>') + "</div>";
+    var bank = '<div class="ordbank">' + q.words.map(function (w, wi) {
+      var used = pick.indexOf(wi) !== -1;
+      return '<button class="ordchip' + (used ? " used" : "") + '" data-act="ord-pick" data-i="' + wi + '"' + (used || a ? " disabled" : "") + ">" + esc(w) + "</button>";
+    }).join("") + "</div>";
+    var canSubmit = !a && pick.length === q.words.length;
+    return strip + bank + (canSubmit ? '<button class="btn" data-act="ord-submit">تحقق</button>' : "");
   }
   function quizHTML() {
     var z = state.quiz; if (!z) return "";
@@ -1335,11 +1402,13 @@ tr:last-child td { border-block-end: 0; }
         var c = "opt"; if (a) { if (o === q.a) c += " ok"; else if (o === a.sel) c += " bad"; }
         return '<button class="' + c + '" data-act="pick" data-k="' + k + '"' + (a ? " disabled" : "") + ">" + esc(o) + "</button>";
       }).join("") + "</div>";
+    } else if (q.t === "order") {
+      body = orderBody(q, z, a);
     } else {
       body = '<div class="opts"><input class="inp" id="ans" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="اكتب الإجابة" value="' + (a ? esc(a.sel) : "") + '"' + (a ? " disabled" : "") + ">" +
         (a ? "" : '<button class="btn" data-act="submit">تحقق</button>') + "</div>";
     }
-    var correctTxt = Array.isArray(q.a) ? q.a[0] : q.a;
+    var correctTxt = q.t === "order" ? q.a.join(" ") : (Array.isArray(q.a) ? q.a[0] : q.a);
     var fb = "";
     if (a) fb = '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(correctTxt) + "</span>" + spkBtn(correctTxt)) + "</div>" +
       (q.why ? '<div class="rule"><b>📘 القاعدة:</b> ' + esc(q.why) + "</div>" : "") +
@@ -1373,7 +1442,7 @@ tr:last-child td { border-block-end: 0; }
     if (c.i >= c.q.length) return '<div class="card"><h2>خلّصت مراجعة اليوم</h2><p class="muted" style="margin-block:6px 12px">عرفت <span class="num">' + c.known + "</span> من <span class=\"num\">" + c.q.length + '</span>. الكلمات اللي لم تعرفها ترجع لك غدًا.</p><button class="btn" data-act="lhome">رجوع</button></div>';
     var w = c.q[c.i];
     var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + spkBtn(w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
-    return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
+    return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + " · " + (LVL_LBL[w.lvl || 1]) + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
       (c.flip ? '<div class="row"><button class="btn grow" data-act="know" data-v="1">عرفتها</button><button class="btn alt grow" data-act="know" data-v="0">لم أعرفها</button></div>' : "") + "</div>";
   }
 
@@ -1453,8 +1522,12 @@ tr:last-child td { border-block-end: 0; }
       case "mrev": var mc = el.getAttribute("data-c"); state.lv.c = mc; startQuiz(mistakeIds(mc).map(function (id) { return QINDEX[id]; }), "مراجعة الأخطاء", null); break;
       case "pick": answerMcq(el.getAttribute("data-k")); break;
       case "submit": answerFill(); break;
-      case "qnext": state.quiz.i++; state.quiz.ans = null; if (state.quiz.i >= state.quiz.qs.length) finishQuiz(); render(); break;
-      case "cards": var cc = el.getAttribute("data-c"); state.lv.c = cc; state.card = { q: shuffle(dueCards(now, cc)).slice(0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards", c: cc }; render(); break;
+      case "ord-pick": if (!state.quiz.ans) { state.quiz.pick.push(Number(el.getAttribute("data-i"))); render(); } break;
+      case "ord-rm": if (!state.quiz.ans) { state.quiz.pick.splice(Number(el.getAttribute("data-p")), 1); render(); } break;
+      case "ord-submit": answerOrder(); break;
+      case "qnext": state.quiz.i++; state.quiz.ans = null; state.quiz.pick = []; if (state.quiz.i >= state.quiz.qs.length) finishQuiz(); render(); break;
+      case "cardlvl": state.cardLvl = Number(el.getAttribute("data-lvl")) || 0; render(); break;
+      case "cards": var cc = el.getAttribute("data-c"); state.lv.c = cc; state.card = { q: shuffle(dueCards(now, cc, state.cardLvl || 0)).slice(0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards", c: cc }; render(); break;
       case "flip": if (state.card) { state.card.flip = true; render(); } break;
       case "know": knowCard(el.getAttribute("data-v") === "1"); break;
     }
@@ -1480,6 +1553,13 @@ tr:last-child td { border-block-end: 0; }
     var v = inp.value; if (!norm(v)) return;
     var ok = q.a.map(norm).indexOf(norm(v)) !== -1;
     z.ans = { sel: v, ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+    render();
+  }
+  function answerOrder() {
+    var z = state.quiz, q = z.qs[z.i]; if (z.ans) return;
+    var sel = z.pick.map(function (wi) { return q.words[wi]; });
+    var ok = norm(sel.join(" ")) === norm(q.a.join(" "));
+    z.ans = { sel: sel.join(" "), ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
     render();
   }
   function knowCard(yes) {
@@ -1592,13 +1672,5 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
-
-<script>
-if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function () {});
-  });
-}
-</script>
 </body>
 </html>
