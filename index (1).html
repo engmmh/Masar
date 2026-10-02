@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0F5C5A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -802,6 +806,29 @@ tr:last-child td { border-block-end: 0; }
           ]
         },
         {
+          id: "u9", icon: "9", title: "مراجعة شاملة: الفعل في المضارع البسيط",
+          pts: [
+            "مع {he / she / it} نضيف {s} لغالبية الأفعال: {play → plays}. ولو الفعل ينتهي بـ {ch, sh, s, x, o} نضيف {es}: {watch → watches}, {wash → washes}, {go → goes}. ولو ينتهي بحرف ساكن + y نقلبها {ies}: {study → studies}.",
+            "النفي دائمًا بالفعل المساعد {don't / doesn't} + الفعل في صورته الأصلية بدون s: {I don't like coffee} · {He doesn't play tennis} — القاعدة الذهبية: الفعل المساعد يأخذ التصريف، مش الفعل الأساسي.",
+            "السؤال بنفس الفعل المساعد {Do / Does} + فاعل + فعل أصلي: {Do you speak English?} · {Does he like apples?}",
+            "الإجابة القصيرة تكرر الفعل المساعد اللي في السؤال فقط، مش الفعل الأساسي: {Do you like tea? — Yes, I do. / No, I don't.} · {Does Ali play tennis? — Yes, he does. / No, he doesn't.}",
+            "تذكير بالضمائر: {he, she, it} = مفرد غائب (يحتاج s/es في المثبت و{does} في السؤال/النفي) · {I, you, we, they} = (الفعل في صورته الأصلية بدون s، و{do} في السؤال/النفي)."
+          ],
+          qs: [
+            { t: "mcq", q: "My brother ___ in Cairo. (live)", o: ["live", "lives", "living"], a: "lives", why: "brother مفرد غائب (he) فنضيف s للفعل: live → lives." },
+            { t: "fill", q: "She ___ tennis. (play)", a: ["plays"], why: "she مفرد غائب فنضيف s: play → plays." },
+            { t: "mcq", q: "The baby ___ at night. (sleep)", o: ["sleep", "sleeps", "sleeping"], a: "sleeps", why: "baby مفرد غائب (it/he/she) فنضيف s: sleep → sleeps." },
+            { t: "fill", q: "My dad ___ in a shop. (work)", a: ["works"], why: "dad مفرد غائب فنضيف s: work → works." },
+            { t: "mcq", q: "Negative: \"They live near the school.\" →", o: ["They don't live near the school.", "They doesn't live near the school.", "They not live near the school."], a: "They don't live near the school.", why: "they جمع فننفي بـ don't + الفعل الأصلي live." },
+            { t: "mcq", q: "Negative: \"Mona watches TV in the morning.\" →", o: ["Mona doesn't watches TV in the morning.", "Mona doesn't watch TV in the morning.", "Mona don't watch TV in the morning."], a: "Mona doesn't watch TV in the morning.", why: "Mona مفرد غائب فننفي بـ doesn't، والفعل يرجع لصورته الأصلية watch بدون es." },
+            { t: "fill", q: "Do you like tea? Yes, I ___.", a: ["do"], why: "الإجابة القصيرة تكرر الفعل المساعد Do فقط." },
+            { t: "fill", q: "Does Ali play tennis? No, he ___.", a: ["doesn't"], why: "الإجابة القصيرة تكرر الفعل المساعد Does منفيًا: doesn't." },
+            { t: "mcq", q: "Correct the mistake: \"She like apples.\"", o: ["She likes apples.", "She liking apples.", "She do like apples."], a: "She likes apples.", why: "she مفرد غائب فيلزم likes مش like." },
+            { t: "mcq", q: "Correct the mistake: \"Does they go to school?\"", o: ["Do they go to school?", "Does they goes to school?", "Do they goes to school?"], a: "Do they go to school?", why: "they جمع فيلزم Do مش Does، والفعل يرجع لصورته الأصلية go." },
+            { t: "order", q: "رتّب الكلمات لتكوين سؤال صحيح", words: ["English", "you", "Do", "speak"], a: ["Do", "you", "speak", "English"], why: "ترتيب السؤال: Do/Does + فاعل + فعل أصلي + مفعول." }
+          ]
+        },
+        {
           id: "dlg1", icon: "D", kind: "dialogue", unlockAfter: 4, title: "محادثة: التعارف",
           pts: ["كمّلت أهم القواعد الأساسية، جاهز تشوفها شغالة في محادثة حقيقية. اقرأ الحوار بعناية، وبعدين هتجاوب أسئلة عليه."],
           dialogue: [
@@ -825,6 +852,31 @@ tr:last-child td { border-block-end: 0; }
             { t: "fill", q: "Sara has two ___. (sisters)", a: ["sisters"] , why: "قالت في الحوار: I have two sisters." },
             { t: "mcq", q: "\"تشرفت بيك\" بالإنجليزي", o: ["Nice to meet you", "How are you", "See you later"], a: "Nice to meet you" , why: "العبارة القياسية عند التعارف لأول مرة." }
           ]
+        },
+        {
+          id: "dlg2", icon: "D", kind: "dialogue", unlockAfter: 8, title: "محادثة: يوم عادي",
+          pts: ["حوار قصير يجمع المضارع البسيط والنفي والسؤال والملكية بـ 's مع بعض. اقرأه كويس وبعدين جاوب الأسئلة."],
+          dialogue: [
+            { who: "a", en: "Hi Mona! What do you do every day?", ar: "أهلًا منى! بتعملي إيه كل يوم؟" },
+            { who: "b", en: "Hi Sara! I go to school at 7.", ar: "أهلًا سارة! بروح المدرسة الساعة 7." },
+            { who: "a", en: "Do you like school?", ar: "بتحبي المدرسة؟" },
+            { who: "b", en: "Yes, I do. I like English and football.", ar: "أيوه. بحب الإنجليزي وكورة القدم." },
+            { who: "a", en: "What about your brother?", ar: "طيب أخوكي عامل إيه؟" },
+            { who: "b", en: "He doesn't go to school. He works in a shop.", ar: "هو مش بيروح المدرسة. بيشتغل في محل." },
+            { who: "a", en: "Does he like his job?", ar: "بيحب شغله؟" },
+            { who: "b", en: "Yes, he does. He likes it a lot.", ar: "أيوه. بيحبه قوي." },
+            { who: "a", en: "Where is your bag?", ar: "فين شنطتك؟" },
+            { who: "b", en: "It's on my brother's chair.", ar: "على كرسي أخويا." }
+          ],
+          qs: [
+            { t: "mcq", q: "What time does Mona go to school?", o: ["7", "8", "9"], a: "7", why: "قالت: I go to school at 7." },
+            { t: "mcq", q: "Does Mona like school?", o: ["Yes, she does.", "No, she doesn't.", "We don't know."], a: "Yes, she does.", why: "قالت: Yes, I do. I like English and football." },
+            { t: "mcq", q: "Mona's brother ___ go to school.", o: ["doesn't", "don't", "isn't"], a: "doesn't", why: "brother مفرد غائب فيلزم doesn't." },
+            { t: "fill", q: "Mona's brother works in a ___.", a: ["shop"], why: "قالت منى: He works in a shop." },
+            { t: "mcq", q: "Where is Mona's bag?", o: ["On her brother's chair.", "In the school.", "On the bus."], a: "On her brother's chair.", why: "قالت: It's on my brother's chair." },
+            { t: "fill", q: "\"على كرسي أخويا\" بالإنجليزي: It's on my brother ___ chair.", a: ["'s"], why: "نضيف 's بعد brother مباشرة للدلالة على الملكية." },
+            { t: "mcq", q: "\"بتحبي المدرسة؟\" بالإنجليزي", o: ["Do you like school?", "Does you like school?", "You like school?"], a: "Do you like school?", why: "مع you نستخدم Do في السؤال، مش Does." }
+          ]
         }
       ],
       vocab: [
@@ -841,7 +893,14 @@ tr:last-child td { border-block-end: 0; }
         ["will", "سوف (فعل مساعد للمستقبل)", "I will call you tomorrow.", 2], ["tomorrow", "غدًا", "I will see you tomorrow.", 1],
         ["tonight", "الليلة", "We are going to watch a movie tonight.", 1], ["next week", "الأسبوع القادم", "She is going to travel next week.", 2],
         ["soon", "قريبًا", "He will finish soon.", 2], ["plan", "خطة / يخطط", "We plan to visit Jeddah.", 2],
-        ["its", "ملكه / ملكها (لغير العاقل)", "The dog wagged its tail.", 2]
+        ["its", "ملكه / ملكها (لغير العاقل)", "The dog wagged its tail.", 2],
+        ["apple", "تفاحة", "I have an apple.", 1], ["dog", "كلب", "She has a dog.", 1], ["egg", "بيضة", "He eats an egg for breakfast.", 1],
+        ["elephant", "فيل", "We see an elephant at the zoo.", 2], ["orange", "برتقالة", "Tom has an orange.", 1], ["bag", "حقيبة / شنطة", "Where is your bag?", 1],
+        ["milk", "لبن", "I like milk.", 1], ["tennis", "تنس", "Does Ali play tennis?", 2], ["bus", "أتوبيس", "The bus stops here.", 1],
+        ["lunch", "غداء", "They eat lunch at home.", 1], ["shop", "محل", "My brother works in a shop.", 1], ["rain", "مطر / تمطر", "It rains in winter.", 1],
+        ["coffee", "قهوة", "Do you like coffee?", 1], ["fish", "سمك", "We eat fish every day.", 1], ["tea", "شاي", "Do you like tea?", 1],
+        ["drink", "يشرب", "We drink water every day.", 1], ["eat", "يأكل", "They eat lunch at home.", 1], ["live", "يعيش / يسكن", "My brother lives in Cairo.", 1],
+        ["speak", "يتكلم", "Do you speak English?", 1], ["wash", "يغسل", "You wash your hands.", 2]
       ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
     },
     iso: {
@@ -1892,5 +1951,13 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
+</script>
 </body>
 </html>
