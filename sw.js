@@ -1,5 +1,5 @@
 // مسار service worker: يفتح الموقع بسرعة ويعمل دون إنترنت للواجهة (البيانات تتزامن عند الاتصال)
-const CACHE = "masar-v10";
+const CACHE = "masar-v11";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -33,7 +33,10 @@ self.addEventListener("push", (e) => {
     badge: "./icon-192.png",
     dir: "rtl",
     lang: "ar",
-    tag: "masar-daily"
+    tag: "masar-daily-" + Date.now(),
+    requireInteraction: true,
+    silent: false,
+    vibrate: [200, 100, 200]
   }));
 });
 self.addEventListener("notificationclick", (e) => {
