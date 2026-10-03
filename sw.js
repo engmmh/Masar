@@ -1,5 +1,5 @@
 // مسار service worker: يفتح الموقع بسرعة ويعمل دون إنترنت للواجهة (البيانات تتزامن عند الاتصال)
-const CACHE = "masar-v9";
+const CACHE = "masar-v10";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -18,5 +18,28 @@ self.addEventListener("fetch", (e) => {
   e.respondWith(caches.match(req).then((hit) => {
     const net = fetch(req).then((r) => { if (r && (r.ok || r.type === "opaque")) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); } return r; }).catch(() => hit);
     return hit || net;
+  }));
+});
+
+// تذكير يومي (كلمة/جملة إنجليزي) عبر Web Push
+self.addEventListener("push", (e) => {
+  let data = {};
+  try { data = e.data ? e.data.json() : {}; } catch (er) {}
+  const title = data.title || "مسار";
+  const body = data.body || "";
+  e.waitUntil(self.registration.showNotification(title, {
+    body,
+    icon: "./icon-192.png",
+    badge: "./icon-192.png",
+    dir: "rtl",
+    lang: "ar",
+    tag: "masar-daily"
+  }));
+});
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: "window" }).then((list) => {
+    for (const c of list) { if ("focus" in c) return c.focus(); }
+    if (self.clients.openWindow) return self.clients.openWindow("./");
   }));
 });

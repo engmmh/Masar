@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#0F5C5A">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -371,6 +367,56 @@ tr:last-child td { border-block-end: 0; }
   }
   function spkBtn(text) {
     return '<button class="spk" data-act="speak" data-txt="' + esc(text) + '" aria-label="استمع للنطق">' + ico("vol") + "</button>";
+  }
+
+  /* ---------------- daily reminder push notifications ---------------- */
+  var VAPID_PUBLIC_KEY = "BLQVA5Z1nDUTLk0hxyPr3-yqd8i_-D0x8GIlaL-I8eXpR7fV2jL7V5suZG1yUeHQi3L-tehs49se-cTNYbqYfgU";
+  function pushSupported() {
+    return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+  }
+  function pushLocalFlag() { try { return localStorage.getItem("masar:push") === "1"; } catch (e) { return false; } }
+  function setPushLocalFlag(v) { try { v ? localStorage.setItem("masar:push", "1") : localStorage.removeItem("masar:push"); } catch (e) { } }
+  function urlB64ToUint8Array(base64) {
+    var pad = "=".repeat((4 - (base64.length % 4)) % 4);
+    var b64 = (base64 + pad).replace(/-/g, "+").replace(/_/g, "/");
+    var raw = atob(b64), out = new Uint8Array(raw.length);
+    for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
+    return out;
+  }
+  function pushCardHTML() {
+    if (!pushSupported()) return "";
+    var on = pushLocalFlag();
+    return '<div class="card row between" style="align-items:center"><div><h3 style="margin:0 0 2px">🔔 تذكير يومي</h3><p class="muted" style="font-size:13px">' +
+      (on ? "مفعّل — هتوصلك كلمة أو جملة إنجليزي كل فترة." : "فعّله عشان توصلك كلمة أو جملة إنجليزي جديدة بانتظام.") + '</p></div>' +
+      (on ? '<button class="btn sm alt" data-act="push-off">إيقاف</button>' : '<button class="btn sm" data-act="push-on">تفعيل</button>') + "</div>";
+  }
+  async function enablePush() {
+    if (!pushSupported()) { toast("الإشعارات مش مدعومة على المتصفح ده."); return; }
+    if (state.mode !== "supa" || !store.uid) { toast("لازم تكون مسجّل دخول بالرمز السري الأول."); return; }
+    try {
+      var perm = await Notification.requestPermission();
+      if (perm !== "granted") { toast("محتاجين إذن الإشعارات عشان تشتغل الخاصية."); return; }
+      var reg = await navigator.serviceWorker.ready;
+      var sub = await reg.pushManager.getSubscription();
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY) });
+      var j = sub.toJSON();
+      var r = await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: "endpoint" });
+      if (r.error) throw r.error;
+      setPushLocalFlag(true); toast("تم تفعيل التذكير اليومي."); render();
+    } catch (e) { toast("تعذّر التفعيل: " + (e && e.message ? e.message : "خطأ غير متوقع")); }
+  }
+  async function disablePush() {
+    try {
+      if (pushSupported()) {
+        var reg = await navigator.serviceWorker.ready;
+        var sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          if (state.mode === "supa" && store.uid) { try { await store.sb.from("masar_push_subs").delete().eq("endpoint", sub.endpoint); } catch (er) { } }
+          await sub.unsubscribe();
+        }
+      }
+    } catch (e) { }
+    setPushLocalFlag(false); toast("تم إيقاف التذكير اليومي."); render();
   }
 
   /* ---------------- prayer times (Umm al-Qura, Riyadh) ---------------- */
@@ -1510,7 +1556,7 @@ tr:last-child td { border-block-end: 0; }
     var t = target(), n = pagesOn(now.key), L = level(), due = dueCards(now).length;
     var miss = state.loaded ? missedList(now).length : 0;
     var alert = miss ? '<div class="card alert"><div class="row between"><div><h2 style="margin:0">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + '</h2><p style="font-size:14px">سجّل القضاء من قسم الصلاة.</p></div><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div></div>' : "";
-    return bannerHTML() + heroHTML(now) + alert +
+    return bannerHTML() + heroHTML(now) + alert + pushCardHTML() +
       '<div class="dual"><div class="stat"><b class="num">' + n + " / " + t + '</b><span>ورد اليوم (صفحة)</span><div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div></div>' +
       '<div class="stat"><b class="num">المستوى ' + L.lv + '</b><span><span class="num">' + L.xp + '</span> نقطة</span><div class="bar amber"><i style="width:' + L.pct + '%"></i></div></div></div>' +
       '<div class="sec-h">الأقسام</div><div class="tiles">' +
@@ -1809,6 +1855,8 @@ tr:last-child td { border-block-end: 0; }
     switch (act) {
       case "lock": lockNow(); break;
       case "speak": speak(el.getAttribute("data-txt")); break;
+      case "push-on": enablePush(); break;
+      case "push-off": disablePush(); break;
       case "theme": var cur = getTheme(), nx = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]; try { localStorage.setItem("masar:theme", nx); } catch (er) { } applyTheme(nx); break;
       case "pv": state.pv = el.getAttribute("data-v"); render(); break;
       case "tab": var tt = el.getAttribute("data-t"); if (tt === "archive") { state.pv = "archive"; tt = "prayer"; } goTab(tt); render(); break;
@@ -1981,13 +2029,5 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
-
-<script>
-if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function () {});
-  });
-}
-</script>
 </body>
 </html>
