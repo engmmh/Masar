@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0F5C5A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -825,6 +829,30 @@ tr:last-child td { border-block-end: 0; }
           ]
         },
         {
+          id: "u10", icon: "10", title: "الأسماء المعدودة وغير المعدودة (Countable & Uncountable)",
+          pts: [
+            "الأسماء المعدودة {countable nouns} يمكن عدّها ولها جمع: {one apple, two apples} · {a brother, two brothers}.",
+            "الأسماء غير المعدودة {uncountable nouns} لا تُعد بالأرقام مباشرة ولا جمع لها: {tea, rice, sugar, water} — لا نقول {two teas} أو {two sugars}.",
+            "السؤال عن الكمية: مع الأسماء غير المعدودة نستخدم {How much}: {How much tea do you need?}. ومع الأسماء المعدودة نستخدم {How many}: {How many brothers do you have?}",
+            "لقياس كمية محددة من اسم غير معدود، نستخدم وعاء أو وحدة + {of}: {a cup of tea} كوب شاي · {a glass of water} كوب مياه · {a bottle of water} زجاجة مياه.",
+            "الفرق بين {need} و{want}: {need} = يحتاج (ضرورة أساسية): {I need water}. أما {want} = يريد (رغبة، مش بالضرورة أساسية): {I want tea}.",
+            "أدوات السؤال الأساسية تيجي في أول الجملة قبل do/does/is: {What} ماذا · {Where} أين · {When} متى · {Who} من."
+          ],
+          qs: [
+            { t: "mcq", q: "\"two apples\" (تفاحتين) هي اسم", o: ["Countable", "Uncountable", "فعل"], a: "Countable", why: "apple يُعد بالأرقام وله جمع (apples)، فهو اسم معدود." },
+            { t: "mcq", q: "\"sugar\" (سكر) هو اسم", o: ["Countable", "Uncountable", "فعل"], a: "Uncountable", why: "sugar لا يُعد بالأرقام مباشرة ولا جمع له، فهو اسم غير معدود." },
+            { t: "mcq", q: "مع الأسماء غير المعدودة (زي tea) نسأل عن الكمية بـ", o: ["How much", "How many", "How often"], a: "How much", why: "How much تُستخدم مع الأسماء غير المعدودة." },
+            { t: "mcq", q: "مع الأسماء المعدودة (زي brothers) نسأل عن الكمية بـ", o: ["How much", "How many", "How often"], a: "How many", why: "How many تُستخدم مع الأسماء المعدودة." },
+            { t: "fill", q: "I need a ___ of tea. (كوب)", a: ["cup"], why: "a cup of tea = كوب شاي، الوحدة المناسبة للشاي." },
+            { t: "fill", q: "I drink a ___ of water. (كوب كبير/زجاجي)", a: ["glass"], why: "a glass of water = كوب مياه." },
+            { t: "mcq", q: "\"يحتاج\" (ضرورة) بالإنجليزي", o: ["need", "want", "like"], a: "need", why: "need تدل على ضرورة أساسية، بعكس want اللي هي رغبة." },
+            { t: "mcq", q: "\"يريد\" (رغبة، مش بالضرورة أساسية) بالإنجليزي", o: ["need", "want", "have"], a: "want", why: "want تدل على رغبة، وليست بالضرورة شيئًا أساسيًا زي need." },
+            { t: "fill", q: "___ is your bag? (أين)", a: ["Where"], why: "Where = أين، أداة سؤال عن المكان." },
+            { t: "fill", q: "___ do you need the money? (متى)", a: ["When"], why: "When = متى، أداة سؤال عن الزمن." },
+            { t: "order", q: "رتّب الكلمات لتكوين سؤال صحيح", words: ["tea", "much", "need", "How", "you", "do"], a: ["How", "much", "tea", "do", "you", "need"], why: "ترتيب السؤال: How much + اسم غير معدود + do/does + فاعل + فعل." }
+          ]
+        },
+        {
           id: "dlg1", icon: "D", kind: "dialogue", unlockAfter: 4, title: "محادثة: التعارف",
           pts: ["كمّلت أهم القواعد الأساسية، جاهز تشوفها شغالة في محادثة حقيقية. اقرأ الحوار بعناية، وبعدين هتجاوب أسئلة عليه."],
           dialogue: [
@@ -896,7 +924,13 @@ tr:last-child td { border-block-end: 0; }
         ["lunch", "غداء", "They eat lunch at home.", 1], ["shop", "محل", "My brother works in a shop.", 1], ["rain", "مطر / تمطر", "It rains in winter.", 1],
         ["coffee", "قهوة", "Do you like coffee?", 1], ["fish", "سمك", "We eat fish every day.", 1], ["tea", "شاي", "Do you like tea?", 1],
         ["drink", "يشرب", "We drink water every day.", 1], ["eat", "يأكل", "They eat lunch at home.", 1], ["live", "يعيش / يسكن", "My brother lives in Cairo.", 1],
-        ["speak", "يتكلم", "Do you speak English?", 1], ["wash", "يغسل", "You wash your hands.", 2]
+        ["speak", "يتكلم", "Do you speak English?", 1], ["wash", "يغسل", "You wash your hands.", 2],
+        ["glass", "كوب (زجاجي)", "I drink a glass of water.", 1], ["bottle", "زجاجة", "She has a bottle of water.", 1],
+        ["need", "يحتاج", "I need a cup of tea.", 1], ["want", "يريد", "What do you want?", 1],
+        ["cup", "كوب / فنجان", "He needs a cup of tea.", 1], ["rice", "أرز", "We eat rice for lunch.", 1],
+        ["sugar", "سكر", "Do you have sugar?", 1], ["breakfast", "فطار", "I eat a good breakfast.", 1],
+        ["water", "مياه", "I drink a bottle of water.", 1], ["when", "متى", "When do you need the money?", 1],
+        ["who", "من", "Who is your teacher?", 1]
       ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
     },
     iso: {
@@ -1947,5 +1981,13 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+}
+</script>
 </body>
 </html>
