@@ -1,5 +1,5 @@
 // مسار service worker: يفتح الموقع بسرعة ويعمل دون إنترنت للواجهة (البيانات تتزامن عند الاتصال)
-const CACHE = "masar-v11";
+const CACHE = "masar-v12";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -27,6 +27,7 @@ self.addEventListener("push", (e) => {
   try { data = e.data ? e.data.json() : {}; } catch (er) {}
   const title = data.title || "مسار";
   const body = data.body || "";
+  const en = data.en || "";
   e.waitUntil(self.registration.showNotification(title, {
     body,
     icon: "./icon-192.png",
@@ -36,13 +37,21 @@ self.addEventListener("push", (e) => {
     tag: "masar-daily-" + Date.now(),
     requireInteraction: true,
     silent: false,
-    vibrate: [200, 100, 200]
+    vibrate: [200, 100, 200],
+    data: { en }
   }));
 });
 self.addEventListener("notificationclick", (e) => {
   e.notification.close();
-  e.waitUntil(self.clients.matchAll({ type: "window" }).then((list) => {
-    for (const c of list) { if ("focus" in c) return c.focus(); }
-    if (self.clients.openWindow) return self.clients.openWindow("./");
+  const en = (e.notification.data && e.notification.data.en) || "";
+  const target = "./" + (en ? "?speak=" + encodeURIComponent(en) : "");
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+    for (const c of list) {
+      if ("focus" in c) {
+        if (en) c.postMessage({ type: "masar-speak", en: en });
+        return c.focus();
+      }
+    }
+    if (self.clients.openWindow) return self.clients.openWindow(target);
   }));
 });
