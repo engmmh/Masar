@@ -267,11 +267,23 @@ tr:last-child td { border-block-end: 0; }
 .tile.t-exp .ic { color: var(--done); }
 .catchip { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: 14px; }
 .catchip[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: var(--teal-ink); font-weight: 600; }
-.explist { display: grid; gap: 8px; margin-block-start: 10px; }
-.expitem { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.expitem .del { background: none; border: 0; color: var(--miss); min-height: 32px; min-width: 32px; display: grid; place-items: center; }
-.expitem .del svg { width: 18px; height: 18px; }
 .catrow { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 6px 10px; }
+.catdot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+.catname { display: flex; align-items: center; gap: 8px; font-weight: 600; min-width: 0; }
+.catrow2 { padding: 11px 0; }
+.catrow2 + .catrow2 { border-block-start: 1px solid var(--line); }
+.catrow2 .top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-block-end: 7px; }
+.expgroup + .expgroup { margin-block-start: 4px; }
+.datelbl { font-size: 13px; color: var(--muted); font-weight: 600; padding: 14px 0 6px; }
+.expgroup:first-child .datelbl { padding-block-start: 2px; }
+.exprow { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 0; }
+.exprow + .exprow { border-block-start: 1px solid var(--line); }
+.exprow-l { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.exprow-l small { color: var(--muted); font-weight: 400; font-size: 13px; }
+.exprow-r { display: flex; align-items: center; gap: 6px; flex: none; }
+.exprow-r .del { background: none; border: 0; color: var(--muted); min-height: 32px; min-width: 32px; display: grid; place-items: center; border-radius: 8px; }
+.exprow-r .del:active { background: var(--miss-bg); color: var(--miss); }
+.exprow-r .del svg { width: 17px; height: 17px; }
 .tile b { font-family: var(--display); font-size: 18px; font-weight: 600; }
 .tile small { font-size: 12px; color: var(--muted); line-height: 1.45; }
 .tile .badge { position: absolute; top: 8px; inset-inline-start: 8px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--miss); color: #fff; font-size: 12px; font-weight: 600; display: grid; place-items: center; }
@@ -1494,6 +1506,16 @@ tr:last-child td { border-block-end: 0; }
     return Object.keys(m).map(function (c) { return { cat: c, amount: m[c] }; }).sort(function (a, b) { return b.amount - a.amount; });
   }
   function fmtMoney(n) { return (Math.round(n * 100) / 100).toLocaleString("en-US"); }
+  var CAT_COLORS = ["var(--teal)", "var(--amber)", "var(--blue)"];
+  function catColor(name) {
+    var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+    return CAT_COLORS[h % CAT_COLORS.length];
+  }
+  function expDateLabel(key, now) {
+    if (key === now.key) return "اليوم";
+    if (key === addDays(now.key, -1)) return "أمس";
+    return WD[dowOf(key)] + " · " + Number(key.slice(8)) + "/" + Number(key.slice(5, 7));
+  }
   function expHomeSub(now) {
     var mk = monthKey(now.key), sal = state.exp.salary[mk] || 0, tot = expTotalOf(mk);
     if (!sal && !tot) return "سجّل مصاريفك";
@@ -1522,14 +1544,24 @@ tr:last-child td { border-block-end: 0; }
       '<div class="row" style="gap:8px;margin-block-start:10px"><button class="btn sm" data-act="exp-save">حفظ المصروف</button><button class="btn sm alt" data-act="exp-add-toggle">إلغاء</button></div></div>';
 
     var catsHTML = !cats.length ? '<p class="muted" style="font-size:14px;margin-block-start:10px">لسه مفيش مصاريف مسجّلة الشهر ده.</p>' :
-      '<div class="explist">' + cats.map(function (c) {
-        var cp = sal ? Math.min(100, Math.round(c.amount / sal * 100)) : 0;
-        return '<div class="expitem" style="display:block"><div class="row between"><b>' + esc(c.cat) + '</b><span class="num">' + fmtMoney(c.amount) + (sal ? " · " + cp + "%" : "") + '</span></div>' + (sal ? '<div class="bar" style="margin-block-start:6px"><i style="width:' + cp + '%"></i></div>' : "") + "</div>";
+      '<div class="card">' + cats.map(function (c) {
+        var cp = sal ? Math.min(100, Math.round(c.amount / sal * 100)) : (tot ? Math.round(c.amount / tot * 100) : 0);
+        var clr = catColor(c.cat);
+        return '<div class="catrow2"><div class="top"><span class="catname"><i class="catdot" style="background:' + clr + '"></i>' + esc(c.cat) + '</span><span class="num">' + fmtMoney(c.amount) + (sal ? " · " + cp + "%" : "") + '</span></div>' +
+          '<div class="bar"><i style="width:' + cp + "%;background:" + clr + '"></i></div></div>';
       }).join("") + "</div>";
 
+    var groups = [], gi = {};
+    items.forEach(function (it) {
+      if (!gi.hasOwnProperty(it.date)) { gi[it.date] = groups.length; groups.push({ date: it.date, items: [] }); }
+      groups[gi[it.date]].items.push(it);
+    });
     var itemsHTML = !items.length ? "" :
-      '<div class="sec-h">كل المصاريف</div><div class="explist">' + items.map(function (it) {
-        return '<div class="expitem"><div><b>' + esc(it.cat) + '</b><div class="muted" style="font-size:12px">' + it.date + (it.note ? " · " + esc(it.note) : "") + '</div></div><div class="row" style="gap:8px"><span class="num">' + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-del" data-id="' + it.id + '" aria-label="حذف">' + ico("trash") + "</button></div></div>";
+      '<div class="sec-h">كل المصاريف</div><div class="card">' + groups.map(function (g) {
+        return '<div class="expgroup"><div class="datelbl">' + expDateLabel(g.date, now) + '</div>' + g.items.map(function (it) {
+          var clr = catColor(it.cat);
+          return '<div class="exprow"><div class="exprow-l"><i class="catdot" style="background:' + clr + '"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '</div><div class="exprow-r"><span class="num">' + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-del" data-id="' + it.id + '" aria-label="حذف">' + ico("trash") + "</button></div></div>";
+        }).join("") + "</div>";
       }).join("") + "</div>";
 
     return '<div class="row between" style="margin-block:6px 4px">' +
