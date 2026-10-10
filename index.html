@@ -931,6 +931,30 @@ tr:last-child td { border-block-end: 0; }
           ]
         },
         {
+          id: "u11", icon: "11", title: "تابع المعدود وغير المعدود: الجمع الشاذ وأدوات السؤال",
+          pts: [
+            "بعض الأسماء جمعها شاذ (مش بإضافة s): {child → children} طفل، {man → men} رجل، {woman → women} امرأة، {foot → feet} قدم.",
+            "وحدات تانية لقياس الأسماء غير المعدودة زي {a cup of tea}: {a glass of water} كوب مياه · {a bottle of milk} زجاجة لبن · {a bowl of rice} طبق أرز · {a piece of bread} رغيف خبز · {a piece of information} معلومة واحدة.",
+            "بعض الأسماء تبقى معدودة أو غير معدودة حسب المعنى: {chicken} كحيوان = معدود {a chicken, two chickens}، لكن كطعام = غير معدود {I eat chicken}.",
+            "نفس الفكرة مع {paper}: كخامة (ورق) = غير معدود {made of paper}، لكن كمستند أو جريدة = معدود {I have a paper to read}.",
+            "{What} نسأل بيها عن شيء أو معلومة: {What is this? — It is a book.} و{What do you eat for breakfast?}",
+            "{How many} + اسم معدود جمع: {How many books are there?} · {How much} + اسم غير معدود: {How much water is in the glass?}"
+          ],
+          qs: [
+            { t: "mcq", q: "Plural of child", o: ["childs", "children", "childes"], a: "children", why: "child جمعها شاذ: children، مش بإضافة s." },
+            { t: "mcq", q: "Plural of man", o: ["mans", "men", "manes"], a: "men", why: "man جمعها شاذ: men." },
+            { t: "fill", q: "foot → ___ (الجمع)", a: ["feet"], why: "foot جمعها شاذ: feet." },
+            { t: "mcq", q: "I drink a ___ of water.", o: ["glass", "piece", "bowl"], a: "glass", why: "a glass of water = كوب مياه، تعبير ثابت." },
+            { t: "mcq", q: "We need a ___ of bread.", o: ["glass", "piece", "bottle"], a: "piece", why: "a piece of bread = رغيف/قطعة خبز." },
+            { t: "mcq", q: "\"chicken\" لما تقصد بيها أكل (طعام) تبقى اسم", o: ["Countable", "Uncountable"], a: "Uncountable", why: "كطعام، chicken غير معدودة: I eat chicken." },
+            { t: "mcq", q: "\"chicken\" لما تقصد بيها حيوان في المزرعة تبقى اسم", o: ["Countable", "Uncountable"], a: "Countable", why: "كحيوان، تُعد: a chicken, two chickens." },
+            { t: "fill", q: "___ is your birthday? — It is in May. (ماذا/متى)", a: ["When"], why: "When = متى، والإجابة فيها شهر، يعني زمن." },
+            { t: "fill", q: "___ do you eat for breakfast? — Bread and eggs.", a: ["What"], why: "What نسأل بيها عن حاجة (الفطار)." },
+            { t: "mcq", q: "How ___ students are in the class?", o: ["much", "many", "often"], a: "many", why: "students اسم معدود جمع، فنستخدم How many." },
+            { t: "order", q: "رتّب الكلمات لتكوين سؤال صحيح", words: ["water", "is", "the", "How", "much", "in", "glass"], a: ["How", "much", "water", "is", "in", "the", "glass"], why: "ترتيب السؤال: How much + اسم غير معدود + is + in the + مكان." }
+          ]
+        },
+        {
           id: "dlg1", icon: "D", kind: "dialogue", unlockAfter: 4, title: "محادثة: التعارف",
           pts: ["كمّلت أهم القواعد الأساسية، جاهز تشوفها شغالة في محادثة حقيقية. اقرأ الحوار بعناية، وبعدين هتجاوب أسئلة عليه."],
           dialogue: [
@@ -1008,7 +1032,12 @@ tr:last-child td { border-block-end: 0; }
         ["cup", "كوب / فنجان", "He needs a cup of tea.", 1], ["rice", "أرز", "We eat rice for lunch.", 1],
         ["sugar", "سكر", "Do you have sugar?", 1], ["breakfast", "فطار", "I eat a good breakfast.", 1],
         ["water", "مياه", "I drink a bottle of water.", 1], ["when", "متى", "When do you need the money?", 1],
-        ["who", "من", "Who is your teacher?", 1]
+        ["who", "من", "Who is your teacher?", 1],
+        ["chicken", "دجاجة / دجاج", "I eat chicken for lunch.", 1], ["paper", "ورق / جريدة", "This bag is made of paper.", 1],
+        ["bread", "خبز", "We need a piece of bread.", 1], ["furniture", "أثاث", "We bought new furniture for the house.", 2],
+        ["information", "معلومات", "I need more information about the job.", 2], ["foot", "قدم", "He hurt his foot.", 1],
+        ["child", "طفل", "The child is playing outside.", 1], ["man", "رجل", "The man is a teacher.", 1],
+        ["woman", "امرأة", "The woman is from Jeddah.", 1]
       ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
     },
     iso: {
