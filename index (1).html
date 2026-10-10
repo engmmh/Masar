@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0F5C5A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -264,6 +268,23 @@ tr:last-child td { border-block-end: 0; }
 .catchip { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 14px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface); color: var(--text); font-size: 14px; }
 .catchip[aria-pressed="true"] { background: var(--teal); border-color: var(--teal); color: var(--teal-ink); font-weight: 600; }
 .catrow { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 6px 10px; }
+.card.daily { background: linear-gradient(135deg, var(--teal), #0a3f3e); color: var(--teal-ink); }
+.card.daily h3 { color: var(--teal-ink); }
+.card.daily p.muted { color: var(--teal-ink); opacity: .82; }
+.card.daily .btn { background: var(--teal-ink); color: var(--teal); border-color: var(--teal-ink); }
+.card.daily.done { background: var(--surface); color: var(--text); border: 1px solid var(--line); }
+.card.daily.done h3, .card.daily.done p.muted { color: inherit; opacity: 1; }
+.badgerow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-block-end: 14px; }
+.badge { display: grid; gap: 4px; justify-items: center; background: none; border: 0; padding: 4px; text-align: center; }
+.badge .ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface2); color: var(--muted); }
+.badge .ic svg { width: 22px; height: 22px; }
+.badge.on .ic { background: var(--amber-bg); color: var(--amber); }
+.badge small { font-size: 11px; color: var(--muted); line-height: 1.3; }
+.spkword { text-align: center; margin-block: 14px; }
+.miccal { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 100%; min-height: 84px; border-radius: 16px; border: 2px dashed var(--line); background: var(--surface2); color: var(--teal); margin-block-end: 10px; }
+.miccal svg { width: 30px; height: 30px; }
+.miccal.on { border-color: var(--teal); border-style: solid; background: var(--done-bg); color: var(--done); }
+.miccal span { font-size: 14px; font-weight: 600; }
 .catdot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
 .catname { display: flex; align-items: center; gap: 8px; font-weight: 600; min-width: 0; }
 .catrow2 { padding: 11px 0; }
@@ -504,14 +525,15 @@ tr:last-child td { border-block-end: 0; }
 
   /* ---------------- state ---------------- */
   var today0 = nowR().key;
+  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null }; }
   var state = {
     loaded: false, mode: "local",
     settings: { startDate: today0, unit: "page", amount: 5, startPage: 1 },
     days: {},
-    learn: { xp: 0, units: {}, cards: {}, mistakes: {}, study: {} },
+    learn: freshLearn(),
     exp: { categories: [], items: [], salary: {} },
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
-    tab: "home", pv: "today", archiveN: 30, lv: { mode: "courses" }, quiz: null, card: null
+    tab: "home", pv: "today", archiveN: 30, lv: { mode: "courses" }, quiz: null, card: null, spk: null
   };
   var ready = { days: false, settings: false, learn: false, exp: false };
 
@@ -606,7 +628,7 @@ tr:last-child td { border-block-end: 0; }
       store.root.collection("meta").doc("learn").onSnapshot(function (s) {
         if (s.exists && !dirty["meta:learn"]) {
           var d = s.data();
-          state.learn = Object.assign({ xp: 0, units: {}, cards: {}, mistakes: {}, study: {} }, d);
+          state.learn = Object.assign(freshLearn(), d);
         }
         ready.learn = true; checkLoaded(); if (state.loaded && state.tab !== "learn") render();
       }, fail);
@@ -1472,9 +1494,10 @@ tr:last-child td { border-block-end: 0; }
     }
   };
   var COURSE_ORDER = ["en", "iso", "iso14001"];
-  var QINDEX = {};
+  var QINDEX = {}, UNIT_BY_KEY = {};
   COURSE_ORDER.forEach(function (cid) {
     COURSES[cid].units.forEach(function (u) {
+      UNIT_BY_KEY[cid + ":" + u.id] = u;
       u.qs.forEach(function (q, i) { q.id = cid + "-" + u.id + "-q" + i; q.u = u.id; q.c = cid; QINDEX[q.id] = q; });
     });
   });
@@ -1505,6 +1528,96 @@ tr:last-child td { border-block-end: 0; }
   }
   function norm(s) { return String(s).toLowerCase().replace(/[‘’ʼ`]/g, "'").replace(/[.!?]+$/g, "").replace(/\s+/g, " ").trim(); }
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+
+  /* ---------------- achievements (badges) ---------------- */
+  var ACHIEVEMENTS = [
+    { id: "dlg100", icon: "chat", title: "محادثة بلا خطأ", desc: "أنهيت محادثة كاملة بدرجة 100%.",
+      check: function (s) { return Object.keys(s.learn.units).some(function (k) { var u = UNIT_BY_KEY[k]; return u && u.kind === "dialogue" && (s.learn.units[k].best || 0) >= 100; }); } },
+    { id: "fifty", icon: "cap", title: "٥٠ كلمة محفوظة", desc: "وصلت لخمسين كلمة في أعلى مستوى حفظ بالكروت.",
+      check: function (s) { return Object.keys(s.learn.cards).filter(function (id) { return s.learn.cards[id].box >= 3; }).length >= 50; } },
+    { id: "week7", icon: "flame", title: "أسبوع مذاكرة متواصل", desc: "ذاكرت 7 أيام متتالية من غير ما تفوّت يوم.",
+      check: function (s, now) { return studyStreak(now) >= 7; } },
+    { id: "course1", icon: "cert", title: "شهادة إتمام كورس", desc: "أنهيت كل وحدات كورس كامل.",
+      check: function (s) { return COURSE_ORDER.some(function (cid) { var c = COURSES[cid], done = c.units.filter(function (u) { var p = s.learn.units[cid + ":" + u.id]; return p && p.done; }).length; return done >= c.units.length; }); } },
+    { id: "speaker", icon: "vol", title: "متكلم واثق", desc: "خلصت تحدي نطق كامل بدقة 100%.",
+      check: function (s) { return (s.learn.speakBest || 0) >= 100; } }
+  ];
+  function checkAchievements(now) {
+    var got = [];
+    ACHIEVEMENTS.forEach(function (b) {
+      if (!state.learn.badges[b.id] && b.check(state, now)) { state.learn.badges[b.id] = now.key; got.push(b); }
+    });
+    if (got.length) { saveMeta("learn", 0); got.forEach(function (b) { toast("🏆 إنجاز جديد: " + b.title); }); }
+    return got;
+  }
+
+  /* ---------------- daily challenge ---------------- */
+  function dailyPool() {
+    var pool = [];
+    COURSE_ORDER.forEach(function (cid) {
+      COURSES[cid].units.forEach(function (u) {
+        var p = state.learn.units[cid + ":" + u.id];
+        if (p && p.done && u.qs) pool = pool.concat(u.qs.map(function (q) { return q.id; }));
+      });
+    });
+    if (pool.length < 5) pool = Object.keys(QINDEX);
+    return pool;
+  }
+  function todaysDaily(now) {
+    var d = state.learn.daily;
+    return (d && d.key === now.key) ? d : null;
+  }
+  function startDailyChallenge(now) {
+    var d = todaysDaily(now);
+    if (!d) {
+      var pool = dailyPool(); pool = shuffle(pool).slice(0, Math.min(5, pool.length));
+      d = { key: now.key, ids: pool, done: false, score: null };
+      state.learn.daily = d; saveMeta("learn", 0);
+    }
+    var qs = d.ids.map(function (id) { return QINDEX[id]; }).filter(Boolean);
+    if (!qs.length) { toast("كمّل شوية وحدات الأول عشان يتجهز لك تحدي يومي"); return; }
+    state.quiz = { qs: shuffle(qs), i: 0, ok: 0, ans: null, title: "تحدي اليوم", unit: null, daily: true, wrong: [], right: [], pick: [] };
+    state.lv = { mode: "quiz", c: state.lv.c || COURSE_ORDER[0] }; render();
+  }
+
+  /* ---------------- speaking challenge ---------------- */
+  function speechOK() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  function startSpeakChallenge(cid) {
+    var words = shuffle(COURSES[cid].vocab.slice()).slice(0, 8);
+    if (!words.length) return;
+    state.spk = { c: cid, q: words, i: 0, ok: 0, result: null, listening: false };
+    state.lv = { mode: "speak", c: cid }; render();
+  }
+  function spkListen() {
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    var s = state.spk; if (!s || !SR) return;
+    s.result = null; s.listening = true; render();
+    try {
+      var r = new SR(); r.lang = "en-US"; r.maxAlternatives = 1;
+      r.onresult = function (e) {
+        var heard = e.results[0][0].transcript;
+        var target = s.q[s.i].en;
+        var ok = norm(heard) === norm(target) || norm(heard).indexOf(norm(target)) !== -1;
+        if (ok) s.ok++;
+        s.result = { heard: heard, ok: ok }; s.listening = false; render();
+      };
+      r.onerror = function () { s.listening = false; s.result = { heard: "", ok: false, err: true }; render(); };
+      r.onend = function () { if (s.listening) { s.listening = false; render(); } };
+      r.start();
+    } catch (e) { s.listening = false; render(); }
+  }
+  function spkNext(now) {
+    var s = state.spk; if (!s) return;
+    s.i++; s.result = null;
+    if (s.i >= s.q.length) {
+      var pct = Math.round(s.ok / s.q.length * 100);
+      addXp(s.ok * 4, now);
+      state.learn.speakBest = Math.max(state.learn.speakBest || 0, pct);
+      saveMeta("learn", 0);
+      checkAchievements(now);
+    }
+    render();
+  }
 
   /* ---------------- toast ---------------- */
   var toastT;
@@ -1540,6 +1653,13 @@ tr:last-child td { border-block-end: 0; }
     if (key === now.key) return "اليوم";
     if (key === addDays(now.key, -1)) return "أمس";
     return WD[dowOf(key)] + " · " + Number(key.slice(8)) + "/" + Number(key.slice(5, 7));
+  }
+  function dailyCardHTML(now) {
+    var d = todaysDaily(now);
+    if (d && d.done) {
+      return '<div class="card daily done"><div class="row between"><div><h3 style="margin:0">✓ تحدي اليوم خلصته</h3><p class="muted" style="font-size:14px;margin-block-start:4px">نتيجتك: <span class="num">' + d.score + '%</span>. يجيلك تحدي جديد بكرة.</p></div></div></div>';
+    }
+    return '<div class="card daily"><div class="row between"><div><h3 style="margin:0">⚡ تحدي اليوم</h3><p class="muted" style="font-size:14px;margin-block-start:4px">5 أسئلة سريعة من كل اللي اتعلمته، وتاخد نقاط إضافية.</p></div><button class="btn sm" data-act="daily-start">ابدأ</button></div></div>';
   }
   function expHomeSub(now) {
     var mk = monthKey(now.key), sal = state.exp.salary[mk] || 0, tot = expTotalOf(mk);
@@ -1702,7 +1822,7 @@ tr:last-child td { border-block-end: 0; }
     var t = target(), n = pagesOn(now.key), L = level(), due = dueCards(now).length;
     var miss = state.loaded ? missedList(now).length : 0;
     var alert = miss ? '<div class="card alert"><div class="row between"><div><h2 style="margin:0">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + '</h2><p style="font-size:14px">سجّل القضاء من قسم الصلاة.</p></div><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div></div>' : "";
-    return bannerHTML() + heroHTML(now) + alert + pushCardHTML() +
+    return bannerHTML() + heroHTML(now) + alert + pushCardHTML() + dailyCardHTML(now) +
       '<div class="dual"><div class="stat"><b class="num">' + n + " / " + t + '</b><span>ورد اليوم (صفحة)</span><div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div></div>' +
       '<div class="stat"><b class="num">المستوى ' + L.lv + '</b><span><span class="num">' + L.xp + '</span> نقطة</span><div class="bar amber"><i style="width:' + L.pct + '%"></i></div></div></div>' +
       '<div class="sec-h">الأقسام</div><div class="tiles">' +
@@ -1797,6 +1917,7 @@ tr:last-child td { border-block-end: 0; }
     var top = head(now);
     if (v.mode === "quiz") return top + quizHTML();
     if (v.mode === "cards") return top + cardsHTML();
+    if (v.mode === "speak") return top + speakHTML();
     if (v.mode === "unit") return top + unitFlatHTML(v.c, v.u);
     if (v.mode === "lesson") return top + lessonHTML(v.c, v.u, v.step || 0);
     if (v.mode === "dialogue") return top + dialogueHTML(v.c, v.u);
@@ -1810,7 +1931,16 @@ tr:last-child td { border-block-end: 0; }
     return top +
       '<div class="card"><div class="row between"><h2>المستوى <span class="num">' + L.lv + '</span></h2><span class="chip"><span class="num">' + L.xp + '</span> نقطة</span></div>' +
       '<div class="bar amber"><i style="width:' + L.pct + '%"></i></div><p class="muted" style="font-size:14px;margin-block-start:6px">تبقى <span class="num">' + L.need + '</span> نقطة للمستوى التالي' + (studyStreak(now) ? " · مذاكرة متواصلة " + studyStreak(now) + " يوم" : "") + "</p></div>" +
+      badgesHTML() +
       '<div class="sec-h">اختر الكورس</div><div class="units">' + cards + "</div>";
+  }
+  function badgesHTML() {
+    var earned = ACHIEVEMENTS.filter(function (b) { return state.learn.badges[b.id]; }).length;
+    var row = ACHIEVEMENTS.map(function (b) {
+      var on = !!state.learn.badges[b.id];
+      return '<button class="badge' + (on ? " on" : "") + '" data-act="badge-info" data-b="' + b.id + '" aria-label="' + esc(b.title) + '"><span class="ic">' + ico(on ? b.icon : "lock") + "</span><small>" + esc(b.title) + "</small></button>";
+    }).join("");
+    return '<div class="sec-h">الإنجازات · <span class="num">' + earned + "/" + ACHIEVEMENTS.length + '</span></div><div class="badgerow">' + row + "</div>";
   }
   var LVL_LBL = { 0: "الكل", 1: "مبتدئ", 2: "متوسط", 3: "متقدم" };
   function courseHomeHTML(cid, now) {
@@ -1821,7 +1951,9 @@ tr:last-child td { border-block-end: 0; }
     return '<button class="linkbtn" data-act="lcourses">← الكورسات</button>' +
       '<div class="card"><h3>المراجعة اليومية</h3><div class="row wrapr">' +
       '<button class="btn" data-act="cards" data-c="' + cid + '"' + (due ? "" : " disabled") + ">كروت المفردات (" + due + ')</button>' +
-      '<button class="btn alt" data-act="mrev" data-c="' + cid + '"' + (ms ? "" : " disabled") + ">راجع أخطائي (" + ms + ")</button></div>" + lvlChips + "</div>" +
+      '<button class="btn alt" data-act="mrev" data-c="' + cid + '"' + (ms ? "" : " disabled") + ">راجع أخطائي (" + ms + ")</button>" +
+      (c.vocab && c.vocab.length ? '<button class="btn alt" data-act="speak-start" data-c="' + cid + '">' + ico("vol") + " تحدي النطق</button>" : "") +
+      "</div>" + lvlChips + "</div>" +
       '<div class="row between" style="margin-block:14px 4px"><h2>' + esc(c.title) + '</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
       pathHTML(cid, c.units, done);
   }
@@ -1937,7 +2069,9 @@ tr:last-child td { border-block-end: 0; }
       if (pct >= 80 && !p.done) { p.done = true; gain += 30; }
       state.learn.units[z.unit] = p;
     }
+    if (z.daily && state.learn.daily) { state.learn.daily.done = true; state.learn.daily.score = pct; gain += 15; }
     z.gain = gain; addXp(gain, now); saveMeta("learn", 0);
+    checkAchievements(now);
   }
   function cardsHTML() {
     var c = state.card; if (!c) return "";
@@ -1946,6 +2080,22 @@ tr:last-child td { border-block-end: 0; }
     var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + spkBtn(w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
     return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + " · " + (LVL_LBL[w.lvl || 1]) + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
       (c.flip ? '<div class="row"><button class="btn grow" data-act="know" data-v="1">عرفتها</button><button class="btn alt grow" data-act="know" data-v="0">لم أعرفها</button></div>' : "") + "</div>";
+  }
+  function speakHTML() {
+    var s = state.spk; if (!s) return "";
+    if (!speechOK()) return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><h2>مش متاح على المتصفح ده</h2><p class="muted" style="margin-block:6px 0">تحدي النطق محتاج متصفح بيدعم التعرف على الصوت، زي Chrome على أندرويد. جرّب تفتح الموقع من Chrome.</p><button class="btn" data-act="lhome">رجوع</button></div>';
+    if (s.i >= s.q.length) {
+      var pct = Math.round(s.ok / s.q.length * 100);
+      return '<div class="card"><h2>' + (pct >= 80 ? "نطق ممتاز" : (pct >= 50 ? "نطق جيد" : "محتاج تمرين أكتر")) + '</h2><p style="font-size:20px" class="num">' + s.ok + " / " + s.q.length + " (" + pct + '%)</p><button class="btn" data-act="lhome">رجوع</button></div>';
+    }
+    var w = s.q[s.i];
+    var masked = w.ex ? esc(w.ex).replace(new RegExp(w.en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), "．．．") : "";
+    var fb = !s.result ? "" : '<div class="fb ' + (s.result.ok ? "ok" : "bad") + '">' + (s.result.err ? "✕ معرفناش نسمعك، جرّب تاني" : (s.result.ok ? "✓ صح! سمعنا: " + esc(s.result.heard) : "✕ سمعنا: " + esc(s.result.heard) + " — الصح: <span class=\"en\">" + esc(w.en) + "</span>" + spkBtn(w.en))) + "</div>";
+    return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">تحدي النطق · ' + (s.i + 1) + " من " + s.q.length + '</div><div class="bar"><i style="width:' + Math.round(s.i / s.q.length * 100) + '%"></i></div>' +
+      '<div class="spkword"><div class="w" style="direction:rtl;font-size:28px">' + esc(w.ar) + "</div>" + (masked ? '<div class="muted en" style="margin-block-start:6px">' + masked + "</div>" : "") + "</div>" +
+      (s.result ? "" : '<button class="miccal' + (s.listening ? " on" : "") + '" data-act="speak-listen">' + ico("vol") + "<span>" + (s.listening ? "باسمع..." : "اضغط واتكلم") + "</span></button>") +
+      fb +
+      (s.result ? '<button class="btn" data-act="speak-next">' + (s.i + 1 >= s.q.length ? "النتيجة" : "التالي") + "</button>" : "") + "</div>";
   }
 
   /* ---------------- render ---------------- */
@@ -2014,9 +2164,9 @@ tr:last-child td { border-block-end: 0; }
       case "pgdone": setPages(Math.max(pagesOn(now.key), target())); toast("تقبّل الله ورد اليوم"); break;
       case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
-      case "lcourses": state.lv = { mode: "courses" }; state.quiz = null; state.card = null; render(); break;
+      case "lcourses": state.lv = { mode: "courses" }; state.quiz = null; state.card = null; state.spk = null; render(); break;
       case "course-open": state.lv = { mode: "home", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
-      case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; render(); break;
+      case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; render(); break;
       case "unit-open": var uoC = el.getAttribute("data-c"), uoU = el.getAttribute("data-u"), uoUnit = unitOf(uoC, uoU);
         state.lv = { mode: uoUnit.kind === "dialogue" ? "dialogue" : "lesson", c: uoC, u: uoU, step: 0 }; $("#p-learn").scrollTop = 0; render(); break;
       case "unit-flat": state.lv = { mode: "unit", c: el.getAttribute("data-c"), u: el.getAttribute("data-u") }; $("#p-learn").scrollTop = 0; render(); break;
@@ -2056,6 +2206,11 @@ tr:last-child td { border-block-end: 0; }
         if (eDate.slice(0, 7) !== curExpMonth(now)) state.expMonth = eDate.slice(0, 7);
         render(); toast("تم تسجيل المصروف"); break;
       case "exp-del": state.exp.items = state.exp.items.filter(function (x) { return x.id !== el.getAttribute("data-id"); }); saveMeta("exp", 200); render(); break;
+      case "daily-start": startDailyChallenge(now); break;
+      case "speak-start": startSpeakChallenge(el.getAttribute("data-c")); break;
+      case "speak-listen": spkListen(); break;
+      case "speak-next": spkNext(now); break;
+      case "badge-info": var bi = ACHIEVEMENTS.filter(function (x) { return x.id === el.getAttribute("data-b"); })[0]; if (bi) toast((state.learn.badges[bi.id] ? "🏆 " : "🔒 ") + bi.title + " — " + bi.desc); break;
     }
   });
   document.addEventListener("keydown", function (e) {
@@ -2095,6 +2250,7 @@ tr:last-child td { border-block-end: 0; }
     state.learn.cards[w.id] = cur;
     c.i++; c.flip = false;
     saveMeta("learn", c.i >= c.q.length ? 0 : 1500);
+    if (yes) checkAchievements(now);
     render();
   }
 
@@ -2140,7 +2296,7 @@ tr:last-child td { border-block-end: 0; }
     var hasSettings = false;
     (m.data || []).forEach(function (r) {
       if (r.name === "settings") { hasSettings = true; if (!dirty["meta:settings"]) Object.assign(state.settings, r.data); }
-      if (r.name === "learn" && !dirty["meta:learn"]) state.learn = Object.assign({ xp: 0, units: {}, cards: {}, mistakes: {}, study: {} }, r.data);
+      if (r.name === "learn" && !dirty["meta:learn"]) state.learn = Object.assign(freshLearn(), r.data);
       if (r.name === "exp" && !dirty["meta:exp"]) state.exp = Object.assign({ categories: [], items: [], salary: {} }, r.data);
     });
     if (!hasSettings && first) { state.settings.startDate = nowR().key; saveMeta("settings"); }
@@ -2151,11 +2307,11 @@ tr:last-child td { border-block-end: 0; }
   async function lockNow() {
     clearInterval(store.poll);
     try { await store.sb.auth.signOut(); } catch (e) { }
-    store.uid = null; state.days = {}; state.learn = { xp: 0, units: {}, cards: {}, mistakes: {}, study: {} };
+    store.uid = null; state.days = {}; state.learn = freshLearn();
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1 };
     state.exp = { categories: [], items: [], salary: {} }; state.expMonth = null; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
-    state.quiz = null; state.card = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; panelCache = {};
+    state.quiz = null; state.card = null; state.spk = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; panelCache = {};
     $("#pager").scrollTo({ left: 0 }); render(); showLock("");
   }
   $("#lockform").addEventListener("submit", function (e) { e.preventDefault(); var v = $("#pin").value.trim(); if (v) unlock(v); });
@@ -2200,5 +2356,38 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+  navigator.serviceWorker.addEventListener("message", function (e) {
+    if (e.data && e.data.type === "masar-speak" && e.data.en) masarSpeakEnglish(e.data.en);
+  });
+}
+function masarSpeakEnglish(text) {
+  try {
+    if (!("speechSynthesis" in window) || !text) return;
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    var say = p.get("speak");
+    if (say) {
+      setTimeout(function () { masarSpeakEnglish(say); }, 500);
+      p.delete("speak");
+      var qs = p.toString();
+      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
