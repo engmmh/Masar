@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0F5C5A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -720,7 +724,7 @@ tr:last-child td { border-block-end: 0; }
     email: "masar-user@example.com",
     prefix: "masar-"
   };
-  var store = { db: null, root: null, sb: null, uid: null };
+  var store = { sb: null, uid: null };
   var LSKEY = "masar:v1";
   function localSave() {
     try { localStorage.setItem(LSKEY, JSON.stringify({ settings: state.settings, days: state.days, learn: state.learn, exp: state.exp })); } catch (e) { }
@@ -754,8 +758,7 @@ tr:last-child td { border-block-end: 0; }
       });
       return;
     }
-    if (state.mode !== "cloud") { localSave(); return; }
-    persist("day:" + key, delay || 0, function () { return store.root.collection("days").doc(key).set(state.days[key] || {}); });
+    localSave();
   }
   function metaData(name) { return name === "settings" ? state.settings : name === "exp" ? state.exp : state.learn; }
   function saveMeta(name, delay) {
@@ -765,52 +768,33 @@ tr:last-child td { border-block-end: 0; }
       });
       return;
     }
-    if (state.mode !== "cloud") { localSave(); return; }
-    persist("meta:" + name, delay || 0, function () { return store.root.collection("meta").doc(name).set(metaData(name)); });
+    localSave();
   }
   function checkLoaded() {
     if (!state.loaded && ready.days && ready.settings && ready.learn && ready.exp) { state.loaded = true; ensureNotesSeed(); render(); }
   }
+  // The Supabase SDK is loaded via a blocking <script> tag before this code runs, so
+  // window.supabase is normally ready immediately. On a flaky connection that script
+  // can occasionally fail to load; retry it once with a fresh request before giving up
+  // on cloud sync for this session (otherwise the app would silently fall back to an
+  // empty local-only account even though the person has a real cloud account).
+  function loadSupabaseScript() {
+    return new Promise(function (resolve) {
+      if (window.supabase) { resolve(true); return; }
+      var done = false, finish = function (ok) { if (done) return; done = true; resolve(ok); };
+      var s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js";
+      s.onload = function () { finish(!!window.supabase); };
+      s.onerror = function () { finish(false); };
+      document.head.appendChild(s);
+      setTimeout(function () { finish(!!window.supabase); }, 6000);
+    });
+  }
   async function initStore() {
-    var db = null, uid = null;
-    try {
-      if (window.claude && window.claude.use) {
-        db = await window.claude.use("db");
-        var user = await window.claude.use("user");
-        uid = user ? await user.id() : null;
-      }
-    } catch (e) { db = null; }
-    if ((!db || !uid) && CFG.url && CFG.key && window.supabase) { initSupa(); return; }
-    if (!db || !uid) {
-      state.mode = "local"; localLoad(); ensureNotesSeed();
-      ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); return;
-    }
-    state.mode = "cloud"; store.db = db;
-    store.root = db.doc("data/users/" + uid + "/app");
-    var fail = function () { state.mode = "local"; localLoad(); ensureNotesSeed(); ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); };
-    try {
-      store.root.collection("days").onSnapshot(function (snap) {
-        snap.docChanges().forEach(function (c) {
-          if (dirty["day:" + c.doc.id]) return;
-          if (c.type === "removed") delete state.days[c.doc.id]; else state.days[c.doc.id] = c.doc.data() || {};
-        });
-        ready.days = true; checkLoaded(); if (state.loaded) render();
-      }, fail);
-      store.root.collection("meta").doc("settings").onSnapshot(function (s) {
-        if (s.exists) { if (!dirty["meta:settings"]) Object.assign(state.settings, s.data()); }
-        else if (!ready.settings) { state.settings.startDate = nowR().key; saveMeta("settings"); }
-        ready.settings = true; checkLoaded(); if (state.loaded) render();
-      }, fail);
-      store.root.collection("meta").doc("learn").onSnapshot(function (s) {
-        if (s.exists && !dirty["meta:learn"]) {
-          var d = s.data();
-          state.learn = Object.assign(freshLearn(), d);
-        }
-        ensureNotesSeed();
-        ready.learn = true; checkLoaded(); if (state.loaded && state.tab !== "learn") render();
-      }, fail);
-    } catch (e) { fail(); }
-    setTimeout(function () { if (!state.loaded) { ready.days = ready.settings = ready.learn = true; checkLoaded(); } }, 6000);
+    if (!window.supabase) await loadSupabaseScript();
+    if (window.supabase && CFG.url && CFG.key) { initSupa(); return; }
+    state.mode = "local"; localLoad(); ensureNotesSeed();
+    ready.days = ready.settings = ready.learn = ready.exp = true; checkLoaded(); render();
   }
 
   /* ---------------- prayer logic ---------------- */
@@ -2584,5 +2568,38 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+  navigator.serviceWorker.addEventListener("message", function (e) {
+    if (e.data && e.data.type === "masar-speak" && e.data.en) masarSpeakEnglish(e.data.en);
+  });
+}
+function masarSpeakEnglish(text) {
+  try {
+    if (!("speechSynthesis" in window) || !text) return;
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    var say = p.get("speak");
+    if (say) {
+      setTimeout(function () { masarSpeakEnglish(say); }, 500);
+      p.delete("speak");
+      var qs = p.toString();
+      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
