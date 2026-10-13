@@ -2482,8 +2482,13 @@ tr:last-child td { border-block-end: 0; }
         btn.disabled = false; return;
       }
       store.uid = r.data.user.id;
-      $("#lock").hidden = true; $("#pin").value = "";
+      $("#pin").value = ""; btn.textContent = "جارٍ التحميل…";
+      // Keep the lock screen up until the real data has actually arrived, instead of
+      // revealing the app shell's empty starting values (0 prayers, level 1, ...) for
+      // the second or two the fetch takes — that brief flash of an empty-looking
+      // account is what used to look like the page "switching" right after login.
       await loadSupa(true);
+      $("#lock").hidden = true; btn.textContent = "دخول";
       clearInterval(store.poll); store.poll = setInterval(function () { if (!document.hidden) loadSupa(false); }, 60000);
     } catch (e) { $("#lockmsg").textContent = "تعذّر الاتصال. تحقق من الإنترنت."; }
     btn.disabled = false;
