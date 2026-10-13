@@ -301,13 +301,23 @@ tr:last-child td { border-block-end: 0; }
 .exprow-r .del { background: none; border: 0; color: var(--muted); min-height: 32px; min-width: 32px; display: grid; place-items: center; border-radius: 8px; }
 .exprow-r .del:active { background: var(--miss-bg); color: var(--miss); }
 .exprow-r .del svg { width: 17px; height: 17px; }
-.notelist { padding-block: 4px; }
-.noterow { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 10px 0; }
-.noterow + .noterow { border-block-start: 1px solid var(--line); }
-.noterow p { margin: 0; font-size: 14px; line-height: 1.65; white-space: pre-wrap; }
-.noterow .del { background: none; border: 0; color: var(--muted); min-height: 32px; min-width: 32px; display: grid; place-items: center; border-radius: 8px; flex: none; }
-.noterow .del:active { background: var(--miss-bg); color: var(--miss); }
-.noterow .del svg { width: 17px; height: 17px; }
+.notecard .del { background: none; border: 0; color: var(--muted); min-height: 32px; min-width: 32px; display: grid; place-items: center; border-radius: 8px; flex: none; }
+.notecard .del:active { background: var(--miss-bg); color: var(--miss); }
+.notecard .del svg { width: 17px; height: 17px; }
+.ntable { margin-block-start: 8px; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.nrow { display: flex; gap: 10px; padding: 9px 12px; font-size: 14px; align-items: baseline; }
+.nrow + .nrow { border-block-start: 1px solid var(--line); }
+.nrow b { flex: 0 0 34%; font-weight: 600; color: var(--muted); }
+.nrow span { flex: 1; min-width: 0; }
+.ndrows { display: grid; gap: 8px; }
+.ndrow { display: flex; gap: 6px; align-items: center; }
+.ndrow .inp { margin: 0; }
+.ndrow .inp:first-child { flex: 0 0 34%; }
+.ndrow .inp:nth-child(2) { flex: 1; min-width: 0; }
+.ndrm { background: none; border: 0; color: var(--muted); flex: none; width: 32px; height: 44px; display: grid; place-items: center; border-radius: 8px; }
+.ndrm:active { background: var(--miss-bg); color: var(--miss); }
+.ndrm svg { width: 16px; height: 16px; }
+.ndrm-ph { flex: none; width: 32px; }
 .hico { display: inline-flex; width: 20px; height: 20px; vertical-align: -4px; color: var(--teal); }
 .hico svg { width: 20px; height: 20px; }
 .tile b { font-family: var(--display); font-size: 18px; font-weight: 600; }
@@ -536,17 +546,65 @@ tr:last-child td { border-block-end: 0; }
   /* ---------------- state ---------------- */
   var today0 = nowR().key;
   var NOTES_SEED_EN = [
-    { id: "seed1", ts: 1700000000000, text: "our / us: {our} قبل الاسم مباشرة (ملكية) زي {our book}. {us} بعد الفعل (مفعول) زي {He knows us}. ماينفعش نقول {This is us book}." },
-    { id: "seed2", ts: 1699999999000, text: "its / it's: {its} من غير فاصلة = ملكية لحاجة أو حيوان {The cat licked its paw}. {it's} باختصار = it is أو it has {It's raining}." },
-    { id: "seed3", ts: 1699999998000, text: "الملكية بـ 's: اسم مفرد {Ahmed's book}. جمع أصلاً بينتهي بـ s، نضيف فاصلة بس من غير s زيادة {the students' books}. جمع شاذ زي children، نرجع لقاعدة المفرد {the children's toys}." },
-    { id: "seed4", ts: 1699999997000, text: "مع he/she/it نضيف s/es للفعل في المضارع البسيط: {play → plays}, {watch → watches}, {study → studies}. وفي النفي والسؤال، do/does هي اللي بتاخد التصريف مش الفعل الأساسي: {He doesn't know} مش {He doesn't knows}، {Does he know?} مش {Does he knows?}." },
-    { id: "seed5", ts: 1699999996000, text: "have / has: I, you, we, they → {have}. he, she, it → {has}. مثال: {She has a car}." },
-    { id: "seed6", ts: 1699999995000, text: "a / an على حسب النطق مش الكتابة: {an hour} (الـ h ساكتة) لكن {a university} (بتتنطق يو)." },
-    { id: "seed7", ts: 1699999994000, text: "الأسماء المعدودة ليها جمع ونسأل عنها بـ {How many}: {How many brothers?}. غير المعدودة (tea, water, sugar) مالهاش جمع ونسأل عنها بـ {How much}: {How much tea?}." },
-    { id: "seed8", ts: 1699999993000, text: "جموع شاذة (مش بـ s): {child → children}, {man → men}, {woman → women}, {foot → feet}." },
-    { id: "seed9", ts: 1699999992000, text: "will / going to: {will} لقرار لحظي وقت الكلام {I will answer it}. {going to} لخطة مرتبة من قبل {I am going to travel next week}." }
+    { id: "p-subj", ts: 1700000012000, title: "ضمائر الفاعل (قبل الفعل)", rows: [
+      { label: "I", ex: "I know you." }, { label: "You", ex: "You are kind." }, { label: "He", ex: "He is my brother." },
+      { label: "She", ex: "She is a teacher." }, { label: "It", ex: "It is a book." }, { label: "We", ex: "We are friends." }, { label: "They", ex: "They are students." }
+    ] },
+    { id: "p-obj", ts: 1700000011000, title: "ضمائر المفعول (بعد الفعل)", rows: [
+      { label: "Me", ex: "She knows me." }, { label: "You", ex: "I know you." }, { label: "Him", ex: "She knows him." },
+      { label: "Her", ex: "I know her." }, { label: "It", ex: "I have it." }, { label: "Us", ex: "He knows us." }, { label: "Them", ex: "I know them." }
+    ] },
+    { id: "p-posadj", ts: 1700000010000, title: "صفات الملكية (قبل الاسم مباشرة)", rows: [
+      { label: "My", ex: "This is my car." }, { label: "Your", ex: "This is your book." }, { label: "His", ex: "This is his phone." },
+      { label: "Her", ex: "This is her bag." }, { label: "Its", ex: "The cat licked its paw." }, { label: "Our", ex: "This is our house." }, { label: "Their", ex: "This is their school." }
+    ] },
+    { id: "p-pospron", ts: 1700000009000, title: "ضمائر الملكية (الضمير يقف لوحده)", rows: [
+      { label: "Mine", ex: "This book is mine." }, { label: "Yours", ex: "That phone is yours." }, { label: "His", ex: "The car is his." },
+      { label: "Hers", ex: "This bag is hers." }, { label: "Ours", ex: "This house is ours." }, { label: "Theirs", ex: "That school is theirs." }
+    ] },
+    { id: "its-vs-its", ts: 1700000008000, title: "its غير it's", rows: [
+      { label: "its (ملكية، من غير فاصلة)", ex: "The cat licked its paw." }, { label: "it's (اختصار it is / it has)", ex: "It's raining." }
+    ] },
+    { id: "apos-s", ts: 1700000007000, title: "الملكية بـ 's", rows: [
+      { label: "اسم مفرد", ex: "Ahmed's book." }, { label: "جمع منتهي بـ s (فاصلة بس)", ex: "the students' books." }, { label: "جمع شاذ (زي المفرد)", ex: "the children's toys." }
+    ] },
+    { id: "a-an", ts: 1700000006000, title: "a أو an (حسب النطق مش الكتابة)", rows: [
+      { label: "قبل صوت متحرك", ex: "an apple, an hour." }, { label: "قبل صوت ساكن", ex: "a car, a university." }
+    ] },
+    { id: "have-has", ts: 1700000005000, title: "have أو has", rows: [
+      { label: "I / you / we / they", ex: "I have a car." }, { label: "he / she / it", ex: "She has a car." }
+    ] },
+    { id: "do-does", ts: 1700000004000, title: "do أو does (في النفي والسؤال)", rows: [
+      { label: "I / you / we / they", ex: "Do you have a car? — I don't know." }, { label: "he / she / it", ex: "Does she have a car? — He doesn't know." }
+    ] },
+    { id: "much-many", ts: 1700000003000, title: "How many أو How much", rows: [
+      { label: "اسم معدود (له جمع)", ex: "How many brothers do you have?" }, { label: "اسم غير معدود (مالوش جمع)", ex: "How much tea do you need?" }
+    ] },
+    { id: "irr-plural", ts: 1700000002000, title: "جموع شاذة (مش بإضافة s)", rows: [
+      { label: "Child", ex: "children" }, { label: "Man", ex: "men" }, { label: "Woman", ex: "women" }, { label: "Foot", ex: "feet" }
+    ] },
+    { id: "will-going", ts: 1700000001000, title: "will أو going to", rows: [
+      { label: "قرار لحظي وقت الكلام", ex: "I will answer it." }, { label: "خطة مرتبة من قبل", ex: "I am going to travel next week." }
+    ] }
   ];
-  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: { en: NOTES_SEED_EN.slice() } }; }
+  function freshDraft() { return { title: "", rows: [{ label: "", ex: "" }, { label: "", ex: "" }] }; }
+  function captureDraft() {
+    var d = state.ndraft; if (!d) return;
+    var t = $("#ndTitle"); if (t) d.title = t.value;
+    d.rows.forEach(function (r, i) {
+      var l = $("#ndLabel" + i), e = $("#ndEx" + i);
+      if (l) r.label = l.value;
+      if (e) r.ex = e.value;
+    });
+  }
+  function ensureNotesSeed() {
+    if (state.learn.notesSeeded) return;
+    if (!state.learn.notes.en) state.learn.notes.en = [];
+    var have = {}; state.learn.notes.en.forEach(function (n) { have[n.id] = true; });
+    NOTES_SEED_EN.forEach(function (n) { if (!have[n.id]) state.learn.notes.en.push(n); });
+    state.learn.notesSeeded = 1; saveMeta("learn", 0);
+  }
+  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0 }; }
   var state = {
     loaded: false, mode: "local",
     settings: { startDate: today0, unit: "page", amount: 5, startPage: 1 },
@@ -614,7 +672,7 @@ tr:last-child td { border-block-end: 0; }
     persist("meta:" + name, delay || 0, function () { return store.root.collection("meta").doc(name).set(metaData(name)); });
   }
   function checkLoaded() {
-    if (!state.loaded && ready.days && ready.settings && ready.learn && ready.exp) { state.loaded = true; render(); }
+    if (!state.loaded && ready.days && ready.settings && ready.learn && ready.exp) { state.loaded = true; ensureNotesSeed(); render(); }
   }
   async function initStore() {
     var db = null, uid = null;
@@ -627,12 +685,12 @@ tr:last-child td { border-block-end: 0; }
     } catch (e) { db = null; }
     if ((!db || !uid) && CFG.url && CFG.key && window.supabase) { initSupa(); return; }
     if (!db || !uid) {
-      state.mode = "local"; localLoad();
+      state.mode = "local"; localLoad(); ensureNotesSeed();
       ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); return;
     }
     state.mode = "cloud"; store.db = db;
     store.root = db.doc("data/users/" + uid + "/app");
-    var fail = function () { state.mode = "local"; localLoad(); ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); };
+    var fail = function () { state.mode = "local"; localLoad(); ensureNotesSeed(); ready.days = ready.settings = ready.learn = true; checkLoaded(); render(); };
     try {
       store.root.collection("days").onSnapshot(function (snap) {
         snap.docChanges().forEach(function (c) {
@@ -651,6 +709,7 @@ tr:last-child td { border-block-end: 0; }
           var d = s.data();
           state.learn = Object.assign(freshLearn(), d);
         }
+        ensureNotesSeed();
         ready.learn = true; checkLoaded(); if (state.loaded && state.tab !== "learn") render();
       }, fail);
     } catch (e) { fail(); }
@@ -1965,19 +2024,35 @@ tr:last-child td { border-block-end: 0; }
     }).join("");
     return '<div class="sec-h">الإنجازات · <span class="num">' + earned + "/" + ACHIEVEMENTS.length + '</span></div><div class="badgerow">' + row + "</div>";
   }
+  function noteCardHTML(cid, n) {
+    var rows = n.rows.map(function (r) {
+      return '<div class="nrow"><b>' + fmtEn(r.label) + "</b><span>" + fmtEn(r.ex) + "</span></div>";
+    }).join("");
+    return '<div class="card notecard"><div class="row between"><h3>' + esc(n.title) + '</h3><button class="del" data-act="note-del" data-c="' + cid + '" data-id="' + n.id + '" aria-label="حذف">' + ico("trash") + "</button></div>" +
+      '<div class="ntable">' + rows + "</div></div>";
+  }
   function notesHTML(cid) {
     var c = COURSES[cid];
     var list = (state.learn.notes[cid] || []).slice().sort(function (a, b) { return b.ts - a.ts; });
-    var rows = list.length ? list.map(function (n) {
-      return '<div class="noterow"><p>' + fmtEn(n.text) + '</p><button class="del" data-act="note-del" data-c="' + cid + '" data-id="' + n.id + '" aria-label="حذف">' + ico("trash") + "</button></div>";
-    }).join("") : '<p class="muted" style="font-size:14px;padding:6px 0">لسه مفيش حاجة محفوظة هنا. اكتب أول قاعدة تحت عايز تفضل فاكرها.</p>';
+    var cardsOut = list.length ? list.map(function (n) { return noteCardHTML(cid, n); }).join("") :
+      '<p class="muted" style="font-size:14px;padding:6px 0">لسه مفيش قاعدة محفوظة هنا. ضيف أول قاعدة من النموذج فوق.</p>';
+    if (!state.ndraft) state.ndraft = freshDraft();
+    var d = state.ndraft;
+    var rowsForm = d.rows.map(function (r, i) {
+      return '<div class="ndrow">' +
+        '<input class="inp" id="ndLabel' + i + '" placeholder="البند، زي: he / she / it" value="' + esc(r.label) + '">' +
+        '<input class="inp" id="ndEx' + i + '" placeholder="مثال: She has a car." value="' + esc(r.ex) + '">' +
+        (d.rows.length > 1 ? '<button class="ndrm" data-act="note-row-del" data-i="' + i + '" aria-label="حذف الصف">' + ico("trash") + "</button>" : '<span class="ndrm-ph"></span>') +
+        "</div>";
+    }).join("");
     return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button>' +
       '<div class="card"><h2><span class="hico">' + ico("pin") + "</span> المهم</h2>" +
-      '<p class="muted" style="font-size:14px;margin-block-end:10px">احفظ هنا أي قاعدة أو حاجة مش عايز تنساها في ' + esc(c.title) + ' — زي الفرق بين our وus، أو امتى تضيف s.</p>' +
-      '<textarea id="noteInput" class="inp" rows="3" placeholder="مثال: our بتتحول us لما الاسم يبقى بعد الفعل مش قبله..."></textarea>' +
-      '<button class="btn sm" data-act="note-add" data-c="' + cid + '" style="margin-block-start:8px">حفظ</button></div>' +
-      '<div class="sec-h">اللي حفظته (' + list.length + ")</div>" +
-      '<div class="card notelist">' + rows + "</div>";
+      '<p class="muted" style="font-size:14px;margin-block-end:12px">قاعدة جديدة في ' + esc(c.title) + '؟ اكتب عنوانها، وتحت كل بند فيها مع مثاله — زي كل ضمير ومثاله لوحده، مش سطر واحد مخلوط.</p>' +
+      '<input class="inp" id="ndTitle" placeholder="عنوان القاعدة، زي: ضمائر الفاعل" value="' + esc(d.title) + '" style="margin-block-end:10px">' +
+      '<div class="ndrows">' + rowsForm + "</div>" +
+      '<button class="linkbtn" data-act="note-row-add" style="margin-block-start:4px">+ إضافة بند</button>' +
+      '<button class="btn sm" data-act="note-add" data-c="' + cid + '" style="margin-block-start:10px;width:100%">حفظ القاعدة</button></div>' +
+      '<div class="sec-h">اللي محفوظ (' + list.length + ")</div>" + cardsOut;
   }
   var LVL_LBL = { 0: "الكل", 1: "مبتدئ", 2: "متوسط", 3: "متقدم" };
   function courseHomeHTML(cid, now) {
@@ -2203,9 +2278,9 @@ tr:last-child td { border-block-end: 0; }
       case "pgdone": setPages(Math.max(pagesOn(now.key), target())); toast("تقبّل الله ورد اليوم"); break;
       case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
-      case "lcourses": state.lv = { mode: "courses" }; state.quiz = null; state.card = null; state.spk = null; render(); break;
+      case "lcourses": state.lv = { mode: "courses" }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
       case "course-open": state.lv = { mode: "home", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
-      case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; render(); break;
+      case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
       case "unit-open": var uoC = el.getAttribute("data-c"), uoU = el.getAttribute("data-u"), uoUnit = unitOf(uoC, uoU);
         state.lv = { mode: uoUnit.kind === "dialogue" ? "dialogue" : "lesson", c: uoC, u: uoU, step: 0 }; $("#p-learn").scrollTop = 0; render(); break;
       case "unit-flat": state.lv = { mode: "unit", c: el.getAttribute("data-c"), u: el.getAttribute("data-u") }; $("#p-learn").scrollTop = 0; render(); break;
@@ -2250,13 +2325,18 @@ tr:last-child td { border-block-end: 0; }
       case "speak-listen": spkListen(); break;
       case "speak-next": spkNext(now); break;
       case "badge-info": var bi = ACHIEVEMENTS.filter(function (x) { return x.id === el.getAttribute("data-b"); })[0]; if (bi) toast((state.learn.badges[bi.id] ? "🏆 " : "🔒 ") + bi.title + " — " + bi.desc); break;
-      case "notes-open": state.lv = { mode: "notes", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
+      case "notes-open": state.lv = { mode: "notes", c: el.getAttribute("data-c") }; state.ndraft = freshDraft(); $("#p-learn").scrollTop = 0; render(); break;
+      case "note-row-add": captureDraft(); state.ndraft.rows.push({ label: "", ex: "" }); render(); break;
+      case "note-row-del": captureDraft(); var nrI = Number(el.getAttribute("data-i")); if (state.ndraft.rows.length > 1) state.ndraft.rows.splice(nrI, 1); render(); break;
       case "note-add":
-        var noC = el.getAttribute("data-c"), noIn = $("#noteInput"), noV = noIn ? noIn.value.trim() : "";
-        if (!noV) { toast("اكتب الحاجة اللي عايز تحفظها الأول"); break; }
+        captureDraft();
+        var noC = el.getAttribute("data-c"), d = state.ndraft, title = d.title.trim();
+        var rowsClean = d.rows.map(function (r) { return { label: r.label.trim(), ex: r.ex.trim() }; }).filter(function (r) { return r.label && r.ex; });
+        if (!title) { toast("اكتب عنوان القاعدة الأول"); break; }
+        if (!rowsClean.length) { toast("ضيف بند واحد على الأقل مع مثاله"); break; }
         if (!state.learn.notes[noC]) state.learn.notes[noC] = [];
-        state.learn.notes[noC].push({ id: "n" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), text: noV, ts: Date.now() });
-        saveMeta("learn", 0); render(); toast("تم الحفظ ف المهم"); break;
+        state.learn.notes[noC].push({ id: "n" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ts: Date.now(), title: title, rows: rowsClean });
+        state.ndraft = freshDraft(); saveMeta("learn", 0); render(); toast("تم الحفظ ف المهم"); break;
       case "note-del":
         var ndC = el.getAttribute("data-c"), ndId = el.getAttribute("data-id");
         if (state.learn.notes[ndC]) state.learn.notes[ndC] = state.learn.notes[ndC].filter(function (x) { return x.id !== ndId; });
@@ -2350,6 +2430,7 @@ tr:last-child td { border-block-end: 0; }
       if (r.name === "exp" && !dirty["meta:exp"]) state.exp = Object.assign({ categories: [], items: [], salary: {} }, r.data);
     });
     if (!hasSettings && first) { state.settings.startDate = nowR().key; saveMeta("settings"); }
+    ensureNotesSeed();
     ready.days = ready.settings = ready.learn = ready.exp = true;
     var wasLoaded = state.loaded; checkLoaded();
     if (wasLoaded && snap() !== before) render();
