@@ -3401,6 +3401,14 @@ tr:last-child td { border-block-end: 0; }
 
   /* ---------------- admin dashboard (account 5912) ---------------- */
   var ADMIN_FN_URL = CFG.url + "/functions/v1/admin-change-password";
+  function recentPages(days, n) {
+    var today = nowR().key, out = [];
+    for (var i = n - 1; i >= 0; i--) {
+      var k = addDays(today, -i);
+      out.push({ key: k, pages: (days[k] && days[k].q) || 0 });
+    }
+    return out;
+  }
   function computeAccountStats(days, learn) {
     var dayKeys = Object.keys(days);
     var completeDays = dayKeys.filter(function (k) {
@@ -3420,7 +3428,7 @@ tr:last-child td { border-block-end: 0; }
       unitsDone += c.units.filter(function (u) { return ((learn.units || {})[cid + ":" + u.id] || {}).done; }).length;
     });
     var lastActive = dayKeys.length ? dayKeys.slice().sort().slice(-1)[0] : null;
-    return { totalDays: dayKeys.length, completeDays: completeDays, totalPages: totalPages, xp: xp, level: level, vocabKnown: vocabKnown, totalVocab: totalVocab, unitsDone: unitsDone, totalUnits: totalUnits, lastActive: lastActive };
+    return { totalDays: dayKeys.length, completeDays: completeDays, totalPages: totalPages, xp: xp, level: level, vocabKnown: vocabKnown, totalVocab: totalVocab, unitsDone: unitsDone, totalUnits: totalUnits, lastActive: lastActive, recent: recentPages(days, 14) };
   }
   function statTile(label, val) {
     return '<div style="min-width:130px;margin:6px 0"><div class="muted" style="font-size:12.5px">' + esc(label) + '</div><div class="num" style="font-size:19px;font-weight:700">' + esc(String(val)) + "</div></div>";
@@ -3442,24 +3450,60 @@ tr:last-child td { border-block-end: 0; }
       '<span class="muted pwmsg" style="font-size:12.5px"></span>' +
       "</form></div>";
   }
+  function adminLegendHTML(stats) {
+    return '<div class="row" style="gap:16px;margin-block-end:10px;font-size:12.5px">' +
+      '<span class="row" style="gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:3px;display:inline-block;background:var(--teal)"></span>' + esc(stats[0].acc.label) + "</span>" +
+      '<span class="row" style="gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:3px;display:inline-block;background:var(--blue)"></span>' + esc(stats[1].acc.label) + "</span>" +
+      "</div>";
+  }
   function adminCompareHTML(stats) {
     var rows = [
-      ["المستوى", function (s) { return "Lv " + s.level; }],
-      ["XP", function (s) { return s.xp; }],
-      ["أيام مسجّلة", function (s) { return s.totalDays; }],
-      ["أيام مكتملة", function (s) { return s.completeDays; }],
-      ["صفحات قرآن", function (s) { return s.totalPages; }],
-      ["كلمات محفوظة", function (s) { return s.vocabKnown + "/" + s.totalVocab; }],
-      ["وحدات مكتملة", function (s) { return s.unitsDone + "/" + s.totalUnits; }],
-      ["آخر نشاط", function (s) { return s.lastActive ? greg(s.lastActive) : "—"; }]
+      ["المستوى", function (s) { return s.level; }, function (s) { return "Lv " + s.level; }],
+      ["XP", function (s) { return s.xp; }, function (s) { return String(s.xp); }],
+      ["أيام مسجّلة", function (s) { return s.totalDays; }, function (s) { return String(s.totalDays); }],
+      ["أيام مكتملة", function (s) { return s.completeDays; }, function (s) { return String(s.completeDays); }],
+      ["صفحات قرآن", function (s) { return s.totalPages; }, function (s) { return String(s.totalPages); }],
+      ["كلمات محفوظة", function (s) { return s.vocabKnown; }, function (s) { return s.vocabKnown + "/" + s.totalVocab; }],
+      ["وحدات مكتملة", function (s) { return s.unitsDone; }, function (s) { return s.unitsDone + "/" + s.totalUnits; }]
     ];
-    var head = '<div class="row between" style="font-weight:700;border-block-end:1px solid var(--line);padding-block-end:8px;margin-block-end:4px">' +
-      "<span>المقياس</span><span>" + esc(stats[0].acc.label) + "</span><span>" + esc(stats[1].acc.label) + "</span></div>";
     var body = rows.map(function (r) {
-      return '<div class="row between" style="padding-block:6px;border-block-end:1px dashed var(--line);font-size:14px">' +
-        '<span class="muted">' + esc(r[0]) + '</span><span class="num">' + esc(String(r[1](stats[0].s))) + '</span><span class="num">' + esc(String(r[1](stats[1].s))) + "</span></div>";
+      var v1 = r[1](stats[0].s), v2 = r[1](stats[1].s), max = Math.max(v1, v2, 1);
+      var w1 = Math.max(2, Math.round((v1 / max) * 100)), w2 = Math.max(2, Math.round((v2 / max) * 100));
+      return '<div style="margin-block-end:10px">' +
+        '<div class="muted" style="font-size:12.5px;margin-block-end:3px">' + esc(r[0]) + "</div>" +
+        '<div class="row" style="align-items:center;gap:6px"><div style="flex:1;height:9px;border-radius:4px;background:var(--surface2);overflow:hidden"><div style="width:' + w1 + '%;height:100%;border-radius:4px;background:var(--teal)"></div></div><span class="num" style="min-width:46px;text-align:end;font-size:12.5px">' + esc(r[2](stats[0].s)) + "</span></div>" +
+        '<div class="row" style="align-items:center;gap:6px;margin-block-start:3px"><div style="flex:1;height:9px;border-radius:4px;background:var(--surface2);overflow:hidden"><div style="width:' + w2 + '%;height:100%;border-radius:4px;background:var(--blue)"></div></div><span class="num" style="min-width:46px;text-align:end;font-size:12.5px">' + esc(r[2](stats[1].s)) + "</span></div>" +
+        "</div>";
     }).join("");
-    return '<div class="card"><h3 style="margin:0 0 10px">مقارنة بين الحسابين</h3>' + head + body + "</div>";
+    var lastRow = '<div class="row between" style="font-size:12.5px;padding-block-start:6px;border-block-start:1px dashed var(--line)"><span class="muted">آخر نشاط</span><span class="num">' +
+      esc(stats[0].acc.label) + ": " + (stats[0].s.lastActive ? greg(stats[0].s.lastActive) : "—") + " · " + esc(stats[1].acc.label) + ": " + (stats[1].s.lastActive ? greg(stats[1].s.lastActive) : "—") + "</span></div>";
+    return '<div class="card"><h3 style="margin:0 0 10px">مقارنة بين الحسابين</h3>' + adminLegendHTML(stats) + body + lastRow + "</div>";
+  }
+  function trendChartSVG(seriesA, seriesB) {
+    var n = seriesA.length;
+    var w = 640, h = 160, padL = 6, padB = 20, padT = 8, padR = 6;
+    var plotW = w - padL - padR, plotH = h - padT - padB;
+    var maxV = Math.max(1, Math.max.apply(null, seriesA.map(function (d) { return d.pages; })), Math.max.apply(null, seriesB.map(function (d) { return d.pages; })));
+    var groupW = plotW / n;
+    var barW = Math.min(13, groupW / 2 - 3);
+    var bars = "";
+    for (var i = 0; i < n; i++) {
+      var gx = padL + i * groupW;
+      var va = seriesA[i].pages, vb = seriesB[i].pages;
+      var ha = Math.max(1, (va / maxV) * plotH), hb = Math.max(1, (vb / maxV) * plotH);
+      var xa = gx + groupW / 2 - barW - 1, xb = gx + groupW / 2 + 1;
+      bars += '<rect x="' + xa.toFixed(1) + '" y="' + (padT + plotH - ha).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + ha.toFixed(1) + '" rx="2" style="fill:var(--teal)"><title>' + esc(seriesA[i].key) + ": " + va + " صفحة</title></rect>";
+      bars += '<rect x="' + xb.toFixed(1) + '" y="' + (padT + plotH - hb).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + hb.toFixed(1) + '" rx="2" style="fill:var(--blue)"><title>' + esc(seriesB[i].key) + ": " + vb + " صفحة</title></rect>";
+      if (i % 2 === 0 || n <= 7) {
+        var lbl = seriesA[i].key.slice(8) + "/" + seriesA[i].key.slice(5, 7);
+        bars += '<text x="' + (gx + groupW / 2).toFixed(1) + '" y="' + (h - 4) + '" text-anchor="middle" font-size="9" style="fill:var(--muted)">' + lbl + "</text>";
+      }
+    }
+    bars += '<line x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (padL + plotW) + '" y2="' + (padT + plotH) + '" style="stroke:var(--line)" stroke-width="1"/>';
+    return '<svg viewBox="0 0 ' + w + " " + h + '" style="width:100%;height:140px;display:block" role="img" aria-label="صفحات القرآن في آخر 14 يوم لكل حساب">' + bars + "</svg>";
+  }
+  function adminTrendCard(stats) {
+    return '<div class="card"><h3 style="margin:0 0 6px">صفحات القرآن — آخر 14 يوم</h3>' + adminLegendHTML(stats) + trendChartSVG(stats[0].s.recent, stats[1].s.recent) + "</div>";
   }
   async function adminChangePassword(form) {
     var uid = form.getAttribute("data-uid");
@@ -3491,6 +3535,7 @@ tr:last-child td { border-block-end: 0; }
       '<div class="row between" style="align-items:center"><h1 style="margin:0">لوحة المتابعة</h1><button class="chip" id="adminlock">قفل</button></div>' +
       stats.map(function (s) { return adminAccountCard(s.acc, s.s); }).join("") +
       adminCompareHTML(stats) +
+      adminTrendCard(stats) +
       "</div>";
     document.body.appendChild(wrap);
     document.getElementById("adminlock").addEventListener("click", function () {
