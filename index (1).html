@@ -348,6 +348,16 @@ tr:last-child td { border-block-end: 0; }
 .ndrm-ph { flex: none; width: 32px; }
 .hico { display: inline-flex; width: 20px; height: 20px; vertical-align: -4px; color: var(--teal); }
 .hico svg { width: 20px; height: 20px; }
+.bankrow { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-block-end: 10px; background: var(--surface); }
+.bankrow.known { border-inline-start: 3px solid var(--teal); }
+.bankrow .bw { display: flex; align-items: center; gap: 8px; }
+.bankrow .bw .en { font-weight: 700; font-size: 17px; font-family: inherit; direction: ltr; }
+.bankrow .ar { color: var(--muted); font-size: 14px; margin-block-start: 2px; }
+.bankrow .bex { font-size: 13.5px; color: var(--text); margin-block-start: 6px; padding-block-start: 6px; border-block-start: 1px dashed var(--line); direction: ltr; text-align: start; }
+.bankchk { margin-block-start: 8px; border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 20px; padding: 5px 12px; font-size: 12.5px; cursor: pointer; }
+.bankchk.on { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); font-weight: 700; }
+.bankhead { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-block-end: 10px; }
+.bankempty { text-align: center; padding: 24px 10px; color: var(--muted); font-size: 14px; }
 .tile b { font-family: var(--display); font-size: 18px; font-weight: 600; }
 .tile small { font-size: 12px; color: var(--muted); line-height: 1.45; }
 .tile .badge { position: absolute; top: 8px; inset-inline-start: 8px; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px; background: var(--miss); color: #fff; font-size: 12px; font-weight: 600; display: grid; place-items: center; }
@@ -881,7 +891,7 @@ tr:last-child td { border-block-end: 0; }
   /* ---------------- learning content ---------------- */
   var COURSES = {
     en: {
-      id: "en", title: "الإنجليزية للمبتدئين", desc: "من كشكولك ومن تمارين المدرّس: 7 وحدات وتدريبات وكروت مفردات.",
+      id: "en", title: "الإنجليزية للمبتدئين", desc: "من كشكولك ومن تمارين المدرّس: 14 وحدة وتدريبات وبنك كلمات.",
       units: [
         {
           id: "u0", icon: "0", title: "الأساسيات",
@@ -1272,7 +1282,56 @@ tr:last-child td { border-block-end: 0; }
         ["early", "مبكرًا", "They get up early.", 1], ["start", "يبدأ", "School starts at eight o'clock.", 1],
         ["finish", "ينتهي", "School finishes at three thirty.", 1], ["drum", "طبلة", "Nick plays the drums.", 2],
         ["read", "يقرأ", "She reads magazines in bed.", 1], ["cinema", "سينما", "They go to the cinema on Saturdays.", 1],
-        ["party", "حفلة", "The children are at a party.", 1]
+        ["party", "حفلة", "The children are at a party.", 1],
+        ["red", "أحمر", "I have a red car.", 1], ["yellow", "أصفر", "She has a yellow bag.", 1],
+        ["blue", "أزرق", "The sky is blue.", 1], ["green", "أخضر", "He likes the green shirt.", 1],
+        ["black", "أسود", "My phone is black.", 1], ["white", "أبيض", "She wears a white dress.", 1],
+        ["brown", "بني", "His eyes are brown.", 1], ["pink", "وردي", "The flowers are pink.", 1],
+        ["one", "واحد", "I have one brother.", 1], ["two", "اثنان", "She has two sisters.", 1],
+        ["three", "ثلاثة", "We have three rooms.", 1], ["four", "أربعة", "There are four chairs.", 1],
+        ["five", "خمسة", "I work five days a week.", 1], ["six", "ستة", "The shop opens at six.", 1],
+        ["seven", "سبعة", "I have seven classes.", 1], ["eight", "ثمانية", "We finish at eight.", 1],
+        ["nine", "تسعة", "The train leaves at nine.", 1], ["ten", "عشرة", "I need ten minutes.", 1],
+        ["eleven", "أحد عشر", "The meeting starts at eleven.", 1], ["twelve", "اثنا عشر", "There are twelve months in a year.", 1],
+        ["thirteen", "ثلاثة عشر", "She is thirteen years old.", 1], ["fourteen", "أربعة عشر", "He is fourteen.", 1],
+        ["fifteen", "خمسة عشر", "We wait fifteen minutes.", 1], ["sixteen", "ستة عشر", "There are sixteen students.", 1],
+        ["seventeen", "سبعة عشر", "I am seventeen.", 1], ["eighteen", "ثمانية عشر", "He turns eighteen next month.", 1],
+        ["nineteen", "تسعة عشر", "It's nineteen minutes past six.", 1], ["twenty", "عشرون", "There are twenty questions.", 1],
+        ["student", "طالب", "I am a student.", 1], ["desk", "مكتب / طاولة", "Put your book on the desk.", 1],
+        ["chair", "كرسي", "Sit on the chair.", 1], ["board", "سبورة", "The teacher writes on the board.", 1],
+        ["school bag", "حقيبة مدرسية", "My school bag is heavy.", 1], ["pencil", "قلم رصاص", "I write with a pencil.", 1],
+        ["pencil case", "مقلمة", "Her pencil case is blue.", 1], ["exercise book", "كراسة", "Write the answer in your exercise book.", 1],
+        ["bike", "دراجة", "He rides his bike to school.", 1], ["house", "بيت", "This is our house.", 1],
+        ["park", "حديقة عامة", "The children play in the park.", 1], ["tree", "شجرة", "There is a big tree in the garden.", 1],
+        ["plane", "طائرة", "We travel by plane.", 1], ["cat", "قطة", "The cat is on the roof.", 1],
+        ["name", "اسم", "What's your name?", 1], ["brother", "أخ", "This is my brother.", 1],
+        ["sister", "أخت", "She is my sister.", 1], ["good", "جيد", "That's a good idea.", 1],
+        ["planet", "كوكب", "Earth is our planet.", 1], ["person", "شخص", "He is a kind person.", 1],
+        ["thing", "شيء", "What's this thing?", 1], ["place", "مكان", "Riyadh is a nice place.", 1],
+        ["girl", "بنت", "The girl is reading a book.", 1], ["friend", "صديق", "She is my best friend.", 1],
+        ["hungry", "جوعان", "I'm hungry, let's eat.", 1], ["thirsty", "عطشان", "He's thirsty after the game.", 1],
+        ["always", "دايمًا", "He's always on time.", 1], ["town", "بلدة", "They live in a small town.", 1],
+        ["hot", "حار", "The tea is hot.", 1], ["cold", "بارد", "The water is cold.", 1],
+        ["big", "كبير", "They have a big house.", 1], ["small", "صغير", "This is a small shop.", 1],
+        ["Greece", "اليونان", "Zoe is from Greece.", 2], ["Italy", "إيطاليا", "Rome is in Italy.", 2],
+        ["sunny", "مشمس", "It's sunny today.", 2], ["warm", "دافئ", "The weather is warm.", 2],
+        ["favourite", "المفضل", "What's your favourite food?", 1], ["dictionary", "قاموس", "I use a dictionary to check new words.", 2],
+        ["grammar book", "كتاب قواعد", "She has a grammar book.", 2], ["useful", "مفيد", "This app is useful.", 2],
+        ["banana", "موزة", "He eats a banana every morning.", 1], ["sandwich", "ساندويتش", "I have a cheese sandwich for lunch.", 1],
+        ["spoon", "ملعقة", "Use a spoon to eat the soup.", 1], ["plate", "طبق", "Put the food on the plate.", 1],
+        ["cake", "كيكة", "We have a cake for the party.", 1], ["lamp", "لمبة / مصباح", "Turn on the lamp.", 1],
+        ["beautiful", "جميل", "Rome is a beautiful city.", 2], ["city", "مدينة", "Cairo is a big city.", 1],
+        ["very", "جدًا", "The food is very good.", 1], ["interesting", "مثير للاهتمام", "This is an interesting book.", 2],
+        ["country", "بلد / دولة", "Egypt is a beautiful country.", 1], ["nice", "لطيف", "She is a nice person.", 1],
+        ["flag", "علم", "The flag is red and white.", 1], ["coin", "عملة معدنية", "He has an old coin.", 1],
+        ["bench", "مقعد (حديقة)", "They sit on a bench in the park.", 1], ["bush", "شجيرة", "The cat is behind the bush.", 1],
+        ["box", "صندوق", "Put the books in the box.", 1], ["tooth", "سنّة", "The dentist checked his tooth.", 1],
+        ["bird", "طائر", "A bird is singing in the tree.", 1], ["kind", "لطيف / طيب", "My teacher is kind.", 1],
+        ["food", "طعام", "I like Italian food.", 1], ["pizza", "بيتزا", "We ordered pizza for dinner.", 1],
+        ["school", "مدرسة", "My school is near my house.", 1], ["sport", "رياضة", "Football is my favourite sport.", 1],
+        ["chocolate", "شوكولاتة", "She likes chocolate cake.", 1], ["steak", "ستيك", "He ordered steak for dinner.", 2],
+        ["swimming", "سباحة", "Swimming is good exercise.", 1], ["basketball", "كرة سلة", "They play basketball after school.", 1],
+        ["spaghetti", "سباجيتي / مكرونة", "We eat spaghetti on Fridays.", 1]
       ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
     },
     iso: {
@@ -2137,6 +2196,7 @@ tr:last-child td { border-block-end: 0; }
     if (v.mode === "cards") return top + cardsHTML();
     if (v.mode === "speak") return top + speakHTML();
     if (v.mode === "notes") return top + notesHTML(v.c);
+    if (v.mode === "bank") return top + bankHTML(v.c);
     if (v.mode === "unit") return top + unitFlatHTML(v.c, v.u);
     if (v.mode === "lesson") return top + lessonHTML(v.c, v.u, v.step || 0);
     if (v.mode === "dialogue") return top + dialogueHTML(v.c, v.u);
@@ -2192,6 +2252,36 @@ tr:last-child td { border-block-end: 0; }
       '<div class="sec-h">اللي محفوظ (' + list.length + ")</div>" + cardsOut;
   }
   var LVL_LBL = { 0: "الكل", 1: "مبتدئ", 2: "متوسط", 3: "متقدم" };
+  function bankHTML(cid) {
+    var c = COURSES[cid], vocab = c.vocab || [];
+    var q = norm(state.bankQ || ""), lvl = state.bankLvl || 0, onlyNew = !!state.bankNew;
+    var known = {};
+    vocab.forEach(function (v) { var cc = state.learn.cards[v.id]; known[v.id] = !!(cc && cc.box >= 3); });
+    var knownCount = vocab.filter(function (v) { return known[v.id]; }).length;
+    var list = vocab.filter(function (v) {
+      if (lvl && (v.lvl || 1) !== lvl) return false;
+      if (onlyNew && known[v.id]) return false;
+      if (q && v.en.toLowerCase().indexOf(q) === -1 && v.ar.indexOf(state.bankQ || "") === -1) return false;
+      return true;
+    });
+    var lvlChips = '<div class="row wrapr" style="margin-block-start:8px">' + [0, 1, 2, 3].map(function (l) {
+      return '<button class="chipbtn' + (lvl === l ? " on" : "") + '" data-act="bank-lvl" data-c="' + cid + '" data-lvl="' + l + '">' + LVL_LBL[l] + "</button>";
+    }).join("") + '<button class="chipbtn' + (onlyNew ? " on" : "") + '" data-act="bank-new" data-c="' + cid + '">لسه ما حفظتهاش</button></div>';
+    var rows = list.length ? list.map(function (v) {
+      return '<div class="bankrow' + (known[v.id] ? " known" : "") + '">' +
+        '<div class="bw"><span class="en">' + esc(v.en) + "</span>" + spkBtn(v.en) + "</div>" +
+        '<div class="ar">' + esc(v.ar) + "</div>" +
+        (v.ex ? '<div class="bex">' + fmtEn(v.ex) + "</div>" : "") +
+        '<button class="bankchk' + (known[v.id] ? " on" : "") + '" data-act="bank-toggle" data-id="' + v.id + '">' + (known[v.id] ? "✓ متعلّمة" : "علّمها كمعروفة") + "</button>" +
+        "</div>";
+    }).join("") : '<div class="bankempty">مفيش كلمات مطابقة للبحث أو الفلتر.</div>';
+    return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button>' +
+      '<div class="card"><div class="bankhead"><h2><span class="hico">' + ico("book") + "</span> بنك الكلمات</h2><span class=\"chip num\">" + knownCount + "/" + vocab.length + "</span></div>" +
+      '<p class="muted" style="font-size:14px;margin-block-end:4px">كل كلمات ' + esc(c.title) + ' في مكان واحد، تقدر ترجع لها في أي وقت — سواء دلوقتي أو بعد ما تحفظها بأسابيع.</p>' +
+      '<input class="inp" id="bankq" dir="rtl" placeholder="دور على كلمة بالإنجليزي أو العربي…" value="' + esc(state.bankQ || "") + '" style="margin-block-start:8px">' +
+      lvlChips + "</div>" +
+      '<div class="sec-h">الكلمات (' + list.length + ")</div>" + rows;
+  }
   function courseHomeHTML(cid, now) {
     var c = COURSES[cid], lvl = state.cardLvl || 0, due = dueCards(now, cid, lvl).length, ms = mistakeIds(cid).length, done = courseDone(cid);
     var notesCount = (state.learn.notes[cid] || []).length;
@@ -2203,6 +2293,7 @@ tr:last-child td { border-block-end: 0; }
       '<button class="btn" data-act="cards" data-c="' + cid + '"' + (due ? "" : " disabled") + ">كروت المفردات (" + due + ')</button>' +
       '<button class="btn alt" data-act="mrev" data-c="' + cid + '"' + (ms ? "" : " disabled") + ">راجع أخطائي (" + ms + ")</button>" +
       (c.vocab && c.vocab.length ? '<button class="btn alt" data-act="speak-start" data-c="' + cid + '">' + ico("vol") + " تحدي النطق</button>" : "") +
+      (c.vocab && c.vocab.length ? '<button class="btn alt" data-act="bank-open" data-c="' + cid + '">' + ico("book") + " بنك الكلمات <span class=\"chip num\">" + c.vocab.length + "</span></button>" : "") +
       '<button class="btn alt" data-act="notes-open" data-c="' + cid + '">' + ico("pin") + " المهم" + (notesCount ? ' <span class="chip num">' + notesCount + "</span>" : "") + "</button>" +
       "</div>" + lvlChips + "</div>" +
       '<div class="row between" style="margin-block:14px 4px"><h2>' + esc(c.title) + '</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
@@ -2398,6 +2489,9 @@ tr:last-child td { border-block-end: 0; }
   }
 
   /* ---------------- events ---------------- */
+  document.addEventListener("input", function (e) {
+    if (e.target && e.target.id === "bankq") { state.bankQ = e.target.value; render(); }
+  });
   document.addEventListener("click", function (e) {
     var el = e.target.closest("[data-act]"); if (!el || el.disabled) return;
     var act = el.getAttribute("data-act"), now = nowR();
@@ -2463,6 +2557,12 @@ tr:last-child td { border-block-end: 0; }
       case "speak-next": spkNext(now); break;
       case "badge-info": var bi = ACHIEVEMENTS.filter(function (x) { return x.id === el.getAttribute("data-b"); })[0]; if (bi) toast((state.learn.badges[bi.id] ? "🏆 " : "🔒 ") + bi.title + " — " + bi.desc); break;
       case "notes-open": state.lv = { mode: "notes", c: el.getAttribute("data-c") }; state.ndraft = freshDraft(); $("#p-learn").scrollTop = 0; render(); break;
+      case "bank-open": state.lv = { mode: "bank", c: el.getAttribute("data-c") }; state.bankQ = ""; state.bankLvl = 0; state.bankNew = false; $("#p-learn").scrollTop = 0; render(); break;
+      case "bank-lvl": state.bankLvl = Number(el.getAttribute("data-lvl")) || 0; render(); break;
+      case "bank-new": state.bankNew = !state.bankNew; render(); break;
+      case "bank-toggle": var bid = el.getAttribute("data-id"), nowB = nowR(), curB = state.learn.cards[bid] || { box: 0 };
+        if (curB.box >= 3) { curB.box = 0; curB.due = nowB.key; } else { curB.box = 3; curB.due = addDays(nowB.key, INTERVALS[3]); }
+        state.learn.cards[bid] = curB; saveMeta("learn", 400); render(); break;
       case "note-row-add": captureDraft(); state.ndraft.rows.push({ label: "", ex: "" }); render(); break;
       case "note-row-del": captureDraft(); var nrI = Number(el.getAttribute("data-i")); if (state.ndraft.rows.length > 1) state.ndraft.rows.splice(nrI, 1); render(); break;
       case "note-add":
