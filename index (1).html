@@ -4,10 +4,6 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#0F5C5A">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -457,7 +453,9 @@ tr:last-child td { border-block-end: 0; }
       calc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="11" x2="8" y2="11.01"/><line x1="12" y1="11" x2="12" y2="11.01"/><line x1="16" y1="11" x2="16" y2="11.01"/><line x1="8" y1="15" x2="8" y2="15.01"/><line x1="12" y1="15" x2="12" y2="15.01"/><line x1="16" y1="15" x2="16" y2="15.01"/><line x1="8" y1="19" x2="8" y2="19.01"/><line x1="12" y1="19" x2="12" y2="19.01"/><line x1="16" y1="19" x2="16" y2="19.01"/></svg>',
       trash: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>',
       pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M8 3h8l1 6 3 3v2H4v-2l3-3z"/></svg>',
-      shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3.5v5c0 5-3.4 8.9-8 11.5-4.6-2.6-8-6.5-8-11.5v-5z"/><path d="M9 12l2 2 4-4"/></svg>'
+      shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3.5v5c0 5-3.4 8.9-8 11.5-4.6-2.6-8-6.5-8-11.5v-5z"/><path d="M9 12l2 2 4-4"/></svg>',
+      food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v7a2 2 0 0 0 4 0V2"/><path d="M9 9v13"/><path d="M17 2c-1.7 0-3 2-3 5s1.3 5 3 5v8"/></svg>',
+      flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6"/><path d="M10 2v6l-5.5 10A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.8-2.9L14 8V2"/><path d="M7.5 15h9"/></svg>'
     };
     return s[name] || "";
   }
@@ -742,7 +740,59 @@ tr:last-child td { border-block-end: 0; }
       { label: "10 — التحسين", ex: "الحادث وعدم المطابقة والإجراء التصحيحي، التحسين المستمر." }
     ] }
   ];
-  var NOTES_SEED_BY_COURSE = { en: NOTES_SEED_EN, iso: NOTES_SEED_ISO, iso14001: NOTES_SEED_ISO14001, iso45001: NOTES_SEED_ISO45001 };
+  var NOTES_SEED_ISO22000 = [
+    { id: "s-ccp-oprp", ts: 1700000010000, title: "CCP مقابل OPRP", rows: [
+      { label: "CCP (نقطة تحكم حرجة)", ex: "حد حرج رقمي قابل للقياس مباشرة، مثل درجة حرارة البسترة." },
+      { label: "OPRP (برنامج تشغيلي تمهيدي)", ex: "معيار إجراء قد يكون ملحوظًا، مثل فحص بصري لنظافة سطح العمل." }
+    ] },
+    { id: "s-correction22", ts: 1700000009000, title: "Correction مقابل Corrective Action (غذاء)", rows: [
+      { label: "Correction (تصحيح فوري)", ex: "حجز وتقييم دفعة منتج متأثرة فورًا — بيعالج الموقف الظاهر." },
+      { label: "Corrective action (إجراء تصحيحي)", ex: "إصلاح الصمام وتعديل إجراء التنظيف بعد التحقيق — بيعالج السبب الجذري." }
+    ] },
+    { id: "s-unsafe-recall", ts: 1700000008000, title: "منتج محتمل عدم أمانه مقابل السحب", rows: [
+      { label: "Potentially unsafe product", ex: "المنتج لسه تحت سيطرة المؤسسة — يُحتجز ويُقيَّم." },
+      { label: "Withdrawal/Recall", ex: "المنتج خرج فعلًا من السيطرة ووصل للسوق — سحب فوري وتبليغ." }
+    ] },
+    { id: "s-prp-haccp", ts: 1700000007000, title: "PRPs مقابل خطة ضبط الأخطار", rows: [
+      { label: "PRPs (برامج تمهيدية)", ex: "أساسيات عامة مستمرة: نظافة، مكافحة آفات، اعتماد موردين." },
+      { label: "Hazard control plan (HACCP/OPRP)", ex: "خطة محددة لكل CCP/OPRP بحد حرج أو معيار إجراء ومراقبة وتصحيح." }
+    ] },
+    { id: "s-clauses22", ts: 1700000006000, title: "خريطة بنود المعيار (4 – 10)", rows: [
+      { label: "4 — السياق", ex: "فهم المؤسسة، سلسلة الغذاء، والأطراف المعنية، ونطاق النظام." },
+      { label: "5 — القيادة وفريق سلامة الغذاء", ex: "التزام الإدارة العليا، سياسة سلامة الغذاء، تعيين فريق سلامة الغذاء وقائده." },
+      { label: "6 — التخطيط", ex: "مخاطر وفرص أداء النظام، أهداف سلامة الغذاء، تخطيط التغييرات." },
+      { label: "7 — الدعم", ex: "الموارد، العناصر المطوَّرة خارجيًا، الكفاءة، الوعي، المعلومات الموثقة." },
+      { label: "8 — التشغيل", ex: "PRPs، التتبع، الطوارئ، تحليل الأخطار، CCP/OPRP، التعامل مع المنتجات غير الآمنة والسحب." },
+      { label: "9 — تقييم الأداء", ex: "المراقبة، التدقيق الداخلي، مراجعة الإدارة." },
+      { label: "10 — التحسين", ex: "عدم المطابقة والإجراء التصحيحي، التحسين المستمر، تحديث النظام." }
+    ] }
+  ];
+  var NOTES_SEED_ISO17025 = [
+    { id: "s-optionab", ts: 1700000015000, title: "الخيار A مقابل الخيار B", rows: [
+      { label: "Option A", ex: "المعمل يبني نظام إدارة كامل مستقل يغطي بنود 8.2-8.9." },
+      { label: "Option B", ex: "المعمل يستخدم شهادة آيزو 9001 سارية تغطي نفس الأنشطة." }
+    ] },
+    { id: "s-verval17025", ts: 1700000014000, title: "Verification مقابل Validation (معامل)", rows: [
+      { label: "Verification (تحقق)", ex: "إثبات إن المعمل قادر يطبّق طريقة قياسية صح قبل استخدامها." },
+      { label: "Validation (تصديق)", ex: "إثبات ملاءمة طريقة غير قياسية أو معدَّلة أو خارج نطاقها المعتاد." }
+    ] },
+    { id: "s-impconf", ts: 1700000013000, title: "Impartiality مقابل Confidentiality", rows: [
+      { label: "Impartiality (نزاهة)", ex: "حياد تام وعدم تأثر بضغوط تجارية أو مالية أو علاقات ملكية." },
+      { label: "Confidentiality (سرية)", ex: "حماية كل المعلومات اللي تم الحصول عليها أو إنشاؤها أثناء العمل." }
+    ] },
+    { id: "s-report17025", ts: 1700000012000, title: "تقرير اختبار مقابل شهادة معايرة", rows: [
+      { label: "Test report", ex: "نتائج اختبار، ممكن يشمل بيان مطابقة أو آراء وتفسيرات." },
+      { label: "Calibration certificate", ex: "عدم يقين القياس إجباري، ممنوع توصية بفترة المعايرة القادمة." }
+    ] },
+    { id: "s-clauses17025", ts: 1700000011000, title: "خريطة بنود المعيار (4 – 8)", rows: [
+      { label: "4 — المتطلبات العامة", ex: "النزاهة والسرية." },
+      { label: "5 — المتطلبات الهيكلية", ex: "الكيان القانوني، الإدارة، نطاق الأنشطة، الهيكل التنظيمي." },
+      { label: "6 — متطلبات الموارد", ex: "الأفراد، المرافق، المعدات، التتبع المتري، المنتجات الخارجية." },
+      { label: "7 — متطلبات العملية", ex: "العقود، الطرق، أخذ العينات، السجلات، عدم اليقين، التقارير، الشكاوى." },
+      { label: "8 — نظام الإدارة", ex: "الخيار A أو B: الوثائق، السجلات، المخاطر، التحسين، التدقيق، المراجعة." }
+    ] }
+  ];
+  var NOTES_SEED_BY_COURSE = { en: NOTES_SEED_EN, iso: NOTES_SEED_ISO, iso14001: NOTES_SEED_ISO14001, iso45001: NOTES_SEED_ISO45001, iso22000: NOTES_SEED_ISO22000, iso17025: NOTES_SEED_ISO17025 };
   function freshDraft() { return { title: "", rows: [{ label: "", ex: "" }, { label: "", ex: "" }] }; }
   function captureDraft() {
     var d = state.ndraft; if (!d) return;
@@ -758,7 +808,7 @@ tr:last-child td { border-block-end: 0; }
     var have = {}; state.learn.notes[cid].forEach(function (n) { have[n.id] = true; });
     seedArr.forEach(function (n) { if (!have[n.id]) state.learn.notes[cid].push(n); });
   }
-  var NOTES_SEED_VERSION = 4;
+  var NOTES_SEED_VERSION = 6;
   function ensureNotesSeed() {
     var v = state.learn.notesSeeded || 0;
     if (v >= NOTES_SEED_VERSION) return;
@@ -766,6 +816,8 @@ tr:last-child td { border-block-end: 0; }
     if (v < 2) { seedNotesCourse("iso", NOTES_SEED_ISO); seedNotesCourse("iso14001", NOTES_SEED_ISO14001); }
     if (v < 3) seedNotesCourse("en", NOTES_SEED_EN_V3);
     if (v < 4) seedNotesCourse("iso45001", NOTES_SEED_ISO45001);
+    if (v < 5) seedNotesCourse("iso22000", NOTES_SEED_ISO22000);
+    if (v < 6) seedNotesCourse("iso17025", NOTES_SEED_ISO17025);
     state.learn.notesSeeded = NOTES_SEED_VERSION; saveMeta("learn", 0);
   }
   function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0 }; }
@@ -784,8 +836,11 @@ tr:last-child td { border-block-end: 0; }
   var CFG = {
     url: "https://guorxzejmtvypiwxrogf.supabase.co",
     key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1b3J4emVqbXR2eXBpd3hyb2dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzI2NjksImV4cCI6MjEwNTMwODY2OX0.o95p3N83NLU8ZKZG5LtwS95iR1W3eN03qixqjsnWk_8",
-    email: "masar-user@example.com",
     prefix: "masar-"
+  };
+  var PIN_ACCOUNTS = {
+    "9876": "masar-user@example.com",
+    "1243": "masar-user2@example.com"
   };
   var store = { sb: null, uid: null };
   var LSKEY = "masar:v1";
@@ -1248,123 +1303,123 @@ tr:last-child td { border-block-end: 0; }
         }
       ],
       vocab: [
-        ["know", "يعرف", "I know your brother.", 1], ["do", "يفعل", "I do my homework at night.", 1], ["have", "يمتلك / عندي", "We have a big house.", 1],
-        ["have got", "حصل على / عنده", "I have got a new computer.", 2], ["be", "يكون", "I want to be an engineer.", 1], ["play", "يلعب", "They play football on Friday.", 1],
-        ["football", "كرة القدم", "He doesn't play football.", 1], ["homework", "واجب منزلي", "She does her homework.", 1], ["car", "سيارة", "Ahmed has a new car.", 1],
-        ["job", "وظيفة", "My father has a job.", 1], ["pen", "قلم", "This is my pen.", 1], ["phone", "هاتف", "That is your phone.", 1],
-        ["cover", "غطاء / غلاف", "This is its cover.", 2], ["shirt", "قميص", "This is our shirt.", 1], ["boy", "ولد", "The boys play here.", 1],
-        ["baby", "طفل رضيع", "The babies are at home.", 1], ["street", "شارع", "There is a car on the street.", 1], ["teacher", "معلم", "Are you a teacher?", 1],
-        ["Egyptian", "مصري", "He is Egyptian.", 2], ["Italian", "إيطالي", "Rome is an Italian city.", 2], ["here", "هنا", "Are they here?", 1],
-        ["there", "هناك", "The books are there.", 1], ["at", "في (مكان)", "I am at work.", 1], ["what", "ماذا", "What is this?", 1],
-        ["how", "كيف", "How are you?", 1], ["where", "أين", "Where are you?", 1], ["vowel", "حرف علة", "An apple starts with a vowel.", 3],
-        ["mine", "ملكي (ضمير)", "This book is mine.", 2], ["yours", "ملكك (ضمير)", "That phone is yours.", 2], ["theirs", "ملكهم (ضمير)", "The books are theirs.", 2],
-        ["will", "سوف (فعل مساعد للمستقبل)", "I will call you tomorrow.", 2], ["tomorrow", "غدًا", "I will see you tomorrow.", 1],
-        ["tonight", "الليلة", "We are going to watch a movie tonight.", 1], ["next week", "الأسبوع القادم", "She is going to travel next week.", 2],
-        ["soon", "قريبًا", "He will finish soon.", 2], ["plan", "خطة / يخطط", "We plan to visit Jeddah.", 2],
-        ["its", "ملكه / ملكها (لغير العاقل)", "The dog wagged its tail.", 2],
-        ["apple", "تفاحة", "I have an apple.", 1], ["dog", "كلب", "She has a dog.", 1], ["egg", "بيضة", "He eats an egg for breakfast.", 1],
-        ["elephant", "فيل", "We see an elephant at the zoo.", 2], ["orange", "برتقالة", "Tom has an orange.", 1], ["bag", "حقيبة / شنطة", "Where is your bag?", 1],
-        ["milk", "لبن", "I like milk.", 1], ["tennis", "تنس", "Does Ali play tennis?", 2], ["bus", "أتوبيس", "The bus stops here.", 1],
-        ["lunch", "غداء", "They eat lunch at home.", 1], ["shop", "محل", "My brother works in a shop.", 1], ["rain", "مطر / تمطر", "It rains in winter.", 1],
-        ["coffee", "قهوة", "Do you like coffee?", 1], ["fish", "سمك", "We eat fish every day.", 1], ["tea", "شاي", "Do you like tea?", 1],
-        ["drink", "يشرب", "We drink water every day.", 1], ["eat", "يأكل", "They eat lunch at home.", 1], ["live", "يعيش / يسكن", "My brother lives in Cairo.", 1],
-        ["speak", "يتكلم", "Do you speak English?", 1], ["wash", "يغسل", "You wash your hands.", 2],
-        ["glass", "كوب (زجاجي)", "I drink a glass of water.", 1], ["bottle", "زجاجة", "She has a bottle of water.", 1],
-        ["need", "يحتاج", "I need a cup of tea.", 1], ["want", "يريد", "What do you want?", 1],
-        ["cup", "كوب / فنجان", "He needs a cup of tea.", 1], ["rice", "أرز", "We eat rice for lunch.", 1],
-        ["sugar", "سكر", "Do you have sugar?", 1], ["breakfast", "فطار", "I eat a good breakfast.", 1],
-        ["water", "مياه", "I drink a bottle of water.", 1], ["when", "متى", "When do you need the money?", 1],
-        ["who", "من", "Who is your teacher?", 1],
-        ["chicken", "دجاجة / دجاج", "I eat chicken for lunch.", 1], ["paper", "ورق / جريدة", "This bag is made of paper.", 1],
-        ["bread", "خبز", "We need a piece of bread.", 1], ["furniture", "أثاث", "We bought new furniture for the house.", 2],
-        ["information", "معلومات", "I need more information about the job.", 2], ["foot", "قدم", "He hurt his foot.", 1],
-        ["child", "طفل", "The child is playing outside.", 1], ["man", "رجل", "The man is a teacher.", 1],
-        ["woman", "امرأة", "The woman is from Jeddah.", 1],
-        ["bedroom", "غرفة نوم", "This is my bedroom.", 1], ["television", "تلفزيون", "We watch television in the evening.", 1],
-        ["computer", "كمبيوتر", "I have a new computer.", 1], ["guitar", "جيتار", "He plays the guitar.", 2],
-        ["camera", "كاميرا", "She has a new camera.", 1], ["piano", "بيانو", "My sister plays the piano.", 2],
-        ["ruler", "مسطرة", "Can I use your ruler?", 1], ["mobile phone", "موبايل / هاتف محمول", "Is this your mobile phone?", 1],
-        ["MP3 player", "جهاز إم بي 3", "He listens to music on his MP3 player.", 2], ["blond", "أشقر", "She has blond hair.", 2],
-        ["hair", "شعر", "He has short hair.", 1], ["eye", "عين", "She has brown eyes.", 1],
-        ["boot", "حذاء بوت / جزمة", "He wears boots in winter.", 2], ["sock", "شراب / جورب", "Where are my socks?", 1],
-        ["coat", "معطف", "Put on your coat, it's cold.", 1], ["shoe", "حذاء", "These shoes are new.", 1],
-        ["glove", "قفاز", "She wears gloves in winter.", 2], ["baseball cap", "كاب / قبعة", "He wears a baseball cap.", 2],
-        ["scarf", "وشاح / شال", "She has a red scarf.", 2], ["salad", "سلطة", "I eat salad every day.", 1],
-        ["chip", "بطاطس مقلية (شرائح)", "We have fish and chips.", 2], ["trousers", "بنطلون", "These trousers are too big.", 1],
-        ["newspaper", "جريدة", "My father reads the newspaper.", 1], ["biscuit", "بسكويت", "Would you like a biscuit?", 1],
-        ["orange juice", "عصير برتقال", "I drink orange juice every morning.", 1], ["sweet", "حلوى / حلو المذاق", "Children like sweets.", 1],
-        ["comic", "مجلة كوميكس / قصة مصورة", "He reads a comic.", 2], ["magazine", "مجلة", "She reads a magazine.", 1],
-        ["picnic", "نزهة / بيكنيك", "We have a picnic in the park.", 2], ["cheese", "جبن", "This cheese is nice.", 1],
-        ["onion", "بصلة", "She needs an onion for the salad.", 1], ["butter", "زبدة", "We've got some butter.", 1],
-        ["burger", "برجر", "He eats a burger for lunch.", 1], ["meat", "لحم", "We don't eat meat every day.", 1],
-        ["lemon", "ليمون", "She puts lemon in her tea.", 1], ["get up", "يستيقظ / ينهض", "I get up at seven o'clock.", 1],
-        ["walk", "يمشي", "They walk to school.", 1], ["wear", "يرتدي", "The children wear school uniform.", 1],
-        ["like", "يحب / يعجبه", "I like English.", 1], ["hate", "يكره", "He hates maths.", 2],
-        ["go", "يذهب", "We go home at three.", 1], ["home", "البيت / المنزل", "They go home at three thirty.", 1],
-        ["dinner", "عشاء", "We have dinner at seven.", 1], ["watch", "يشاهد", "They watch television after dinner.", 1],
-        ["game", "لعبة", "He plays computer games.", 1], ["use", "يستخدم", "Do you use the internet?", 1],
-        ["listen to", "يستمع إلى", "She listens to music in bed.", 1], ["bone", "عظمة", "The dog buries his bone.", 2],
-        ["bury", "يدفن", "He buries his bones in the garden.", 2], ["garden", "حديقة (منزل)", "The dog plays in the garden.", 1],
-        ["chase", "يطارد / يلاحق", "The dog chases the cat.", 2], ["sleep", "ينام", "The baby sleeps all day.", 1],
-        ["learn", "يتعلّم", "I learn new words every day.", 1], ["carry", "يحمل", "She carries the newspaper.", 1],
-        ["catch", "يمسك / يلحق بـ", "He catches the ball.", 1], ["tidy", "يرتّب", "She tidies her room every week.", 2],
-        ["try", "يحاول", "He tries hard in English class.", 1], ["help", "يساعد", "He helps in the kitchen.", 1],
-        ["kitchen", "مطبخ", "Mum is in the kitchen.", 1], ["club", "نادي", "He goes to the sports club.", 1],
-        ["run", "يجري / يركض", "The dog runs in the park.", 1], ["exercise", "تمرين / يمارس الرياضة", "He doesn't like exercise.", 1],
-        ["early", "مبكرًا", "They get up early.", 1], ["start", "يبدأ", "School starts at eight o'clock.", 1],
-        ["finish", "ينتهي", "School finishes at three thirty.", 1], ["drum", "طبلة", "Nick plays the drums.", 2],
-        ["read", "يقرأ", "She reads magazines in bed.", 1], ["cinema", "سينما", "They go to the cinema on Saturdays.", 1],
-        ["party", "حفلة", "The children are at a party.", 1],
-        ["red", "أحمر", "I have a red car.", 1], ["yellow", "أصفر", "She has a yellow bag.", 1],
-        ["blue", "أزرق", "The sky is blue.", 1], ["green", "أخضر", "He likes the green shirt.", 1],
-        ["black", "أسود", "My phone is black.", 1], ["white", "أبيض", "She wears a white dress.", 1],
-        ["brown", "بني", "His eyes are brown.", 1], ["pink", "وردي", "The flowers are pink.", 1],
-        ["one", "واحد", "I have one brother.", 1], ["two", "اثنان", "She has two sisters.", 1],
-        ["three", "ثلاثة", "We have three rooms.", 1], ["four", "أربعة", "There are four chairs.", 1],
-        ["five", "خمسة", "I work five days a week.", 1], ["six", "ستة", "The shop opens at six.", 1],
-        ["seven", "سبعة", "I have seven classes.", 1], ["eight", "ثمانية", "We finish at eight.", 1],
-        ["nine", "تسعة", "The train leaves at nine.", 1], ["ten", "عشرة", "I need ten minutes.", 1],
-        ["eleven", "أحد عشر", "The meeting starts at eleven.", 1], ["twelve", "اثنا عشر", "There are twelve months in a year.", 1],
-        ["thirteen", "ثلاثة عشر", "She is thirteen years old.", 1], ["fourteen", "أربعة عشر", "He is fourteen.", 1],
-        ["fifteen", "خمسة عشر", "We wait fifteen minutes.", 1], ["sixteen", "ستة عشر", "There are sixteen students.", 1],
-        ["seventeen", "سبعة عشر", "I am seventeen.", 1], ["eighteen", "ثمانية عشر", "He turns eighteen next month.", 1],
-        ["nineteen", "تسعة عشر", "It's nineteen minutes past six.", 1], ["twenty", "عشرون", "There are twenty questions.", 1],
-        ["student", "طالب", "I am a student.", 1], ["desk", "مكتب / طاولة", "Put your book on the desk.", 1],
-        ["chair", "كرسي", "Sit on the chair.", 1], ["board", "سبورة", "The teacher writes on the board.", 1],
-        ["school bag", "حقيبة مدرسية", "My school bag is heavy.", 1], ["pencil", "قلم رصاص", "I write with a pencil.", 1],
-        ["pencil case", "مقلمة", "Her pencil case is blue.", 1], ["exercise book", "كراسة", "Write the answer in your exercise book.", 1],
-        ["bike", "دراجة", "He rides his bike to school.", 1], ["house", "بيت", "This is our house.", 1],
-        ["park", "حديقة عامة", "The children play in the park.", 1], ["tree", "شجرة", "There is a big tree in the garden.", 1],
-        ["plane", "طائرة", "We travel by plane.", 1], ["cat", "قطة", "The cat is on the roof.", 1],
-        ["name", "اسم", "What's your name?", 1], ["brother", "أخ", "This is my brother.", 1],
-        ["sister", "أخت", "She is my sister.", 1], ["good", "جيد", "That's a good idea.", 1],
-        ["planet", "كوكب", "Earth is our planet.", 1], ["person", "شخص", "He is a kind person.", 1],
-        ["thing", "شيء", "What's this thing?", 1], ["place", "مكان", "Riyadh is a nice place.", 1],
-        ["girl", "بنت", "The girl is reading a book.", 1], ["friend", "صديق", "She is my best friend.", 1],
-        ["hungry", "جوعان", "I'm hungry, let's eat.", 1], ["thirsty", "عطشان", "He's thirsty after the game.", 1],
-        ["always", "دايمًا", "He's always on time.", 1], ["town", "بلدة", "They live in a small town.", 1],
-        ["hot", "حار", "The tea is hot.", 1], ["cold", "بارد", "The water is cold.", 1],
-        ["big", "كبير", "They have a big house.", 1], ["small", "صغير", "This is a small shop.", 1],
-        ["Greece", "اليونان", "Zoe is from Greece.", 2], ["Italy", "إيطاليا", "Rome is in Italy.", 2],
-        ["sunny", "مشمس", "It's sunny today.", 2], ["warm", "دافئ", "The weather is warm.", 2],
-        ["favourite", "المفضل", "What's your favourite food?", 1], ["dictionary", "قاموس", "I use a dictionary to check new words.", 2],
-        ["grammar book", "كتاب قواعد", "She has a grammar book.", 2], ["useful", "مفيد", "This app is useful.", 2],
-        ["banana", "موزة", "He eats a banana every morning.", 1], ["sandwich", "ساندويتش", "I have a cheese sandwich for lunch.", 1],
-        ["spoon", "ملعقة", "Use a spoon to eat the soup.", 1], ["plate", "طبق", "Put the food on the plate.", 1],
-        ["cake", "كيكة", "We have a cake for the party.", 1], ["lamp", "لمبة / مصباح", "Turn on the lamp.", 1],
-        ["beautiful", "جميل", "Rome is a beautiful city.", 2], ["city", "مدينة", "Cairo is a big city.", 1],
-        ["very", "جدًا", "The food is very good.", 1], ["interesting", "مثير للاهتمام", "This is an interesting book.", 2],
-        ["country", "بلد / دولة", "Egypt is a beautiful country.", 1], ["nice", "لطيف", "She is a nice person.", 1],
-        ["flag", "علم", "The flag is red and white.", 1], ["coin", "عملة معدنية", "He has an old coin.", 1],
-        ["bench", "مقعد (حديقة)", "They sit on a bench in the park.", 1], ["bush", "شجيرة", "The cat is behind the bush.", 1],
-        ["box", "صندوق", "Put the books in the box.", 1], ["tooth", "سنّة", "The dentist checked his tooth.", 1],
-        ["bird", "طائر", "A bird is singing in the tree.", 1], ["kind", "لطيف / طيب", "My teacher is kind.", 1],
-        ["food", "طعام", "I like Italian food.", 1], ["pizza", "بيتزا", "We ordered pizza for dinner.", 1],
-        ["school", "مدرسة", "My school is near my house.", 1], ["sport", "رياضة", "Football is my favourite sport.", 1],
-        ["chocolate", "شوكولاتة", "She likes chocolate cake.", 1], ["steak", "ستيك", "He ordered steak for dinner.", 2],
-        ["swimming", "سباحة", "Swimming is good exercise.", 1], ["basketball", "كرة سلة", "They play basketball after school.", 1],
-        ["spaghetti", "سباجيتي / مكرونة", "We eat spaghetti on Fridays.", 1]
-      ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
+        ["know", "يعرف", "I know your brother.", 1, "أنا أعرف أخاك."], ["do", "يفعل", "I do my homework at night.", 1, "أنا أذاكر واجبي بالليل."], ["have", "يمتلك / عندي", "We have a big house.", 1, "عندنا بيت كبير."],
+        ["have got", "حصل على / عنده", "I have got a new computer.", 2, "عندي كمبيوتر جديد."], ["be", "يكون", "I want to be an engineer.", 1, "أريد أن أكون مهندسًا."], ["play", "يلعب", "They play football on Friday.", 1, "يلعبون كرة القدم يوم الجمعة."],
+        ["football", "كرة القدم", "He doesn't play football.", 1, "هو لا يلعب كرة القدم."], ["homework", "واجب منزلي", "She does her homework.", 1, "هي تذاكر واجبها."], ["car", "سيارة", "Ahmed has a new car.", 1, "أحمد عنده سيارة جديدة."],
+        ["job", "وظيفة", "My father has a job.", 1, "أبي عنده وظيفة."], ["pen", "قلم", "This is my pen.", 1, "هذا قلمي."], ["phone", "هاتف", "That is your phone.", 1, "ذلك هاتفك."],
+        ["cover", "غطاء / غلاف", "This is its cover.", 2, "هذا غطاؤه."], ["shirt", "قميص", "This is our shirt.", 1, "هذا قميصنا."], ["boy", "ولد", "The boys play here.", 1, "الأولاد يلعبون هنا."],
+        ["baby", "طفل رضيع", "The babies are at home.", 1, "الأطفال الرضّع في البيت."], ["street", "شارع", "There is a car on the street.", 1, "يوجد سيارة في الشارع."], ["teacher", "معلم", "Are you a teacher?", 1, "هل أنت معلم؟"],
+        ["Egyptian", "مصري", "He is Egyptian.", 2, "هو مصري."], ["Italian", "إيطالي", "Rome is an Italian city.", 2, "روما مدينة إيطالية."], ["here", "هنا", "Are they here?", 1, "هل هم هنا؟"],
+        ["there", "هناك", "The books are there.", 1, "الكتب هناك."], ["at", "في (مكان)", "I am at work.", 1, "أنا في العمل."], ["what", "ماذا", "What is this?", 1, "ما هذا؟"],
+        ["how", "كيف", "How are you?", 1, "كيف حالك؟"], ["where", "أين", "Where are you?", 1, "أين أنت؟"], ["vowel", "حرف علة", "An apple starts with a vowel.", 3, "التفاحة تبدأ بحرف علة."],
+        ["mine", "ملكي (ضمير)", "This book is mine.", 2, "هذا الكتاب ملكي."], ["yours", "ملكك (ضمير)", "That phone is yours.", 2, "ذلك الهاتف ملكك."], ["theirs", "ملكهم (ضمير)", "The books are theirs.", 2, "الكتب ملكهم."],
+        ["will", "سوف (فعل مساعد للمستقبل)", "I will call you tomorrow.", 2, "سوف أتصل بك غدًا."], ["tomorrow", "غدًا", "I will see you tomorrow.", 1, "سوف أراك غدًا."],
+        ["tonight", "الليلة", "We are going to watch a movie tonight.", 1, "سنشاهد فيلمًا الليلة."], ["next week", "الأسبوع القادم", "She is going to travel next week.", 2, "هي ستسافر الأسبوع القادم."],
+        ["soon", "قريبًا", "He will finish soon.", 2, "سينتهي قريبًا."], ["plan", "خطة / يخطط", "We plan to visit Jeddah.", 2, "نخطط لزيارة جدة."],
+        ["its", "ملكه / ملكها (لغير العاقل)", "The dog wagged its tail.", 2, "الكلب حرّك ذيله."],
+        ["apple", "تفاحة", "I have an apple.", 1, "عندي تفاحة."], ["dog", "كلب", "She has a dog.", 1, "عندها كلب."], ["egg", "بيضة", "He eats an egg for breakfast.", 1, "هو يأكل بيضة في الفطار."],
+        ["elephant", "فيل", "We see an elephant at the zoo.", 2, "نرى فيلًا في حديقة الحيوان."], ["orange", "برتقالة", "Tom has an orange.", 1, "عند توم برتقالة."], ["bag", "حقيبة / شنطة", "Where is your bag?", 1, "أين حقيبتك؟"],
+        ["milk", "لبن", "I like milk.", 1, "أنا أحب اللبن."], ["tennis", "تنس", "Does Ali play tennis?", 2, "هل يلعب علي التنس؟"], ["bus", "أتوبيس", "The bus stops here.", 1, "الأتوبيس يقف هنا."],
+        ["lunch", "غداء", "They eat lunch at home.", 1, "يأكلون الغداء في البيت."], ["shop", "محل", "My brother works in a shop.", 1, "أخي يعمل في محل."], ["rain", "مطر / تمطر", "It rains in winter.", 1, "تمطر في الشتاء."],
+        ["coffee", "قهوة", "Do you like coffee?", 1, "هل تحب القهوة؟"], ["fish", "سمك", "We eat fish every day.", 1, "نأكل سمكًا كل يوم."], ["tea", "شاي", "Do you like tea?", 1, "هل تحب الشاي؟"],
+        ["drink", "يشرب", "We drink water every day.", 1, "نشرب المياه كل يوم."], ["eat", "يأكل", "They eat lunch at home.", 1, "يأكلون الغداء في البيت."], ["live", "يعيش / يسكن", "My brother lives in Cairo.", 1, "أخي يعيش في القاهرة."],
+        ["speak", "يتكلم", "Do you speak English?", 1, "هل تتكلم الإنجليزية؟"], ["wash", "يغسل", "You wash your hands.", 2, "أنت تغسل يديك."],
+        ["glass", "كوب (زجاجي)", "I drink a glass of water.", 1, "أنا أشرب كوب مياه."], ["bottle", "زجاجة", "She has a bottle of water.", 1, "عندها زجاجة مياه."],
+        ["need", "يحتاج", "I need a cup of tea.", 1, "أحتاج كوب شاي."], ["want", "يريد", "What do you want?", 1, "ماذا تريد؟"],
+        ["cup", "كوب / فنجان", "He needs a cup of tea.", 1, "هو يحتاج كوب شاي."], ["rice", "أرز", "We eat rice for lunch.", 1, "نأكل أرزًا في الغداء."],
+        ["sugar", "سكر", "Do you have sugar?", 1, "هل عندك سكر؟"], ["breakfast", "فطار", "I eat a good breakfast.", 1, "أنا آكل فطارًا جيدًا."],
+        ["water", "مياه", "I drink a bottle of water.", 1, "أشرب زجاجة مياه."], ["when", "متى", "When do you need the money?", 1, "متى تحتاج المال؟"],
+        ["who", "من", "Who is your teacher?", 1, "من هو معلمك؟"],
+        ["chicken", "دجاجة / دجاج", "I eat chicken for lunch.", 1, "أنا آكل دجاجًا في الغداء."], ["paper", "ورق / جريدة", "This bag is made of paper.", 1, "هذه الحقيبة مصنوعة من الورق."],
+        ["bread", "خبز", "We need a piece of bread.", 1, "نحتاج رغيف خبز."], ["furniture", "أثاث", "We bought new furniture for the house.", 2, "اشترينا أثاثًا جديدًا للبيت."],
+        ["information", "معلومات", "I need more information about the job.", 2, "أحتاج معلومات أكثر عن الوظيفة."], ["foot", "قدم", "He hurt his foot.", 1, "أصاب قدمه."],
+        ["child", "طفل", "The child is playing outside.", 1, "الطفل يلعب في الخارج."], ["man", "رجل", "The man is a teacher.", 1, "الرجل معلم."],
+        ["woman", "امرأة", "The woman is from Jeddah.", 1, "المرأة من جدة."],
+        ["bedroom", "غرفة نوم", "This is my bedroom.", 1, "هذه غرفة نومي."], ["television", "تلفزيون", "We watch television in the evening.", 1, "نشاهد التلفزيون في المساء."],
+        ["computer", "كمبيوتر", "I have a new computer.", 1, "عندي كمبيوتر جديد."], ["guitar", "جيتار", "He plays the guitar.", 2, "هو يعزف الجيتار."],
+        ["camera", "كاميرا", "She has a new camera.", 1, "عندها كاميرا جديدة."], ["piano", "بيانو", "My sister plays the piano.", 2, "أختي تعزف البيانو."],
+        ["ruler", "مسطرة", "Can I use your ruler?", 1, "هل يمكنني استخدام مسطرتك؟"], ["mobile phone", "موبايل / هاتف محمول", "Is this your mobile phone?", 1, "هل هذا موبايلك؟"],
+        ["MP3 player", "جهاز إم بي 3", "He listens to music on his MP3 player.", 2, "يستمع للموسيقى على جهاز الإم بي ثري."], ["blond", "أشقر", "She has blond hair.", 2, "عندها شعر أشقر."],
+        ["hair", "شعر", "He has short hair.", 1, "عنده شعر قصير."], ["eye", "عين", "She has brown eyes.", 1, "عندها عيون بنية."],
+        ["boot", "حذاء بوت / جزمة", "He wears boots in winter.", 2, "يلبس بوت في الشتاء."], ["sock", "شراب / جورب", "Where are my socks?", 1, "أين شرابي؟"],
+        ["coat", "معطف", "Put on your coat, it's cold.", 1, "البس معطفك، الجو بارد."], ["shoe", "حذاء", "These shoes are new.", 1, "هذه الأحذية جديدة."],
+        ["glove", "قفاز", "She wears gloves in winter.", 2, "ترتدي قفازات في الشتاء."], ["baseball cap", "كاب / قبعة", "He wears a baseball cap.", 2, "يلبس كابتن بيسبول."],
+        ["scarf", "وشاح / شال", "She has a red scarf.", 2, "عندها إيشارب أحمر."], ["salad", "سلطة", "I eat salad every day.", 1, "آكل سلطة كل يوم."],
+        ["chip", "بطاطس مقلية (شرائح)", "We have fish and chips.", 2, "عندنا سمك وبطاطس مقرمشة."], ["trousers", "بنطلون", "These trousers are too big.", 1, "هذا البنطلون كبير جدًا."],
+        ["newspaper", "جريدة", "My father reads the newspaper.", 1, "أبي يقرأ الجريدة."], ["biscuit", "بسكويت", "Would you like a biscuit?", 1, "هل تحب بسكويت؟"],
+        ["orange juice", "عصير برتقال", "I drink orange juice every morning.", 1, "أشرب عصير برتقال كل صباح."], ["sweet", "حلوى / حلو المذاق", "Children like sweets.", 1, "الأطفال يحبون الحلويات."],
+        ["comic", "مجلة كوميكس / قصة مصورة", "He reads a comic.", 2, "هو يقرأ مجلة كوميكس."], ["magazine", "مجلة", "She reads a magazine.", 1, "هي تقرأ مجلة."],
+        ["picnic", "نزهة / بيكنيك", "We have a picnic in the park.", 2, "نقوم برحلة نزهة في الحديقة."], ["cheese", "جبن", "This cheese is nice.", 1, "هذا الجبن لذيذ."],
+        ["onion", "بصلة", "She needs an onion for the salad.", 1, "تحتاج بصلة للسلطة."], ["butter", "زبدة", "We've got some butter.", 1, "عندنا زبدة."],
+        ["burger", "برجر", "He eats a burger for lunch.", 1, "يأكل برجر في الغداء."], ["meat", "لحم", "We don't eat meat every day.", 1, "لا نأكل لحمًا كل يوم."],
+        ["lemon", "ليمون", "She puts lemon in her tea.", 1, "تضع ليمون في شايها."], ["get up", "يستيقظ / ينهض", "I get up at seven o'clock.", 1, "أنا أستيقظ في الساعة السابعة."],
+        ["walk", "يمشي", "They walk to school.", 1, "يمشون إلى المدرسة."], ["wear", "يرتدي", "The children wear school uniform.", 1, "الأطفال يرتدون الزي المدرسي."],
+        ["like", "يحب / يعجبه", "I like English.", 1, "أنا أحب الإنجليزية."], ["hate", "يكره", "He hates maths.", 2, "هو يكره الرياضيات."],
+        ["go", "يذهب", "We go home at three.", 1, "نذهب للبيت في الساعة الثالثة."], ["home", "البيت / المنزل", "They go home at three thirty.", 1, "يذهبون للبيت في الثالثة والنصف."],
+        ["dinner", "عشاء", "We have dinner at seven.", 1, "نتناول العشاء في الساعة السابعة."], ["watch", "يشاهد", "They watch television after dinner.", 1, "يشاهدون التلفزيون بعد العشاء."],
+        ["game", "لعبة", "He plays computer games.", 1, "هو يلعب ألعاب الكمبيوتر."], ["use", "يستخدم", "Do you use the internet?", 1, "هل تستخدم الإنترنت؟"],
+        ["listen to", "يستمع إلى", "She listens to music in bed.", 1, "هي تستمع للموسيقى في السرير."], ["bone", "عظمة", "The dog buries his bone.", 2, "الكلب يدفن عظمته."],
+        ["bury", "يدفن", "He buries his bones in the garden.", 2, "هو يدفن عظامه في الحديقة."], ["garden", "حديقة (منزل)", "The dog plays in the garden.", 1, "الكلب يلعب في الحديقة."],
+        ["chase", "يطارد / يلاحق", "The dog chases the cat.", 2, "الكلب يجري خلف القط."], ["sleep", "ينام", "The baby sleeps all day.", 1, "الطفل ينام طوال اليوم."],
+        ["learn", "يتعلّم", "I learn new words every day.", 1, "أتعلم كلمات جديدة كل يوم."], ["carry", "يحمل", "She carries the newspaper.", 1, "هي تحمل الجريدة."],
+        ["catch", "يمسك / يلحق بـ", "He catches the ball.", 1, "هو يمسك الكرة."], ["tidy", "يرتّب", "She tidies her room every week.", 2, "هي ترتب غرفتها كل أسبوع."],
+        ["try", "يحاول", "He tries hard in English class.", 1, "هو يحاول بجد في فصل الإنجليزية."], ["help", "يساعد", "He helps in the kitchen.", 1, "هو يساعد في المطبخ."],
+        ["kitchen", "مطبخ", "Mum is in the kitchen.", 1, "ماما في المطبخ."], ["club", "نادي", "He goes to the sports club.", 1, "هو يذهب للنادي الرياضي."],
+        ["run", "يجري / يركض", "The dog runs in the park.", 1, "الكلب يجري في الحديقة."], ["exercise", "تمرين / يمارس الرياضة", "He doesn't like exercise.", 1, "هو لا يحب التمارين الرياضية."],
+        ["early", "مبكرًا", "They get up early.", 1, "يستيقظون مبكرًا."], ["start", "يبدأ", "School starts at eight o'clock.", 1, "المدرسة تبدأ في الساعة الثامنة."],
+        ["finish", "ينتهي", "School finishes at three thirty.", 1, "المدرسة تنتهي في الثالثة والنصف."], ["drum", "طبلة", "Nick plays the drums.", 2, "نيك يعزف الطبول."],
+        ["read", "يقرأ", "She reads magazines in bed.", 1, "هي تقرأ مجلات في السرير."], ["cinema", "سينما", "They go to the cinema on Saturdays.", 1, "يذهبون للسينما يوم السبت."],
+        ["party", "حفلة", "The children are at a party.", 1, "الأطفال في حفلة."],
+        ["red", "أحمر", "I have a red car.", 1, "عندي سيارة حمراء."], ["yellow", "أصفر", "She has a yellow bag.", 1, "عندها حقيبة صفراء."],
+        ["blue", "أزرق", "The sky is blue.", 1, "السماء زرقاء."], ["green", "أخضر", "He likes the green shirt.", 1, "هو يحب القميص الأخضر."],
+        ["black", "أسود", "My phone is black.", 1, "هاتفي أسود."], ["white", "أبيض", "She wears a white dress.", 1, "هي ترتدي فستانًا أبيض."],
+        ["brown", "بني", "His eyes are brown.", 1, "عيونه بنية."], ["pink", "وردي", "The flowers are pink.", 1, "الورود وردية."],
+        ["one", "واحد", "I have one brother.", 1, "عندي أخ واحد."], ["two", "اثنان", "She has two sisters.", 1, "عندها أختان."],
+        ["three", "ثلاثة", "We have three rooms.", 1, "عندنا ثلاث غرف."], ["four", "أربعة", "There are four chairs.", 1, "يوجد أربع كراسي."],
+        ["five", "خمسة", "I work five days a week.", 1, "أعمل خمسة أيام في الأسبوع."], ["six", "ستة", "The shop opens at six.", 1, "المحل يفتح في الساعة الستة."],
+        ["seven", "سبعة", "I have seven classes.", 1, "عندي سبع حصص."], ["eight", "ثمانية", "We finish at eight.", 1, "ننتهي في الساعة الثامنة."],
+        ["nine", "تسعة", "The train leaves at nine.", 1, "القطار يغادر في الساعة التاسعة."], ["ten", "عشرة", "I need ten minutes.", 1, "أحتاج عشر دقائق."],
+        ["eleven", "أحد عشر", "The meeting starts at eleven.", 1, "الاجتماع يبدأ في الساعة الحادية عشرة."], ["twelve", "اثنا عشر", "There are twelve months in a year.", 1, "يوجد اثنا عشر شهرًا في السنة."],
+        ["thirteen", "ثلاثة عشر", "She is thirteen years old.", 1, "عمرها ثلاثة عشر عامًا."], ["fourteen", "أربعة عشر", "He is fourteen.", 1, "عمره أربعة عشر عامًا."],
+        ["fifteen", "خمسة عشر", "We wait fifteen minutes.", 1, "ننتظر خمسة عشر دقيقة."], ["sixteen", "ستة عشر", "There are sixteen students.", 1, "يوجد ستة عشر طالبًا."],
+        ["seventeen", "سبعة عشر", "I am seventeen.", 1, "عمري سبعة عشر عامًا."], ["eighteen", "ثمانية عشر", "He turns eighteen next month.", 1, "سيبلغ الثامنة عشرة الشهر القادم."],
+        ["nineteen", "تسعة عشر", "It's nineteen minutes past six.", 1, "الساعة السادسة وتسعة عشر دقيقة."], ["twenty", "عشرون", "There are twenty questions.", 1, "يوجد عشرون سؤالًا."],
+        ["student", "طالب", "I am a student.", 1, "أنا طالب."], ["desk", "مكتب / طاولة", "Put your book on the desk.", 1, "ضع كتابك على المكتب."],
+        ["chair", "كرسي", "Sit on the chair.", 1, "اجلس على الكرسي."], ["board", "سبورة", "The teacher writes on the board.", 1, "المعلم يكتب على السبورة."],
+        ["school bag", "حقيبة مدرسية", "My school bag is heavy.", 1, "حقيبتي المدرسية ثقيلة."], ["pencil", "قلم رصاص", "I write with a pencil.", 1, "أكتب بقلم رصاص."],
+        ["pencil case", "مقلمة", "Her pencil case is blue.", 1, "مقلمتها زرقاء."], ["exercise book", "كراسة", "Write the answer in your exercise book.", 1, "اكتب الإجابة في كراستك."],
+        ["bike", "دراجة", "He rides his bike to school.", 1, "هو يركب دراجته إلى المدرسة."], ["house", "بيت", "This is our house.", 1, "هذا بيتنا."],
+        ["park", "حديقة عامة", "The children play in the park.", 1, "الأطفال يلعبون في الحديقة العامة."], ["tree", "شجرة", "There is a big tree in the garden.", 1, "يوجد شجرة كبيرة في الحديقة."],
+        ["plane", "طائرة", "We travel by plane.", 1, "نسافر بالطائرة."], ["cat", "قطة", "The cat is on the roof.", 1, "القطة على السطح."],
+        ["name", "اسم", "What's your name?", 1, "ما اسمك؟"], ["brother", "أخ", "This is my brother.", 1, "هذا أخي."],
+        ["sister", "أخت", "She is my sister.", 1, "هي أختي."], ["good", "جيد", "That's a good idea.", 1, "هذه فكرة جيدة."],
+        ["planet", "كوكب", "Earth is our planet.", 1, "الأرض كوكبنا."], ["person", "شخص", "He is a kind person.", 1, "هو شخص طيب."],
+        ["thing", "شيء", "What's this thing?", 1, "ما هذا الشيء؟"], ["place", "مكان", "Riyadh is a nice place.", 1, "الرياض مكان جميل."],
+        ["girl", "بنت", "The girl is reading a book.", 1, "البنت تقرأ كتابًا."], ["friend", "صديق", "She is my best friend.", 1, "هي أفضل صديقة لي."],
+        ["hungry", "جوعان", "I'm hungry, let's eat.", 1, "أنا جائع، تعالوا نأكل."], ["thirsty", "عطشان", "He's thirsty after the game.", 1, "هو عطشان بعد المباراة."],
+        ["always", "دايمًا", "He's always on time.", 1, "هو دائمًا في الوقت المحدد."], ["town", "بلدة", "They live in a small town.", 1, "يعيشون في مدينة صغيرة."],
+        ["hot", "حار", "The tea is hot.", 1, "الشاي سخن."], ["cold", "بارد", "The water is cold.", 1, "المياه بارد."],
+        ["big", "كبير", "They have a big house.", 1, "عندهم بيت كبير."], ["small", "صغير", "This is a small shop.", 1, "هذا محل صغير."],
+        ["Greece", "اليونان", "Zoe is from Greece.", 2, "زوي من اليونان."], ["Italy", "إيطاليا", "Rome is in Italy.", 2, "روما في إيطاليا."],
+        ["sunny", "مشمس", "It's sunny today.", 2, "الجو مشمس اليوم."], ["warm", "دافئ", "The weather is warm.", 2, "الجو دافئ."],
+        ["favourite", "المفضل", "What's your favourite food?", 1, "ما هو طعامك المفضل؟"], ["dictionary", "قاموس", "I use a dictionary to check new words.", 2, "أستخدم قاموسًا لمراجعة الكلمات الجديدة."],
+        ["grammar book", "كتاب قواعد", "She has a grammar book.", 2, "عندها كتاب قواعد."], ["useful", "مفيد", "This app is useful.", 2, "هذا التطبيق مفيد."],
+        ["banana", "موزة", "He eats a banana every morning.", 1, "يأكل موزة كل صباح."], ["sandwich", "ساندويتش", "I have a cheese sandwich for lunch.", 1, "عندي ساندويتش جبنة في الغداء."],
+        ["spoon", "ملعقة", "Use a spoon to eat the soup.", 1, "استخدم ملعقة لتأكل الشوربة."], ["plate", "طبق", "Put the food on the plate.", 1, "ضع الطعام في الصحن."],
+        ["cake", "كيكة", "We have a cake for the party.", 1, "عندنا كيكة للحفلة."], ["lamp", "لمبة / مصباح", "Turn on the lamp.", 1, "شغّل اللمبة."],
+        ["beautiful", "جميل", "Rome is a beautiful city.", 2, "روما مدينة جميلة."], ["city", "مدينة", "Cairo is a big city.", 1, "القاهرة مدينة كبيرة."],
+        ["very", "جدًا", "The food is very good.", 1, "الطعام جيد جدًا."], ["interesting", "مثير للاهتمام", "This is an interesting book.", 2, "هذا كتاب مثير للاهتمام."],
+        ["country", "بلد / دولة", "Egypt is a beautiful country.", 1, "مصر بلد جميل."], ["nice", "لطيف", "She is a nice person.", 1, "هي شخص لطيف."],
+        ["flag", "علم", "The flag is red and white.", 1, "العلم أحمر وأبيض."], ["coin", "عملة معدنية", "He has an old coin.", 1, "عنده عملة قديمة."],
+        ["bench", "مقعد (حديقة)", "They sit on a bench in the park.", 1, "يجلسون على مقعد في الحديقة."], ["bush", "شجيرة", "The cat is behind the bush.", 1, "القطة خلف الشجيرة."],
+        ["box", "صندوق", "Put the books in the box.", 1, "ضع الكتب في الصندوق."], ["tooth", "سنّة", "The dentist checked his tooth.", 1, "فحص طبيب الأسنان سنّه."],
+        ["bird", "طائر", "A bird is singing in the tree.", 1, "عصفور يغني على الشجرة."], ["kind", "لطيف / طيب", "My teacher is kind.", 1, "معلمتي طيبة."],
+        ["food", "طعام", "I like Italian food.", 1, "أنا أحب الطعام الإيطالي."], ["pizza", "بيتزا", "We ordered pizza for dinner.", 1, "طلبنا بيتزا للعشاء."],
+        ["school", "مدرسة", "My school is near my house.", 1, "مدرستي قريبة من بيتي."], ["sport", "رياضة", "Football is my favourite sport.", 1, "كرة القدم رياضتي المفضلة."],
+        ["chocolate", "شوكولاتة", "She likes chocolate cake.", 1, "هي تحب كيك الشوكولاتة."], ["steak", "ستيك", "He ordered steak for dinner.", 2, "طلب ستيك للعشاء."],
+        ["swimming", "سباحة", "Swimming is good exercise.", 1, "السباحة تمرين جيد."], ["basketball", "كرة سلة", "They play basketball after school.", 1, "يلعبون كرة السلة بعد المدرسة."],
+        ["spaghetti", "سباجيتي / مكرونة", "We eat spaghetti on Fridays.", 1, "نأكل المكرونة الإسباجيتي يوم الجمعة."]
+      ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1, exAr: v[4] || "" }; })
     },
     iso: {
       id: "iso", title: "آيزو 9001:2026", desc: "دليلك المبسّط لنظام إدارة الجودة: البنود، المصطلحات ثنائية اللغة، والفروق عن نسخة 2015.",
@@ -1554,32 +1609,32 @@ tr:last-child td { border-block-end: 0; }
         }
       ],
       vocab: [
-        ["quality management system", "نظام إدارة الجودة", "The company follows a quality management system."],
-        ["interested party", "طرف معنيّ", "Customers and suppliers are interested parties."],
-        ["risk-based thinking", "التفكير القائم على المخاطر", "Risk-based thinking helps prevent problems early."],
-        ["opportunity", "فرصة", "Rising demand is an opportunity for growth."],
-        ["top management", "الإدارة العليا", "Top management reviews the quality policy yearly."],
-        ["quality policy", "سياسة الجودة", "The quality policy is posted on the wall."],
-        ["quality objective", "هدف الجودة", "Our quality objective is to reduce defects."],
-        ["competence", "الكفاءة", "Training improves employee competence."],
-        ["awareness", "الوعي", "Awareness of the policy helps everyone contribute."],
-        ["documented information", "المعلومات الموثقة", "Documented information must be protected from loss."],
-        ["requirement", "متطلب", "Meeting customer requirements is essential."],
-        ["conformity", "المطابقة", "Conformity means meeting the requirements."],
-        ["nonconformity", "عدم المطابقة", "The nonconformity was corrected immediately."],
-        ["corrective action", "إجراء تصحيحي", "A corrective action prevents the problem from recurring."],
-        ["verification", "التحقق", "Verification confirms the design matches the specification."],
-        ["validation", "التثبيت", "Validation confirms the product works as intended."],
-        ["traceability", "التتبع", "Traceability lets us track each product's origin."],
-        ["external provider", "مورّد خارجي", "The external provider supplies raw materials."],
-        ["internal audit", "التدقيق الداخلي", "The internal audit checks the system every six months."],
-        ["management review", "مراجعة الإدارة", "The management review happens once a year."],
-        ["continual improvement", "التحسين المستمر", "Continual improvement is a core principle."],
-        ["customer satisfaction", "رضا العميل", "Customer satisfaction is measured through surveys."],
-        ["scope", "النطاق", "The scope defines what the QMS covers."],
-        ["process", "عملية", "Every process has inputs and outputs."],
-        ["quality culture", "ثقافة الجودة", "Quality culture means everyone cares about quality daily."]
-      ].map(function (v, i) { return { id: "iso-v" + i, en: v[0], ar: v[1], ex: v[2] }; })
+        ["quality management system", "نظام إدارة الجودة", "The company follows a quality management system.", 1, "الشركة تتبع نظام إدارة الجودة."],
+        ["interested party", "طرف معنيّ", "Customers and suppliers are interested parties.", 1, "العملاء والموردون هم أصحاب المصلحة."],
+        ["risk-based thinking", "التفكير القائم على المخاطر", "Risk-based thinking helps prevent problems early.", 1, "التفكير القائم على المخاطر يساعد في منع المشاكل مبكرًا."],
+        ["opportunity", "فرصة", "Rising demand is an opportunity for growth.", 1, "زيادة الطلب تمثل فرصة للنمو."],
+        ["top management", "الإدارة العليا", "Top management reviews the quality policy yearly.", 1, "الإدارة العليا تراجع سياسة الجودة سنويًا."],
+        ["quality policy", "سياسة الجودة", "The quality policy is posted on the wall.", 1, "سياسة الجودة معلّقة على الحائط."],
+        ["quality objective", "هدف الجودة", "Our quality objective is to reduce defects.", 1, "هدفنا من الجودة هو تقليل العيوب."],
+        ["competence", "الكفاءة", "Training improves employee competence.", 1, "التدريب يحسّن كفاءة الموظفين."],
+        ["awareness", "الوعي", "Awareness of the policy helps everyone contribute.", 1, "الوعي بالسياسة يساعد الجميع على المساهمة."],
+        ["documented information", "المعلومات الموثقة", "Documented information must be protected from loss.", 1, "يجب حماية المعلومات الموثقة من الفقد."],
+        ["requirement", "متطلب", "Meeting customer requirements is essential.", 1, "تلبية متطلبات العميل أمر ضروري."],
+        ["conformity", "المطابقة", "Conformity means meeting the requirements.", 1, "المطابقة تعني تلبية المتطلبات."],
+        ["nonconformity", "عدم المطابقة", "The nonconformity was corrected immediately.", 1, "تم تصحيح حالة عدم المطابقة فورًا."],
+        ["corrective action", "إجراء تصحيحي", "A corrective action prevents the problem from recurring.", 1, "الإجراء التصحيحي يمنع تكرار المشكلة."],
+        ["verification", "التحقق", "Verification confirms the design matches the specification.", 1, "التحقق يؤكد أن التصميم يطابق المواصفة."],
+        ["validation", "التثبيت", "Validation confirms the product works as intended.", 1, "التصديق يؤكد أن المنتج يعمل كما هو مقصود."],
+        ["traceability", "التتبع", "Traceability lets us track each product's origin.", 1, "قابلية التتبع تتيح لنا تتبّع أصل كل منتج."],
+        ["external provider", "مورّد خارجي", "The external provider supplies raw materials.", 1, "المورد الخارجي يوفّر المواد الخام."],
+        ["internal audit", "التدقيق الداخلي", "The internal audit checks the system every six months.", 1, "التدقيق الداخلي يفحص النظام كل ستة أشهر."],
+        ["management review", "مراجعة الإدارة", "The management review happens once a year.", 1, "مراجعة الإدارة تحدث مرة واحدة في السنة."],
+        ["continual improvement", "التحسين المستمر", "Continual improvement is a core principle.", 1, "التحسين المستمر مبدأ أساسي."],
+        ["customer satisfaction", "رضا العميل", "Customer satisfaction is measured through surveys.", 1, "رضا العميل يُقاس من خلال الاستبيانات."],
+        ["scope", "النطاق", "The scope defines what the QMS covers.", 1, "المجال يحدد ما يغطيه نظام إدارة الجودة."],
+        ["process", "عملية", "Every process has inputs and outputs.", 1, "كل عملية لها مدخلات ومخرجات."],
+        ["quality culture", "ثقافة الجودة", "Quality culture means everyone cares about quality daily.", 1, "ثقافة الجودة تعني أن كل شخص يهتم بالجودة يوميًا."]
+      ].map(function (v, i) { return { id: "iso-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1, exAr: v[4] || "" }; })
     },
     iso14001: {
       id: "iso14001", title: "آيزو 14001:2026", desc: "دليلك المبسّط لنظام الإدارة البيئية: الجوانب والتأثيرات البيئية، الطوارئ، والفروق عن نسخة 2015.",
@@ -1768,37 +1823,37 @@ tr:last-child td { border-block-end: 0; }
         }
       ],
       vocab: [
-        ["environmental aspect", "جانب بيئي", "Diesel truck emissions are an environmental aspect.", 1],
-        ["environmental impact", "تأثير بيئي", "Air pollution is the environmental impact of the emissions.", 1],
-        ["environmental management system", "نظام الإدارة البيئية", "The factory operates a certified environmental management system.", 1],
-        ["life cycle perspective", "منظور دورة الحياة", "The company considers a life cycle perspective from raw material to disposal.", 3],
-        ["environmental policy", "السياسة البيئية", "The environmental policy is posted at the factory entrance.", 1],
-        ["compliance obligation", "التزام قانوني", "Discharge permits are a key compliance obligation.", 2],
-        ["significant environmental aspect", "جانب بيئي هام", "Water consumption is a significant environmental aspect here.", 2],
-        ["pollution prevention", "منع التلوث", "Pollution prevention is a core commitment in the policy.", 2],
-        ["interested party", "طرف معنيّ", "The environmental regulator is an interested party.", 1],
-        ["top management", "الإدارة العليا", "Top management reviews the EMS every year.", 1],
-        ["environmental objective", "هدف بيئي", "Our environmental objective is to cut water use by 10%.", 2],
-        ["emergency preparedness", "الاستعداد للطوارئ", "Emergency preparedness includes a spill response plan.", 2],
-        ["internal audit", "التدقيق الداخلي", "The internal audit checks the EMS every six months.", 2],
-        ["management review", "مراجعة الإدارة", "The management review covers audit results and compliance status.", 2],
-        ["continual improvement", "التحسين المستمر", "Continual improvement enhances environmental performance.", 2],
-        ["nonconformity", "عدم المطابقة", "The nonconformity was corrected immediately.", 2],
-        ["corrective action", "إجراء تصحيحي", "A corrective action prevents the leak from recurring.", 2],
-        ["documented information", "المعلومات الموثقة", "Documented information must be kept up to date.", 2],
-        ["scope", "النطاق", "The scope defines which sites the EMS covers.", 1],
-        ["hierarchy of controls", "التسلسل الهرمي للضبط", "Elimination is the first step in the hierarchy of controls.", 3],
-        ["root cause", "السبب الجذري", "Finding the root cause prevents the problem from repeating.", 2],
-        ["spill", "انسكاب", "The team cleaned the diesel spill immediately.", 1],
-        ["leak", "تسرب", "A leak from the tank was reported last week.", 1],
-        ["hazardous waste", "مخلفات خطرة", "Hazardous waste is stored in a separate area.", 2],
-        ["legal register", "سجل الالتزامات القانونية", "The legal register lists every environmental law we follow.", 2],
-        ["awareness", "الوعي", "Awareness training covers the significant environmental aspects.", 1],
-        ["competence", "الكفاءة", "Competence ensures staff handle chemicals safely.", 2],
-        ["correction", "تصحيح فوري", "The correction stopped the spill from spreading.", 2],
-        ["risk and opportunity", "المخاطر والفرص", "The team reviews risk and opportunity every quarter.", 2],
-        ["frequency", "وتيرة", "They set the frequency of compliance evaluation to once a year.", 2]
-      ].map(function (v, i) { return { id: "iso14001-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
+        ["environmental aspect", "جانب بيئي", "Diesel truck emissions are an environmental aspect.", 1, "انبعاثات شاحنات الديزل جانب بيئي."],
+        ["environmental impact", "تأثير بيئي", "Air pollution is the environmental impact of the emissions.", 1, "تلوث الهواء هو الأثر البيئي لهذه الانبعاثات."],
+        ["environmental management system", "نظام الإدارة البيئية", "The factory operates a certified environmental management system.", 1, "المصنع يطبّق نظام إدارة بيئية معتمدًا."],
+        ["life cycle perspective", "منظور دورة الحياة", "The company considers a life cycle perspective from raw material to disposal.", 3, "الشركة تنظر لمنظور دورة الحياة من المادة الخام حتى التخلص منها."],
+        ["environmental policy", "السياسة البيئية", "The environmental policy is posted at the factory entrance.", 1, "السياسة البيئية معلّقة عند مدخل المصنع."],
+        ["compliance obligation", "التزام قانوني", "Discharge permits are a key compliance obligation.", 2, "تصاريح الصرف هي أحد أهم متطلبات الالتزام."],
+        ["significant environmental aspect", "جانب بيئي هام", "Water consumption is a significant environmental aspect here.", 2, "استهلاك المياه جانب بيئي هام هنا."],
+        ["pollution prevention", "منع التلوث", "Pollution prevention is a core commitment in the policy.", 2, "منع التلوث التزام أساسي في السياسة."],
+        ["interested party", "طرف معنيّ", "The environmental regulator is an interested party.", 1, "الجهة التنظيمية البيئية صاحبة مصلحة."],
+        ["top management", "الإدارة العليا", "Top management reviews the EMS every year.", 1, "الإدارة العليا تراجع نظام الإدارة البيئية كل سنة."],
+        ["environmental objective", "هدف بيئي", "Our environmental objective is to cut water use by 10%.", 2, "هدفنا البيئي هو تقليل استخدام المياه بنسبة 10%."],
+        ["emergency preparedness", "الاستعداد للطوارئ", "Emergency preparedness includes a spill response plan.", 2, "التأهب للطوارئ يشمل خطة للاستجابة للتسرب."],
+        ["internal audit", "التدقيق الداخلي", "The internal audit checks the EMS every six months.", 2, "التدقيق الداخلي يفحص نظام الإدارة البيئية كل ستة أشهر."],
+        ["management review", "مراجعة الإدارة", "The management review covers audit results and compliance status.", 2, "مراجعة الإدارة تغطي نتائج التدقيق وحالة الالتزام."],
+        ["continual improvement", "التحسين المستمر", "Continual improvement enhances environmental performance.", 2, "التحسين المستمر يعزز الأداء البيئي."],
+        ["nonconformity", "عدم المطابقة", "The nonconformity was corrected immediately.", 2, "تم تصحيح حالة عدم المطابقة فورًا."],
+        ["corrective action", "إجراء تصحيحي", "A corrective action prevents the leak from recurring.", 2, "الإجراء التصحيحي يمنع تكرار التسرب."],
+        ["documented information", "المعلومات الموثقة", "Documented information must be kept up to date.", 2, "يجب تحديث المعلومات الموثقة باستمرار."],
+        ["scope", "النطاق", "The scope defines which sites the EMS covers.", 1, "المجال يحدد المواقع التي يغطيها نظام الإدارة البيئية."],
+        ["hierarchy of controls", "التسلسل الهرمي للضبط", "Elimination is the first step in the hierarchy of controls.", 3, "الإزالة هي الخطوة الأولى في تسلسل ضوابط التحكم."],
+        ["root cause", "السبب الجذري", "Finding the root cause prevents the problem from repeating.", 2, "إيجاد السبب الجذري يمنع تكرار المشكلة."],
+        ["spill", "انسكاب", "The team cleaned the diesel spill immediately.", 1, "قام الفريق بتنظيف تسرب الديزل فورًا."],
+        ["leak", "تسرب", "A leak from the tank was reported last week.", 1, "تم الإبلاغ عن تسرب من الخزان الأسبوع الماضي."],
+        ["hazardous waste", "مخلفات خطرة", "Hazardous waste is stored in a separate area.", 2, "النفايات الخطرة تُخزَّن في منطقة منفصلة."],
+        ["legal register", "سجل الالتزامات القانونية", "The legal register lists every environmental law we follow.", 2, "السجل القانوني يضم كل القوانين البيئية التي نلتزم بها."],
+        ["awareness", "الوعي", "Awareness training covers the significant environmental aspects.", 1, "تدريب التوعية يغطي الجوانب البيئية الهامة."],
+        ["competence", "الكفاءة", "Competence ensures staff handle chemicals safely.", 2, "الكفاءة تضمن تعامل الموظفين مع المواد الكيميائية بأمان."],
+        ["correction", "تصحيح فوري", "The correction stopped the spill from spreading.", 2, "التصحيح الفوري أوقف انتشار التسرب."],
+        ["risk and opportunity", "المخاطر والفرص", "The team reviews risk and opportunity every quarter.", 2, "يراجع الفريق المخاطر والفرص كل ربع سنة."],
+        ["frequency", "وتيرة", "They set the frequency of compliance evaluation to once a year.", 2, "حددوا تكرار تقييم الالتزام بمرة واحدة في السنة."]
+      ].map(function (v, i) { return { id: "iso14001-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1, exAr: v[4] || "" }; })
     },
     iso45001: {
       id: "iso45001", title: "آيزو 45001: الصحة والسلامة المهنية", desc: "دليلك المبسّط لنظام إدارة الصحة والسلامة المهنية: تحديد المخاطر، مشاركة العاملين، والاستعداد للطوارئ.",
@@ -1972,40 +2027,482 @@ tr:last-child td { border-block-end: 0; }
         }
       ],
       vocab: [
-        ["hazard", "خطر", "A wet floor is a common hazard in the workshop.", 1],
-        ["OH&S risk", "مخاطرة صحة وسلامة مهنية", "The team assessed the OH&S risk before starting the job.", 1],
-        ["worker participation", "مشاركة العاملين", "Worker participation improved hazard reporting.", 2],
-        ["consultation", "مشاورة", "Consultation with workers happens before the new policy is set.", 2],
-        ["stop work authority", "صلاحية وقف العمل", "Every worker has stop work authority when they see danger.", 2],
-        ["incident", "حادث", "The incident was reported and investigated the same day.", 1],
-        ["near-miss", "إنذار مبكر", "He reported a near-miss before anyone got hurt.", 2],
-        ["hierarchy of controls", "التسلسل الهرمي للضبط", "Elimination is the first step in the hierarchy of controls.", 3],
-        ["elimination", "الإلغاء", "Elimination removes the hazard completely.", 2],
-        ["substitution", "الإحلال", "Substitution replaces a hazardous material with a safer one.", 2],
-        ["engineering control", "ضابط هندسي", "A ventilation system is an engineering control.", 2],
-        ["administrative control", "ضابط إداري", "Warning signs are a simple administrative control.", 2],
-        ["PPE", "معدات الحماية الشخصية", "Workers must wear PPE on the production floor.", 1],
-        ["personal protective equipment", "معدات الحماية الشخصية", "Helmets are a basic type of personal protective equipment.", 1],
-        ["emergency preparedness", "الاستعداد للطوارئ", "Emergency preparedness includes regular fire drills.", 2],
-        ["drill", "تدريب محاكاة", "The factory runs an evacuation drill every quarter.", 1],
-        ["evacuation", "إخلاء", "The alarm started the evacuation of the building.", 1],
-        ["injury and ill health", "إصابة واعتلال صحي", "The policy aims to prevent injury and ill health.", 2],
-        ["management of change", "إدارة التغيير", "Management of change checks new equipment before use.", 2],
-        ["procurement", "المشتريات", "Procurement verifies supplier safety standards.", 2],
-        ["root cause", "السبب الجذري", "Finding the root cause prevents the accident from recurring.", 2],
-        ["correction", "تصحيح فوري", "The correction stopped the hazard from spreading.", 2],
-        ["corrective action", "إجراء تصحيحي", "A corrective action prevents the fall from happening again.", 2],
-        ["top management", "الإدارة العليا", "Top management reviews the OH&S system every year.", 1],
-        ["competence", "الكفاءة", "Competence ensures workers handle chemicals safely.", 2],
-        ["awareness", "الوعي", "Awareness training covers every significant hazard.", 1],
-        ["reprisal", "انتقام", "Workers are protected from reprisal when reporting hazards.", 3],
-        ["legal requirement", "متطلب قانوني", "Fire exit width is a common legal requirement.", 2],
-        ["internal audit", "التدقيق الداخلي", "The internal audit checks the OH&S system every six months.", 2],
-        ["management review", "مراجعة الإدارة", "The management review covers incident trends and audit results.", 2]
-      ].map(function (v, i) { return { id: "iso45001-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
+        ["hazard", "خطر", "A wet floor is a common hazard in the workshop.", 1, "الأرض المبللة خطر شائع في الورشة."],
+        ["OH&S risk", "مخاطرة صحة وسلامة مهنية", "The team assessed the OH&S risk before starting the job.", 1, "قيّم الفريق مخاطر الصحة والسلامة المهنية قبل بدء العمل."],
+        ["worker participation", "مشاركة العاملين", "Worker participation improved hazard reporting.", 2, "مشاركة العمال حسّنت الإبلاغ عن المخاطر."],
+        ["consultation", "مشاورة", "Consultation with workers happens before the new policy is set.", 2, "التشاور مع العمال يتم قبل وضع السياسة الجديدة."],
+        ["stop work authority", "صلاحية وقف العمل", "Every worker has stop work authority when they see danger.", 2, "لكل عامل سلطة إيقاف العمل عند رؤية خطر."],
+        ["incident", "حادث", "The incident was reported and investigated the same day.", 1, "تم الإبلاغ عن الحادث والتحقيق فيه في نفس اليوم."],
+        ["near-miss", "إنذار مبكر", "He reported a near-miss before anyone got hurt.", 2, "أبلغ عن حالة كادت أن تكون حادثًا قبل أن يتأذى أحد."],
+        ["hierarchy of controls", "التسلسل الهرمي للضبط", "Elimination is the first step in the hierarchy of controls.", 3, "الإزالة هي الخطوة الأولى في تسلسل ضوابط التحكم."],
+        ["elimination", "الإلغاء", "Elimination removes the hazard completely.", 2, "الإزالة تُزيل الخطر بشكل كامل."],
+        ["substitution", "الإحلال", "Substitution replaces a hazardous material with a safer one.", 2, "الاستبدال يستبدل المادة الخطرة بمادة أكثر أمانًا."],
+        ["engineering control", "ضابط هندسي", "A ventilation system is an engineering control.", 2, "نظام التهوية هو ضابط تحكم هندسي."],
+        ["administrative control", "ضابط إداري", "Warning signs are a simple administrative control.", 2, "لوحات التحذير ضابط تحكم إداري بسيط."],
+        ["PPE", "معدات الحماية الشخصية", "Workers must wear PPE on the production floor.", 1, "يجب على العمال ارتداء معدات الحماية الشخصية في منطقة الإنتاج."],
+        ["personal protective equipment", "معدات الحماية الشخصية", "Helmets are a basic type of personal protective equipment.", 1, "الخوذات نوع أساسي من معدات الحماية الشخصية."],
+        ["emergency preparedness", "الاستعداد للطوارئ", "Emergency preparedness includes regular fire drills.", 2, "التأهب للطوارئ يشمل تدريبات إخلاء منتظمة بالحريق."],
+        ["drill", "تدريب محاكاة", "The factory runs an evacuation drill every quarter.", 1, "المصنع يجري تدريب إخلاء كل ربع سنة."],
+        ["evacuation", "إخلاء", "The alarm started the evacuation of the building.", 1, "أدى الإنذار إلى بدء إخلاء المبنى."],
+        ["injury and ill health", "إصابة واعتلال صحي", "The policy aims to prevent injury and ill health.", 2, "تهدف السياسة إلى منع الإصابات واعتلال الصحة."],
+        ["management of change", "إدارة التغيير", "Management of change checks new equipment before use.", 2, "إدارة التغيير تفحص المعدات الجديدة قبل استخدامها."],
+        ["procurement", "المشتريات", "Procurement verifies supplier safety standards.", 2, "الشراء يتحقق من معايير السلامة لدى المورد."],
+        ["root cause", "السبب الجذري", "Finding the root cause prevents the accident from recurring.", 2, "إيجاد السبب الجذري يمنع تكرار الحادث."],
+        ["correction", "تصحيح فوري", "The correction stopped the hazard from spreading.", 2, "التصحيح أوقف انتشار الخطر."],
+        ["corrective action", "إجراء تصحيحي", "A corrective action prevents the fall from happening again.", 2, "الإجراء التصحيحي يمنع تكرار السقوط."],
+        ["top management", "الإدارة العليا", "Top management reviews the OH&S system every year.", 1, "الإدارة العليا تراجع نظام الصحة والسلامة المهنية كل سنة."],
+        ["competence", "الكفاءة", "Competence ensures workers handle chemicals safely.", 2, "الكفاءة تضمن تعامل العمال مع المواد الكيميائية بأمان."],
+        ["awareness", "الوعي", "Awareness training covers every significant hazard.", 1, "تدريب التوعية يغطي كل خطر هام."],
+        ["reprisal", "انتقام", "Workers are protected from reprisal when reporting hazards.", 3, "العمال محميون من الانتقام عند الإبلاغ عن المخاطر."],
+        ["legal requirement", "متطلب قانوني", "Fire exit width is a common legal requirement.", 2, "عرض مخارج الحريق متطلب قانوني شائع."],
+        ["internal audit", "التدقيق الداخلي", "The internal audit checks the OH&S system every six months.", 2, "التدقيق الداخلي يفحص نظام الصحة والسلامة المهنية كل ستة أشهر."],
+        ["management review", "مراجعة الإدارة", "The management review covers incident trends and audit results.", 2, "مراجعة الإدارة تغطي اتجاهات الحوادث ونتائج التدقيق."]
+      ].map(function (v, i) { return { id: "iso45001-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1, exAr: v[4] || "" }; })
+    },
+    iso22000: {
+      id: "iso22000", title: "آيزو 22000: سلامة الغذاء", desc: "دليلك المبسّط لنظام إدارة سلامة الغذاء: البرامج التمهيدية، HACCP، وCCP مقابل OPRP.",
+      units: [
+        {
+          id: "c0", icon: "★", title: "فكرة عامة عن آيزو 22000",
+          pts: [
+            "آيزو 22000 {ISO 22000} معيار عالمي يحدد متطلبات \"نظام إدارة سلامة الغذاء\" {Food Safety Management System (FSMS)} لأي مؤسسة في \"سلسلة الغذاء\" {food chain} — من المزارع والمصنّعين لشركات النقل والتخزين ومطاعم التقديم.",
+            "المعيار مبني على نفس الهيكل العالي الموحد (بند 4 إلى 10) ودورة {Plan-Do-Check-Act (PDCA)} الموجودة في آيزو 9001 و14001 و45001 — لكن الإضافة الجوهرية هنا إنه يدمج متطلبات نظام الإدارة مع مبادئ \"الهاسب\" {HACCP (Hazard Analysis and Critical Control Points)} كعلم غذائي قائم بذاته.",
+            "الفرق الجوهري عن باقي المعايير: آيزو 9001 يركّز على رضا العميل، 14001 على البيئة، 45001 على سلامة العامل، أما آيزو 22000 فهدفه حماية \"المستهلك النهائي\" {end consumer} من أي أذى صحي ناتج عن الغذاء وقت تناوله.",
+            "مفهوم محوري: \"خطر سلامة الغذاء\" {food safety hazard} هو عامل بيولوجي أو كيميائي أو فيزيائي في الغذاء له احتمالية التسبب بأذى صحي (مثل بكتيريا السالمونيلا، أو بقايا مبيد حشري، أو شظية زجاج)، أما \"المخاطرة\" {risk} فهي احتمال وشدة حدوث هذا الأذى فعليًا عند الاستهلاك.",
+            "سمة مميزة لآيزو 22000: الجمع بين \"برامج تمهيدية\" {Prerequisite Programmes (PRPs)} و\"خطة ضبط الأخطار\" {hazard control plan} التي تصنّف كل ضابط تحكم إما \"نقطة تحكم حرجة\" {CCP} أو \"برنامج تشغيلي تمهيدي\" {OPRP} — مزيج فريد غير موجود بنفس الشكل في أي معيار إدارة تاني."
+          ],
+          qs: [
+            { t: "mcq", q: "{FSMS} اختصار لـ", o: ["Food Safety Management System", "Factory Safety Monitoring Service", "Final Supply Management Standard"], a: "Food Safety Management System", why: "FSMS هو الاختصار الرسمي لنظام إدارة سلامة الغذاء." },
+            { t: "mcq", q: "هدف آيزو 22000 الأساسي", o: ["حماية المستهلك من أذى صحي ناتج عن الغذاء", "تحسين أرباح المصنع فقط", "تسريع خطوط الإنتاج"], a: "حماية المستهلك من أذى صحي ناتج عن الغذاء", why: "آيزو 22000 يركّز على سلامة الغذاء وقت الاستهلاك من قِبل المستهلك النهائي." },
+            { t: "mcq", q: "بكتيريا السالمونيلا الموجودة في قطعة دجاج غير مطهوة جيدًا تُصنَّف", o: ["Hazard (خطر)", "Risk (مخاطرة)", "Objective (هدف)"], a: "Hazard (خطر)", why: "السالمونيلا عامل بيولوجي له احتمالية التسبب في أذى صحي، فهي الخطر نفسه." },
+            { t: "fill", q: "الحروف الأربعة لمبادئ تحليل الأخطار المدمجة في آيزو 22000 هي ___ (إنجليزي).", a: ["HACCP"], why: "HACCP = Hazard Analysis and Critical Control Points، العلم الغذائي المدمج في قلب المعيار." },
+            { t: "mcq", q: "السمة المميزة لآيزو 22000 عن باقي معايير الإدارة", o: ["الجمع بين البرامج التمهيدية وخطة ضبط الأخطار CCP/OPRP", "عدم وجود تدقيق داخلي", "استبعاد الإدارة العليا من المسؤولية"], a: "الجمع بين البرامج التمهيدية وخطة ضبط الأخطار CCP/OPRP", why: "هذا المزيج بين PRPs وتصنيف الضوابط إلى CCP أو OPRP سمة فريدة لآيزو 22000." }
+          ]
+        },
+        {
+          id: "c4", icon: "4", title: "سياق المؤسسة {Context of the organization}",
+          pts: [
+            "{4.1} فهم المؤسسة وسياقها: القضايا الداخلية والخارجية المؤثرة على قدرتها على ضمان سلامة الغذاء — مثل نوع النشاط (مصنع ألبان، مطعم، شركة توصيل مبرّد)، الظروف المناخية، أو انتشار وباء غذائي في المنطقة.",
+            "{4.2} فهم احتياجات وتوقعات الأطراف المعنية: المستهلكون، الجهات الرقابية الصحية، الموردون، شركات النقل والتخزين، وحتى \"الأطراف الأخرى في سلسلة الغذاء\" {other parties in the food chain} مثل المزارعين المورّدين للمواد الخام.",
+            "مثال عملي: مصنع عصائر — المستهلك يتوقع منتج آمن خالٍ من الميكروبات، الجهة الرقابية تشترط تراخيص سلامة غذاء سارية، والمورد يشترط مواصفات استلام واضحة للفاكهة الخام.",
+            "{4.3} تحديد نطاق نظام إدارة سلامة الغذاء {scope}: يُحدَّد بدقة المنتجات والخدمات والعمليات والمواقع المشمولة — مثال: مصنع له خط تعبئة ومخزن تبريد منفصل، فيُحدَّد هل النظام يغطي الاثنين معًا.",
+            "{4.4} نظام إدارة سلامة الغذاء: المؤسسة تُنشئ وتُطبّق وتُحدّث نظامًا يشمل كل العمليات المؤثرة على سلامة الغذاء وتفاعلها مع بعضها."
+          ],
+          qs: [
+            { t: "mcq", q: "بند {4.2} يخص فهم احتياجات", o: ["المستهلكين والأطراف المعنية في سلسلة الغذاء", "الموظفين الإداريين فقط", "المنافسين فقط"], a: "المستهلكين والأطراف المعنية في سلسلة الغذاء", why: "بند 4.2 يحدد المستهلكين والجهات الرقابية والموردين كأطراف معنية أساسية." },
+            { t: "mcq", q: "اشتراط الجهة الرقابية تراخيص سلامة غذاء سارية مثال على", o: ["احتياج طرف معنيّ خارجي", "هدف داخلي للمصنع", "جانب تسويقي"], a: "احتياج طرف معنيّ خارجي", why: "الجهة الرقابية طرف معنيّ خارجي له متطلبات يجب على المؤسسة تحديدها والوفاء بها." },
+            { t: "mcq", q: "بند {4.3} يتعلق بـ", o: ["تحديد نطاق نظام إدارة سلامة الغذاء", "تحديد أسعار المنتجات", "تحديد رواتب العاملين"], a: "تحديد نطاق نظام إدارة سلامة الغذاء", why: "بند 4.3 يحدد بدقة أي المواقع والمنتجات والعمليات يغطيها نظام FSMS." },
+            { t: "fill", q: "بند ___ يخص فهم احتياجات وتوقعات الأطراف المعنية. (رقم)", a: ["4.2"], why: "بند 4.2 يحدد الأطراف المعنية ومتطلباتهم المرتبطة بسلامة الغذاء." },
+            { t: "mcq", q: "مزرعة تورّد مواد خام للمصنع تُعتبر طرفًا معنيًا من نوع", o: ["طرف آخر في سلسلة الغذاء", "مستهلك نهائي", "جهة رقابية"], a: "طرف آخر في سلسلة الغذاء", why: "المزارعون والموردون أطراف أساسية ضمن سلسلة الغذاء يجب مراعاة متطلباتهم." }
+          ]
+        },
+        {
+          id: "c5", icon: "5", title: "القيادة وفريق سلامة الغذاء {Leadership & Food Safety Team}",
+          pts: [
+            "{5.1} القيادة والالتزام: الإدارة العليا {top management} مسؤولة عن دمج متطلبات النظام في عمليات المؤسسة الأساسية، وضمان توفر الموارد، والتأكيد على أهمية سلامة الغذاء لكل العاملين.",
+            "{5.2} سياسة سلامة الغذاء {food safety policy}: بيان مكتوب يلتزم بالوفاء بمتطلبات سلامة الغذاء القانونية والتنظيمية ومتطلبات العملاء المتفق عليها، ويوفر إطارًا لمراجعة الأهداف.",
+            "{5.3} الأدوار التنظيمية — سمة مميزة لآيزو 22000: الإدارة العليا تُلزَم صراحةً بتعيين \"فريق سلامة الغذاء\" {food safety team} و\"قائد فريق سلامة الغذاء\" {food safety team leader} — بند مُفرد بالكامل لتشكيل هذا الفريق، غير موجود بنفس الوضوح في أي معيار إدارة تاني.",
+            "قائد فريق سلامة الغذاء مسؤول عن: ضمان إنشاء وتطبيق وتحديث النظام، إدارة عمل الفريق، التأكد من كفاءة أعضائه، ورفع تقارير الأداء للإدارة العليا.",
+            "فريق سلامة الغذاء لازم يجمع خبرات \"متعددة التخصصات\" {multi-disciplinary} — مثال: مصنع ألبان يضم في الفريق مهندس جودة، أخصائي ميكروبيولوجي، مسؤول إنتاج، ومسؤول صيانة — كل واحد بيغطي زاوية مختلفة من الأخطار.",
+            "{5.3.3} كل شخص في المؤسسة له مسؤولية الإبلاغ عن أي مشكلة تخص نظام سلامة الغذاء للشخص المُحدَّد — مش بس فريق سلامة الغذاء نفسه."
+          ],
+          qs: [
+            { t: "mcq", q: "سمة مميزة لآيزو 22000 في بند 5.3", o: ["تعيين فريق سلامة الغذاء وقائده صراحةً", "إلغاء دور الإدارة العليا", "عدم الحاجة لسياسة مكتوبة"], a: "تعيين فريق سلامة الغذاء وقائده صراحةً", why: "بند 5.3 يُفرد متطلبًا واضحًا لتعيين فريق سلامة الغذاء وقائده، وهو فريد نسبيًا لهذا المعيار." },
+            { t: "mcq", q: "من مسؤوليات قائد فريق سلامة الغذاء", o: ["رفع تقارير فعالية النظام للإدارة العليا", "تحديد رواتب العاملين", "التفاوض مع الموردين على الأسعار"], a: "رفع تقارير فعالية النظام للإدارة العليا", why: "قائد الفريق مسؤول عن إبلاغ الإدارة العليا بمدى فعالية وملاءمة النظام." },
+            { t: "fill", q: "بند ___ هو البند المُفرد لتعيين فريق سلامة الغذاء. (رقم)", a: ["5.3"], why: "بند 5.3 يُلزم الإدارة العليا بتعيين فريق سلامة الغذاء وقائده بوضوح." },
+            { t: "mcq", q: "مثال على \"خبرة متعددة التخصصات\" في فريق سلامة الغذاء", o: ["ضم مهندس جودة وأخصائي ميكروبيولوجي ومسؤول إنتاج معًا", "الاعتماد على شخص واحد فقط من قسم المبيعات", "استبعاد مسؤول الصيانة من الفريق دائمًا"], a: "ضم مهندس جودة وأخصائي ميكروبيولوجي ومسؤول إنتاج معًا", why: "تعدد التخصصات يغطي زوايا مختلفة من أخطار سلامة الغذاء في آن واحد." },
+            { t: "mcq", q: "{food safety policy} هي", o: ["بيان مكتوب لالتزام المؤسسة بمتطلبات سلامة الغذاء", "قائمة أسعار المنتجات", "جدول صيانة المعدات"], a: "بيان مكتوب لالتزام المؤسسة بمتطلبات سلامة الغذاء", why: "سياسة سلامة الغذاء بيان معلن يوضح التزام المؤسسة ويوفر إطارًا لأهدافها." }
+          ]
+        },
+        {
+          id: "c6", icon: "6", title: "التخطيط {Planning}",
+          pts: [
+            "{6.1} عند التخطيط، المؤسسة تحدد المخاطر والفرص المرتبطة بسياقها (بند 4) — لكن تنبيه مهم: المخاطر هنا تخص \"أداء نظام الإدارة نفسه\"، أما التحكم الفعلي في أخطار الغذاء فمكانه بند 8 تحديدًا.",
+            "فرق جوهري ينفرد به آيزو 22000: الجهات الحكومية مسؤولة عن إدارة \"مخاطر الصحة العامة\" {public health risks}، بينما المؤسسة مسؤولة عن إدارة \"أخطار سلامة الغذاء\" {food safety hazards} داخل عملياتها هي تحديدًا.",
+            "{6.2} أهداف نظام سلامة الغذاء: يُفضَّل أن تكون قابلة للقياس ومتسقة مع سياسة سلامة الغذاء — مثال {SMART}: تقليل شكاوى العملاء المتعلقة بأجسام غريبة بنسبة 30% خلال سنة، أو الوصول لصفر حالات سحب منتج خلال العام.",
+            "{6.3} تخطيط التغييرات: أي تغيير في النظام (تغيير مورد خام، تعديل خط إنتاج، تغيير عضو في فريق سلامة الغذاء) لازم يُخطَّط له وتُراعى سلامة استمرارية النظام وتوافر الموارد.",
+            "مثال تطبيقي: مصنع يقرر تغيير مورد السكر — فرصة {opportunity} محتملة لتحسين الجودة، لكن لازم تقييم أثرها على النظام (مواصفات جديدة، شهادات سلامة من المورد الجديد) قبل التنفيذ الفعلي."
+          ],
+          qs: [
+            { t: "mcq", q: "الجهات الحكومية مسؤولة عن إدارة", o: ["مخاطر الصحة العامة", "أخطار سلامة الغذاء داخل عمليات المصنع", "أرباح المصنع"], a: "مخاطر الصحة العامة", why: "آيزو 22000 يميّز بوضوح بين مسؤولية الجهات الحكومية (الصحة العامة) ومسؤولية المؤسسة (أخطار عملياتها)." },
+            { t: "mcq", q: "مثال على هدف SMART لنظام سلامة الغذاء", o: ["تقليل شكاوى الأجسام الغريبة 30% خلال سنة", "تحسين المزاج العام للعاملين", "زيادة عدد الموردين بلا هدف محدد"], a: "تقليل شكاوى الأجسام الغريبة 30% خلال سنة", why: "هدف قابل للقياس بنسبة ومدة زمنية محددة، متسق مع سياسة سلامة الغذاء." },
+            { t: "fill", q: "بند ___ يخص تخطيط التغييرات في نظام سلامة الغذاء. (رقم)", a: ["6.3"], why: "بند 6.3 يشترط تخطيط أي تغيير في النظام قبل تنفيذه." },
+            { t: "mcq", q: "تغيير مورد خام مع تقييم مخاطره وفرصه على النظام قبل التنفيذ هو تطبيق لبند", o: ["6.3 تخطيط التغييرات", "9.2 التدقيق الداخلي", "5.2 السياسة"], a: "6.3 تخطيط التغييرات", why: "أي تغيير مخطط في النظام يخضع لتقييم أثره قبل التنفيذ حسب بند 6.3." },
+            { t: "mcq", q: "تحديد المخاطر والفرص المرتبطة بسياق المؤسسة يخص بند", o: ["6.1", "8.5", "9.1"], a: "6.1", why: "بند 6.1 يربط مباشرة بين سياق المؤسسة (بند 4) والمخاطر والفرص التنظيمية." }
+          ]
+        },
+        {
+          id: "c7", icon: "7", title: "الدعم {Support}",
+          pts: [
+            "{7.1.1-7.1.4} الموارد: الأفراد، البنية التحتية (المصنع، المعدات، أنظمة التبريد)، وبيئة العمل المناسبة (نظافة، إضاءة، تهوية) اللازمة لضمان سلامة الغذاء.",
+            "{7.1.5} العناصر المطوَّرة خارجيًا — سمة مميزة لآيزو 22000: يسمح للمؤسسات الصغيرة (مزرعة صغيرة، محل بقالة) باستخدام \"عناصر جاهزة من مصادر خارجية\" {externally developed elements} مثل برامج تمهيدية أو خطط هاسب جاهزة — بشرط تكييفها لعمليات المؤسسة الفعلية من فريق سلامة الغذاء.",
+            "{7.1.6} ضبط العمليات والمنتجات المقدَّمة من جهات خارجية: التأكد من أن الموردين والمقاولين (شركة تعبئة خارجية مثلًا) يستوفون معايير سلامة الغذاء قبل التعامل معهم.",
+            "{7.2} الكفاءة {competence}: التأكد من تأهيل كل العاملين خصوصًا فريق سلامة الغذاء ومن يدير خطة ضبط الأخطار — بالتعليم والتدريب والخبرة.",
+            "{7.3-7.4} الوعي والاتصال: كل عامل يفهم سياسة سلامة الغذاء ودوره فيها؛ والتواصل الخارجي يشمل معلومات المنتج، الأخطار المحددة اللي يجب التحكم بها من منظمات تانية في السلسلة، وشكاوى المستهلكين.",
+            "{7.5} المعلومات الموثقة: سجلات التدريب، شهادات الموردين، محاضر فريق سلامة الغذاء، وسجلات خطة ضبط الأخطار — كلها أمثلة أساسية لمعلومات موثقة في نظام FSMS."
+          ],
+          qs: [
+            { t: "mcq", q: "بند {7.1.5} يسمح بـ", o: ["استخدام عناصر مطوَّرة خارجيًا مع تكييفها لعمليات المؤسسة", "إلغاء الحاجة لفريق سلامة الغذاء", "تجاهل متطلبات المعيار للمؤسسات الصغيرة"], a: "استخدام عناصر مطوَّرة خارجيًا مع تكييفها لعمليات المؤسسة", why: "بند 7.1.5 سمة مميزة تتيح للمؤسسات الصغيرة الاستفادة من عناصر جاهزة بشرط تكييفها فعليًا." },
+            { t: "mcq", q: "مزرعة صغيرة تستخدم برنامج تمهيدي جاهز من مصدر خارجي يجب أن", o: ["يُكيَّف لعمليات المزرعة الفعلية من فريق سلامة الغذاء", "يُطبَّق كما هو دون أي تعديل", "يُستبعد لأنه غير مسموح بآيزو 22000"], a: "يُكيَّف لعمليات المزرعة الفعلية من فريق سلامة الغذاء", why: "بند 7.1.5 يشترط التكييف الفعلي للعنصر الخارجي حسب عمليات المؤسسة ومنتجاتها." },
+            { t: "fill", q: "التأكد من استيفاء الموردين والمقاولين معايير سلامة الغذاء يخص بند ___. (رقم)", a: ["7.1.6"], why: "بند 7.1.6 يخص ضبط العمليات والمنتجات المقدَّمة من جهات خارجية." },
+            { t: "mcq", q: "{Competence} يُطبَّق خصوصًا على", o: ["فريق سلامة الغذاء ومن يدير خطة ضبط الأخطار", "الإدارة المالية فقط", "التسويق فقط"], a: "فريق سلامة الغذاء ومن يدير خطة ضبط الأخطار", why: "الكفاءة مطلوبة بالذات لفريق سلامة الغذاء والمسؤولين عن تنفيذ خطة الضبط." },
+            { t: "mcq", q: "محاضر فريق سلامة الغذاء وسجلات خطة ضبط الأخطار أمثلة على بند", o: ["7.5 المعلومات الموثقة", "6.2 الأهداف", "4.3 النطاق"], a: "7.5 المعلومات الموثقة", why: "بند 7.5 يخص المعلومات الموثقة، وهذه السجلات من أهم أمثلتها في نظام سلامة الغذاء." }
+          ]
+        },
+        {
+          id: "c8", icon: "8", title: "البرامج التمهيدية والتتبع والطوارئ {PRPs, Traceability & Emergency}",
+          pts: [
+            "{8.1} التخطيط والضبط التشغيلي: المؤسسة تخطط وتنفذ وتضبط العمليات اللازمة لتحقيق منتجات آمنة، وتحتفظ بمعلومات موثقة تثبت تنفيذها كما هو مخطط.",
+            "{8.2} البرامج التمهيدية {Prerequisite Programmes (PRPs)}: الشروط والأنشطة الأساسية اللازمة في المؤسسة وعبر سلسلة الغذاء للحفاظ على سلامة الغذاء — أمثلتها: ممارسات التصنيع الجيدة {GMP}، ممارسات النظافة الجيدة {GHP}، مكافحة الآفات، التنظيف والتطهير، النظافة الشخصية.",
+            "مثال عملي شامل لعناصر PRPs في مصنع: تصميم المبنى ومنع التلوث المتبادل، إمدادات المياه والهواء، مكافحة الآفات، التخلص من المخلفات، اعتماد الموردين، النظافة الشخصية للعاملين، ووعي المستهلك بمعلومات المنتج.",
+            "{8.3} نظام التتبع {traceability system}: لازم يقدر يربط دفعات المواد الخام المستلمة بالمنتج النهائي، وإعادة التصنيع، وتوزيع المنتج — ويُحتفظ بسجلاته لمدة لا تقل عن \"مدة صلاحية المنتج\" {shelf life}.",
+            "{8.4} الاستعداد والاستجابة للطوارئ: خطة مكتوبة تغطي حالات مثل الحرائق، الكوارث الطبيعية، التلوث الكيميائي المفاجئ، أو حتى \"الإرهاب الحيوي\" {bioterrorism} وانقطاع خدمات أساسية مثل المياه أو الكهرباء أو التبريد.",
+            "مثال تطبيقي على التتبع: مصنع ألبان يستلم شحنة حليب خام برقم دفعة معين، فلو ظهرت مشكلة لاحقًا، النظام لازم يقدر يحدد بالظبط أي عبوات نهائية استُخدم فيها الحليب ده علشان يكون أي سحب للمنتج دقيق ومحدود النطاق."
+          ],
+          qs: [
+            { t: "mcq", q: "ممارسات التصنيع الجيدة وممارسات النظافة الجيدة أمثلة على", o: ["البرامج التمهيدية (PRPs)", "خطة ضبط الأخطار", "مراجعة الإدارة"], a: "البرامج التمهيدية (PRPs)", why: "GMP وGHP من أهم أمثلة البرامج التمهيدية الأساسية في المصنع." },
+            { t: "mcq", q: "الهدف الأساسي من نظام التتبع {traceability}", o: ["ربط دفعات المواد الخام بالمنتج النهائي وتوزيعه", "تحديد أسعار المنتجات", "تحديد رواتب العاملين"], a: "ربط دفعات المواد الخام بالمنتج النهائي وتوزيعه", why: "نظام التتبع يسمح بتحديد أي دفعة بدقة عند الحاجة لتضييق نطاق أي مشكلة." },
+            { t: "fill", q: "سجلات التتبع يجب الاحتفاظ بها لمدة لا تقل عن ___ المنتج. (كلمة)", a: ["صلاحية"], why: "بند 8.3 يشترط الاحتفاظ بسجلات التتبع لمدة لا تقل عن مدة صلاحية المنتج (shelf life)." },
+            { t: "mcq", q: "انقطاع إمدادات المياه أو الكهرباء بشكل مفاجئ يُعتبر مثالًا على", o: ["حالة طوارئ مؤثرة على سلامة الغذاء", "فرصة تحسين", "إجراء تصحيحي"], a: "حالة طوارئ مؤثرة على سلامة الغذاء", why: "بند 8.4 يذكر انقطاع الخدمات الأساسية كمثال صريح على حالات الطوارئ." },
+            { t: "mcq", q: "اعتماد الموردين ومنع التلوث المتبادل في المصنع يندرجان تحت", o: ["البرامج التمهيدية (PRPs)", "مراجعة الإدارة", "خطة الطوارئ فقط"], a: "البرامج التمهيدية (PRPs)", why: "بند 8.2 يحدد اعتماد الموردين ومنع التلوث المتبادل كعناصر أساسية من PRPs." }
+          ]
+        },
+        {
+          id: "c8b", icon: "8", title: "تحليل الأخطار وخطة الضبط {Hazard Analysis & HACCP/OPRP Plan}",
+          pts: [
+            "{8.5.1} الخطوات التمهيدية: قبل تحليل الأخطار، فريق سلامة الغذاء يجمع معلومات عن خصائص المواد الخام والمكونات، خصائص المنتج النهائي، \"الاستخدام المقصود\" {intended use}، و\"مخططات تدفق العملية\" {flow diagrams} المؤكدة ميدانيًا.",
+            "{8.5.2} تحديد الأخطار وتحديد \"المستوى المقبول\" {acceptable level}: فريق سلامة الغذاء يحدد كل الأخطار البيولوجية والكيميائية والفيزيائية المتوقعة لكل خطوة في العملية، ويحدد الحد المقبول منها في المنتج النهائي وقت الاستهلاك.",
+            "بعد تقييم كل خطر من ناحية احتمالية حدوثه وشدة أثره الصحي، تتحدد \"الأخطار المعنوية\" {significant food safety hazards}، ثم يُصنَّف كل ضابط تحكم مُختار إما \"نقطة تحكم حرجة\" {Critical Control Point (CCP)} أو \"برنامج تشغيلي تمهيدي\" {Operational Prerequisite Programme (OPRP)}.",
+            "الفرق الجوهري بين CCP وOPRP — سمة مميزة لآيزو 22000: الـCCP نقطة حرجة لها \"حد حرج\" {critical limit} قابل للقياس مباشرة (مثل درجة حرارة البسترة)، أما الـOPRP فضابط تحكم له \"معيار إجراء\" {action criterion} ممكن يكون قابل للملاحظة مش بالضرورة قياس رقمي مباشر (مثل نظافة سطح العمل بالفحص البصري).",
+            "مثال عملي: خط إنتاج لحوم مُصنَّعة — خطوة الطهي تُصنَّف CCP بحد حرج \"درجة حرارة داخلية 75°م لمدة دقيقة على الأقل\" لأنها تقضي على البكتيريا مباشرة؛ بينما إجراء غسل أيدي العاملين قبل التعبئة يُصنَّف OPRP لأنه إجراء وقائي عام مش نقطة حرجة واحدة قابلة للقياس الدقيق.",
+            "{8.5.3} التحقق من الصلاحية {validation}: قبل تطبيق خطة ضبط الأخطار، فريق سلامة الغذاء لازم يثبت علميًا أن ضوابط التحكم المختارة (أو مجموعها) فعلًا قادرة على التحكم في الخطر المعنوي — مثال: دراسة علمية تثبت أن 75°م لمدة دقيقة كافية فعلًا لقتل السالمونيلا.",
+            "{8.5.4} خطة ضبط الأخطار {hazard control plan (HACCP/OPRP plan)}: وثيقة شاملة تحدد لكل CCP أو OPRP: الخطر المُراد ضبطه، الحد الحرج أو معيار الإجراء، إجراءات المراقبة، التصحيحات عند عدم المطابقة، المسؤوليات، وسجلات المراقبة."
+          ],
+          qs: [
+            { t: "mcq", q: "الفرق الجوهري بين CCP وOPRP", o: ["CCP له حد حرج قابل للقياس المباشر، وOPRP له معيار إجراء قد يكون ملحوظًا", "لا فرق بينهما إطلاقًا", "OPRP يخص الإدارة العليا فقط"], a: "CCP له حد حرج قابل للقياس المباشر، وOPRP له معيار إجراء قد يكون ملحوظًا", why: "CCP مرتبط بحد حرج رقمي دقيق، بينما OPRP مرتبط بمعيار إجراء أوسع قد يُقاس بالملاحظة." },
+            { t: "mcq", q: "درجة حرارة الطهي الداخلية 75°م لمدة دقيقة في خط لحوم مُصنَّعة تُصنَّف", o: ["CCP", "OPRP", "PRP عام"], a: "CCP", why: "ده حد حرج قياسي دقيق يحدد أمان المنتج مباشرة، فهو نقطة تحكم حرجة." },
+            { t: "mcq", q: "إجراء غسل أيدي العاملين قبل التعبئة يُصنَّف غالبًا", o: ["OPRP", "CCP", "خطة طوارئ"], a: "OPRP", why: "إجراء وقائي عام بمعيار إجراء ملحوظ وليس حد حرج دقيق واحد، فهو OPRP." },
+            { t: "fill", q: "القيمة المقاسة التي تفصل بين المقبول وغير المقبول عند الـCCP تُسمى الحد ___ (كلمة).", a: ["الحرج"], why: "critical limit = الحد الحرج، القيمة الفاصلة عند نقطة التحكم الحرجة." },
+            { t: "order", q: "رتّب خطوات بند 8.5 من الأول للأخير", words: ["التحقق من الصلاحية (validation)", "تحديد الأخطار والمستوى المقبول", "الخطوات التمهيدية (معلومات المنتج والتدفق)", "خطة ضبط الأخطار (hazard control plan)", "تقييم الأخطار واختيار وتصنيف ضوابط التحكم"], a: ["الخطوات التمهيدية (معلومات المنتج والتدفق)", "تحديد الأخطار والمستوى المقبول", "تقييم الأخطار واختيار وتصنيف ضوابط التحكم", "التحقق من الصلاحية (validation)", "خطة ضبط الأخطار (hazard control plan)"], why: "الترتيب الصحيح: جمع المعلومات التمهيدية، ثم تحديد الأخطار والمستوى المقبول، ثم التقييم والتصنيف، ثم التحقق من الصلاحية، وأخيرًا بناء خطة ضبط الأخطار." }
+          ]
+        },
+        {
+          id: "c8c", icon: "8", title: "عدم المطابقة والمنتجات غير الآمنة والسحب {Nonconformities & Recall}",
+          pts: [
+            "{8.6-8.7} تحديث معلومات PRPs وخطة الضبط عند أي تغيير، وضبط معدات المراقبة والقياس (معايرة دورية، حماية من التلف) لضمان موثوقية القراءات.",
+            "{8.8} التحقق {verification}: أنشطة دورية تؤكد أن البرامج التمهيدية وخطة ضبط الأخطار مطبَّقة وفعّالة فعليًا — ولازم الشخص اللي بيتحقق يكون مختلف عن الشخص اللي بيراقب نفس النشاط، لضمان الموضوعية.",
+            "{8.9.1-8.9.3} عدم المطابقة والتصحيحات والإجراءات التصحيحية: لما الحد الحرج عند CCP أو معيار الإجراء عند OPRP ما يتحققش، المؤسسة تطبق \"تصحيح فوري\" {correction} لمعالجة المنتج المتأثر، و\"إجراء تصحيحي\" {corrective action} لمعالجة السبب الجذري ومنع التكرار.",
+            "{8.9.4} التعامل مع \"المنتجات المحتمل عدم أمانها\" {potentially unsafe products}: المنتج يُحتجز تحت سيطرة المؤسسة لحين تقييمه، وبعدين يُقرَّر إما إعادة تصنيعه لتقليل الخطر، أو إعادة توجيهه لاستخدام آخر آمن، أو إتلافه نهائيًا.",
+            "{8.9.5} السحب {withdrawal/recall} — سمة حسّاسة في آيزو 22000: لو منتج خرج فعلًا من سيطرة المؤسسة واتضح إنه غير آمن، لازم تبليغ فوري للأطراف المعنية (الجهات الرقابية، العملاء، المستهلكين) وبدء إجراءات سحب فورية، مع الاحتفاظ بسجل السبب والمدى والنتيجة.",
+            "مثال تطبيقي: مصنع يكتشف أثناء التحقق أن عينة من دفعة شيكولاتة تحتوي أثر فول سوداني غير معلن على الملصق (مُسبِّب حساسية). المنتج لسه في المخازن؟ يُحتجز ويُقيَّم (8.9.4). المنتج وصل فعلًا للسوق؟ يبدأ سحب فوري {recall} وتبليغ الجهات الرقابية والمستهلكين فورًا (8.9.5)، وتُجرى \"عملية سحب تجريبية\" {mock recall} دوريًا للتأكد من جاهزية النظام."
+          ],
+          qs: [
+            { t: "mcq", q: "الفرق بين correction وcorrective action", o: ["correction يعالج المنتج المتأثر فورًا، وcorrective action يعالج السبب الجذري", "لا فرق بينهما إطلاقًا", "corrective action يخص الإدارة العليا فقط"], a: "correction يعالج المنتج المتأثر فورًا، وcorrective action يعالج السبب الجذري", why: "التصحيح يعالج الموقف الظاهر، بينما الإجراء التصحيحي يمنع تكرار المشكلة من جذورها." },
+            { t: "mcq", q: "اشتراط عدم قيام نفس الشخص بالمراقبة والتحقق لنفس النشاط يضمن", o: ["الموضوعية في التحقق", "توفير الوقت فقط", "تقليل تكلفة التدريب"], a: "الموضوعية في التحقق", why: "بند 8.8.1 يشترط فصل دور المراقبة عن دور التحقق لضمان نتائج موضوعية." },
+            { t: "mcq", q: "من خيارات التصرف في منتج غير مقبول للإفراج عنه (8.9.4.3)", o: ["إعادة تصنيعه، إعادة توجيهه لاستخدام آخر آمن، أو إتلافه", "تجاهله وبيعه كما هو", "تصديره فقط بدون فحص"], a: "إعادة تصنيعه، إعادة توجيهه لاستخدام آخر آمن، أو إتلافه", why: "بند 8.9.4.3 يحدد ثلاثة خيارات واضحة للتصرف في المنتج غير المقبول للإفراج." },
+            { t: "fill", q: "عملية سحب تجريبية دورية للتأكد من جاهزية نظام السحب تُسمى ___ (كلمتين إنجليزي).", a: ["mock recall"], why: "mock recall = عملية سحب تجريبية لاختبار فعالية خطة السحب الفعلي." },
+            { t: "mcq", q: "لو منتج غير آمن وصل فعلًا للسوق وخرج من سيطرة المؤسسة، أول إجراء واجب هو", o: ["بدء السحب الفوري وتبليغ الأطراف المعنية", "الانتظار لحين اكتمال التحقيق الكامل", "تجاهل الأمر لحين شكوى رسمية"], a: "بدء السحب الفوري وتبليغ الأطراف المعنية", why: "بند 8.9.5 يشترط التبليغ الفوري وبدء السحب بمجرد التأكد من خروج منتج غير آمن من السيطرة." }
+          ]
+        },
+        {
+          id: "c9", icon: "9", title: "تقييم الأداء {Performance evaluation}",
+          pts: [
+            "{9.1} المراقبة والقياس والتحليل والتقييم: تحديد ما يُراقب، طرق المراقبة، توقيتها، ومن يحللها — لضمان أداء وفعالية النظام ككل.",
+            "{9.1.2} التحليل يهدف لتأكيد مطابقة الأداء، تحديد فرص التحسين، كشف الاتجاهات اللي تدل على زيادة احتمالية منتجات غير آمنة، وتوفير معلومات لتخطيط برنامج التدقيق الداخلي.",
+            "{9.2} التدقيق الداخلي: فحص دوري مخطط يتأكد أن نظام سلامة الغذاء مطابق لمتطلبات المؤسسة والمعيار ومُطبَّق بفعالية، مع اختيار مدققين موضوعيين ومحايدين، ومتابعة تنفيذ الإجراءات التصحيحية بعدها.",
+            "{9.3} مراجعة الإدارة: الإدارة العليا تراجع دوريًا النظام، وتشمل المدخلات بشكل مميز: أي حالة طوارئ أو حادث أو عملية سحب/استرجاع {withdrawal/recall} حدثت خلال الفترة — وده مدخل فريد ومهم في آيزو 22000 بالتحديد.",
+            "مخرجات مراجعة الإدارة: قرارات وإجراءات متعلقة بفرص التحسين، وأي احتياج لتحديث النظام بما فيه سياسة سلامة الغذاء وأهدافها."
+          ],
+          qs: [
+            { t: "mcq", q: "اختيار مدققين موضوعيين ومحايدين شرط أساسي في بند", o: ["9.2 التدقيق الداخلي", "7.1 الموارد", "6.2 الأهداف"], a: "9.2 التدقيق الداخلي", why: "بند 9.2 يشترط اختيار مدققين يضمنون الموضوعية والحيادية أثناء التدقيق." },
+            { t: "fill", q: "الإدارة العليا تراجع النظام دوريًا في بند ___. (رقم)", a: ["9.3"], why: "بند 9.3 يخص مراجعة الإدارة لضمان استمرار ملاءمة وكفاية وفعالية النظام." },
+            { t: "mcq", q: "من مدخلات مراجعة الإدارة المميزة لآيزو 22000 تحديدًا", o: ["أي حالة طوارئ أو حادث أو عملية سحب/استرجاع", "أسعار المنافسين", "جدول الإجازات السنوية"], a: "أي حالة طوارئ أو حادث أو عملية سحب/استرجاع", why: "بند 9.3 يضيف صراحة هذه المدخلات الحساسة الخاصة بسلامة الغذاء." },
+            { t: "mcq", q: "تحليل نتائج المراقبة والتحقق يهدف من بين ما يهدف إلى", o: ["كشف اتجاهات تدل على زيادة احتمالية منتجات غير آمنة", "تحديد أجور العاملين", "اختيار ألوان التغليف"], a: "كشف اتجاهات تدل على زيادة احتمالية منتجات غير آمنة", why: "بند 9.1.2 يشترط تحليل البيانات لرصد أي اتجاه سلبي قبل تفاقمه." },
+            { t: "mcq", q: "نتائج التدقيق الداخلي تُرفع إلى", o: ["فريق سلامة الغذاء والإدارة المعنية", "العملاء مباشرة فقط", "الموردين الخارجيين"], a: "فريق سلامة الغذاء والإدارة المعنية", why: "بند 9.2.2 يشترط رفع نتائج التدقيق لفريق سلامة الغذاء والإدارة ذات الصلة." }
+          ]
+        },
+        {
+          id: "c10", icon: "10", title: "التحسين {Improvement}",
+          pts: [
+            "{10.1} عدم المطابقة والإجراء التصحيحي: عند حدوث عدم مطابقة، المؤسسة تتفاعل معها (تتحكم وتصحح)، ثم تقيّم الحاجة لإجراء يزيل السبب الجذري لمنع التكرار أو حدوثها في مكان تاني.",
+            "{10.2} التحسين المستمر: المؤسسة تحسّن باستمرار ملاءمة وكفاية وفعالية النظام من خلال الاتصال، مراجعة الإدارة، التدقيق الداخلي، تحليل نتائج التحقق، التحقق من صلاحية ضوابط التحكم، والإجراءات التصحيحية.",
+            "{10.3} تحديث نظام إدارة سلامة الغذاء — سمة مميزة: فريق سلامة الغذاء يُقيِّم النظام بفترات مخططة، ويحدد تحديدًا هل محتاج مراجعة تحليل الأخطار أو خطة ضبط الأخطار أو البرامج التمهيدية نفسها، بناءً على مدخلات الاتصال ونتائج التحقق ومراجعة الإدارة.",
+            "الفرق بين \"التصحيح\" و\"الإجراء التصحيحي\" في سياق سلامة الغذاء: التصحيح يعالج المنتج المتأثر فورًا (مثلًا حجز دفعة منتج)، أما الإجراء التصحيحي فيعالج السبب الجذري {root cause} (مثلًا تعديل إجراء التنظيف اللي سبب التلوث) لمنع تكرار المشكلة.",
+            "مثال شامل: مصنع يكتشف تكرار شكاوى عن طعم غريب في منتج — المؤسسة تسحب الدفعات المتأثرة (تصحيح)، تحقق في السبب الجذري وتجده خلل في صمام تنظيف خط الإنتاج، تصلح الصمام وتراجع إجراء التنظيف (إجراء تصحيحي)، ثم تُحدّث خطة ضبط الأخطار والبرنامج التمهيدي الخاص بالتنظيف (تحديث النظام 10.3)."
+          ],
+          qs: [
+            { t: "mcq", q: "تحديث خطة ضبط الأخطار والبرامج التمهيدية بناءً على مدخلات الاتصال ونتائج التحقق يخص بند", o: ["10.3 تحديث النظام", "7.4 الاتصال فقط", "5.1 القيادة"], a: "10.3 تحديث النظام", why: "بند 10.3 يحدد تحديدًا تحديث تحليل الأخطار وخطة الضبط والبرامج التمهيدية كجزء من تحديث النظام." },
+            { t: "fill", q: "السبب الأساسي الذي يعالجه الإجراء التصحيحي يُسمى السبب ___ (كلمة).", a: ["الجذري"], why: "root cause = السبب الجذري، وهو ما يستهدفه الإجراء التصحيحي لمنع تكرار المشكلة." },
+            { t: "mcq", q: "إصلاح صمام تنظيف معطوب ومراجعة إجراء التنظيف بعد التحقيق هو مثال على", o: ["إجراء تصحيحي", "تصحيح فوري", "مراجعة إدارة"], a: "إجراء تصحيحي", why: "عالج السبب الجذري (الصمام المعطوب) لمنع تكرار المشكلة، فهو إجراء تصحيحي." },
+            { t: "mcq", q: "التحسين المستمر لنظام سلامة الغذاء يعتمد على", o: ["الاتصال، مراجعة الإدارة، التدقيق الداخلي، والإجراءات التصحيحية معًا", "التدقيق الداخلي فقط دون غيره", "سياسة سلامة الغذاء فقط"], a: "الاتصال، مراجعة الإدارة، التدقيق الداخلي، والإجراءات التصحيحية معًا", why: "بند 10.2 يربط بين عدة عناصر من النظام معًا لتحقيق تحسين مستمر فعّال." },
+            { t: "mcq", q: "سحب الدفعات المتأثرة بطعم غريب فورًا قبل معرفة السبب هو", o: ["Correction (تصحيح فوري)", "Corrective action (إجراء تصحيحي)", "Validation"], a: "Correction (تصحيح فوري)", why: "سحب الدفعات معالجة فورية للمنتج المتأثر دون التعامل بعد مع السبب الجذري." }
+          ]
+        },
+        {
+          id: "sc1", icon: "!", kind: "scenario", unlockAfter: 5, title: "مواقف قرار: طبّق اللي اتعلّمته",
+          pts: [
+            "الموقف 1: خط تعبئة عصير — خطوة البسترة تحتاج حد رقمي دقيق (درجة حرارة ووقت) يحدد أمان المنتج مباشرة. فكّر: هل ده {CCP} ولا {OPRP}؟",
+            "الإجابة: ده {CCP} — لأن له حد حرج قياسي مباشر يحدد أمان المنتج بدقة رقمية.",
+            "الموقف 2: إجراء تنظيف أسطح العمل بالمطهر كل نوبة عمل، يُتابع بفحص بصري للنظافة. فكّر: هل ده {CCP} ولا {OPRP}؟",
+            "الإجابة: ده {OPRP} — لأنه إجراء وقائي عام بمعيار إجراء ملحوظ (فحص بصري) مش حد حرج دقيق.",
+            "الموقف 3: عامل يكتشف دفعة منتج فيها عيب تعبئة بسيط لسه في المخزن ولم تغادر المصنع. فكّر: هل المطلوب {potentially unsafe products} ولا {withdrawal/recall} مباشرة؟",
+            "الإجابة: تُحتجز الدفعة وتُقيَّم كمنتج محتمل عدم أمانه {potentially unsafe product} — مفيش داعي لسحب {recall} لأن المنتج لسه تحت سيطرة المؤسسة ولم يخرج للسوق.",
+            "الموقف 4: اتضح بعد التحقيق أن سبب تكرار العيب هو عطل في جهاز التعبئة. فكّر: {correction} ولا {corrective action}؟",
+            "الإجابة: إصلاح الجهاز ومراجعة برنامج الصيانة الوقائية = {corrective action} لأنه يعالج السبب الجذري ويمنع تكرار العيب.",
+            "الموقف 5: منتج غذائي فيه مادة مسبِّبة لحساسية غير معلنة على الملصق وصل فعلًا لرفوف السوبرماركت. فكّر: إيه أول إجراء واجب؟",
+            "الإجابة: بدء عملية سحب/استرجاع {withdrawal/recall} فوري وتبليغ الجهات الرقابية والمستهلكين، لأن المنتج خرج من سيطرة المؤسسة."
+          ],
+          qs: [
+            { t: "mcq", q: "حد حرج رقمي دقيق لدرجة حرارة ووقت البسترة يُصنَّف", o: ["CCP", "OPRP", "PRP عام"], a: "CCP", why: "الحد الرقمي الدقيق الذي يحدد أمان المنتج مباشرة هو سمة الـCCP." },
+            { t: "mcq", q: "تنظيف أسطح العمل مع فحص بصري للنظافة يُصنَّف غالبًا", o: ["OPRP", "CCP", "withdrawal/recall"], a: "OPRP", why: "إجراء وقائي عام بمعيار إجراء ملحوظ (فحص بصري) وليس حدًا حرجًا رقميًا." },
+            { t: "mcq", q: "دفعة منتج فيها عيب بسيط لسه في المخزن تُعامَل كـ", o: ["منتج محتمل عدم أمانه يُحتجز ويُقيَّم", "منتج يُسحب فورًا من السوق", "منتج يُهمَل بدون تقييم"], a: "منتج محتمل عدم أمانه يُحتجز ويُقيَّم", why: "طالما المنتج تحت سيطرة المؤسسة ولم يخرج للسوق، يُحتجز ويُقيَّم وليس سحبًا." },
+            { t: "mcq", q: "إصلاح جهاز التعبئة ومراجعة برنامج الصيانة بعد التحقيق في السبب هو", o: ["Corrective action", "Correction", "Internal audit"], a: "Corrective action", why: "عالج السبب الجذري للعطل لمنع تكرار العيب، فهو إجراء تصحيحي." },
+            { t: "mcq", q: "منتج فيه مادة حساسية غير معلنة وصل فعلًا للسوق يستوجب", o: ["بدء سحب/استرجاع فوري وتبليغ الأطراف المعنية", "الانتظار لحين تلقي شكوى رسمية", "تعديل الملصق في الدفعة القادمة فقط"], a: "بدء سحب/استرجاع فوري وتبليغ الأطراف المعنية", why: "بمجرد خروج منتج غير آمن من سيطرة المؤسسة، يجب بدء السحب الفوري والتبليغ." },
+            { t: "fill", q: "الواقعة اللي بيكون فيها منتج غير آمن خرج فعلًا من سيطرة المؤسسة ولازم تبليغ فوري وسحب تُدار تحت بند ___. (رقم)", a: ["8.9.5"], why: "بند 8.9.5 هو بند السحب/الاسترجاع (withdrawal/recall) في آيزو 22000." }
+          ]
+        }
+      ],
+      vocab: [
+        ["food safety hazard", "خطر سلامة الغذاء", "Salmonella is a common food safety hazard in raw chicken.", 1, "السالمونيلا خطر غذائي شائع في الدجاج الخام."],
+        ["food chain", "سلسلة الغذاء", "The food chain includes farmers, processors and retailers.", 1, "سلسلة الغذاء تشمل المزارعين والمصنّعين وتجار التجزئة."],
+        ["food safety team", "فريق سلامة الغذاء", "The food safety team reviews the hazard analysis every year.", 2, "فريق سلامة الغذاء يراجع تحليل المخاطر كل سنة."],
+        ["food safety team leader", "قائد فريق سلامة الغذاء", "The food safety team leader reports to top management.", 2, "قائد فريق سلامة الغذاء يرفع تقاريره للإدارة العليا."],
+        ["prerequisite programme", "برنامج تمهيدي", "Pest control is a basic prerequisite programme.", 1, "مكافحة الحشرات برنامج أساسي من البرامج التمهيدية."],
+        ["PRP", "برنامج تمهيدي", "The PRPs cover cleaning, pest control and personal hygiene.", 1, "البرامج التمهيدية تشمل التنظيف ومكافحة الحشرات والنظافة الشخصية."],
+        ["OPRP", "برنامج تشغيلي تمهيدي", "Hand washing before packing is managed as an OPRP.", 3, "غسل اليدين قبل التعبئة يُدار كبرنامج تشغيلي تمهيدي."],
+        ["CCP", "نقطة تحكم حرجة", "The cooking step is a CCP with a measurable critical limit.", 3, "خطوة الطهي نقطة تحكم حرجة بحد حرج يمكن قياسه."],
+        ["critical limit", "حد حرج", "The critical limit at this CCP is 75 degrees for one minute.", 2, "الحد الحرج عند نقطة التحكم هذه هو 75 درجة لمدة دقيقة واحدة."],
+        ["action criterion", "معيار إجراء", "The action criterion for this OPRP is a clean visual check.", 3, "معيار الإجراء لهذا البرنامج التشغيلي التمهيدي هو فحص بصري للنظافة."],
+        ["hazard analysis", "تحليل الأخطار", "Hazard analysis identifies every significant food safety hazard.", 2, "تحليل المخاطر يحدد كل خطر غذائي هام."],
+        ["hazard control plan", "خطة ضبط الأخطار", "The hazard control plan lists every CCP and OPRP.", 2, "خطة ضبط المخاطر تسرد كل نقاط التحكم الحرجة والبرامج التشغيلية التمهيدية."],
+        ["HACCP", "نظام الهاسب", "HACCP principles are embedded throughout the standard.", 1, "مبادئ تحليل المخاطر ونقاط التحكم الحرجة مدمجة في المواصفة بالكامل."],
+        ["traceability", "التتبع", "Traceability links the raw material lot to the final product.", 2, "قابلية التتبع تربط دفعة المادة الخام بالمنتج النهائي."],
+        ["flow diagram", "مخطط تدفق العملية", "The flow diagram shows every step from receiving to dispatch.", 2, "مخطط التدفق يوضح كل خطوة من الاستلام حتى الشحن."],
+        ["intended use", "الاستخدام المقصود", "Intended use includes reasonably expected mishandling too.", 2, "الاستخدام المقصود يشمل أيضًا سوء الاستخدام المتوقع بشكل معقول."],
+        ["acceptable level", "المستوى المقبول", "The acceptable level of the hazard must not be exceeded.", 2, "المستوى المقبول للخطر يجب ألا يتم تجاوزه."],
+        ["significant food safety hazard", "خطر معنوي لسلامة الغذاء", "A significant food safety hazard needs a control measure.", 3, "الخطر الغذائي الهام يحتاج إلى تدبير تحكم."],
+        ["validation", "التحقق من الصلاحية", "Validation proves the control measure can control the hazard.", 2, "التصديق يثبت أن تدبير التحكم قادر على ضبط الخطر."],
+        ["verification", "التحقق", "Verification confirms the hazard control plan is working.", 2, "التحقق يؤكد أن خطة ضبط المخاطر تعمل بشكل صحيح."],
+        ["monitoring", "المراقبة", "Monitoring at the CCP happens every batch.", 1, "الرصد عند نقطة التحكم الحرجة يحدث مع كل دفعة."],
+        ["correction", "تصحيح فوري", "The correction isolated the affected lot immediately.", 2, "التصحيح عزل الدفعة المتأثرة فورًا."],
+        ["corrective action", "إجراء تصحيحي", "A corrective action fixed the faulty cleaning valve.", 2, "الإجراء التصحيحي أصلح صمام التنظيف المعطل."],
+        ["potentially unsafe product", "منتج محتمل عدم أمانه", "The potentially unsafe product was held under control.", 2, "المنتج المحتمل عدم أمانه تم ضبطه تحت السيطرة."],
+        ["withdrawal", "سحب", "The withdrawal removed the stock still in the warehouse.", 2, "الانسحاب أزال المخزون الذي كان لا يزال في المستودع."],
+        ["recall", "استرجاع", "The recall notified customers about the affected lot.", 2, "الاستدعاء أخطر العملاء بشأن الدفعة المتأثرة."],
+        ["mock recall", "سحب تجريبي", "The team runs a mock recall every year to test readiness.", 3, "يقوم الفريق بتجربة استدعاء وهمية كل سنة لاختبار الجاهزية."],
+        ["root cause", "السبب الجذري", "Finding the root cause prevents the defect from recurring.", 2, "إيجاد السبب الجذري يمنع تكرار العيب."],
+        ["nonconformity", "عدم مطابقة", "The nonconformity was logged with its cause and effect.", 2, "تم تسجيل حالة عدم المطابقة مع سببها وأثرها."],
+        ["GMP", "ممارسات التصنيع الجيدة", "GMP covers hygiene and equipment maintenance in the plant.", 2, "ممارسات التصنيع الجيدة تشمل النظافة وصيانة المعدات في المصنع."],
+        ["shelf life", "مدة الصلاحية", "Traceability records are kept for at least the shelf life.", 1, "سجلات قابلية التتبع تُحفظ على الأقل طوال مدة الصلاحية."],
+        ["end consumer", "المستهلك النهائي", "Food safety protects the end consumer from harm.", 1, "سلامة الغذاء تحمي المستهلك النهائي من الضرر."],
+        ["top management", "الإدارة العليا", "Top management reviews the FSMS every year.", 1, "الإدارة العليا تراجع نظام إدارة سلامة الغذاء كل سنة."],
+        ["management review", "مراجعة الإدارة", "The management review covers any recall that occurred.", 2, "مراجعة الإدارة تغطي أي استدعاء حدث."],
+        ["internal audit", "التدقيق الداخلي", "The internal audit checks the FSMS every six months.", 2, "التدقيق الداخلي يفحص نظام إدارة سلامة الغذاء كل ستة أشهر."],
+        ["continual improvement", "التحسين المستمر", "Continual improvement uses audits and corrective actions.", 2, "التحسين المستمر يستخدم التدقيقات والإجراءات التصحيحية."]
+      ].map(function (v, i) { return { id: "iso22000-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1, exAr: v[4] || "" }; })
+    },
+    iso17025: {
+      id: "iso17025", title: "آيزو/أيزو 17025: كفاءة المعامل", desc: "دليلك المبسّط لكفاءة معامل الاختبار والمعايرة: النزاهة، التتبع المتري، وخيار A مقابل خيار B.",
+      units: [
+        {
+          id: "c0", icon: "★", title: "فكرة عامة عن آيزو/أيزو 17025",
+          pts: [
+            "آيزو/أيزو 17025 {ISO/IEC 17025} معيار دولي يحدد المتطلبات العامة لكفاءة \"معامل الاختبار والمعايرة\" {testing and calibration laboratories} — بيشترط إثبات إن المعمل قادر فعليًا ينتج نتائج صحيحة وموثوقة، مش بس إنه عنده نظام إدارة منظم على الورق.",
+            "الفرق الجوهري عن باقي معايير الإدارة (9001، 14001، 45001، 22000): دي كلها معايير \"نظام إدارة\" بحتة، أما 17025 فمعيار \"كفاءة فنية\" {technical competence} بالدرجة الأولى — بيربط بين نظام الإدارة والقدرة الفنية الفعلية على القياس والاختبار بدقة.",
+            "مفهوم محوري: \"المعمل\" {laboratory} في المعيار هو أي جهة تقوم بواحد أو أكثر من ثلاث أنشطة: الاختبار {testing}، المعايرة {calibration}، أو أخذ العينات {sampling} المرتبط باختبار أو معايرة لاحقة.",
+            "سمة مميزة: المعيار بيدي المعمل خيارين لبناء نظام الإدارة بتاعه — \"الخيار A\" {Option A} ببناء نظام إدارة كامل بنفسه، أو \"الخيار B\" {Option B} باستخدام شهادة آيزو 9001 سارية تغطي نفس الأنشطة — مرونة مش موجودة بنفس الشكل في أي معيار تاني.",
+            "مثال عملي: معمل تحاليل مياه عنده شهادة آيزو 9001 سارية، ممكن يعتمد على الخيار B ويوفر وقت بناء نظام إدارة منفصل، بينما معمل معايرة صغير مالوش شهادة 9001 هيطبق الخيار A ببناء نظام إدارة خاص بيه من الصفر."
+          ],
+          qs: [
+            { t: "mcq", q: "آيزو 17025 معيار يحدد المتطلبات العامة لكفاءة", o: ["معامل الاختبار والمعايرة", "المصانع الغذائية فقط", "مواقع الإنشاءات"], a: "معامل الاختبار والمعايرة", why: "آيزو 17025 معيار مخصص لمعامل الاختبار والمعايرة تحديدًا." },
+            { t: "mcq", q: "الفرق الجوهري بين 17025 وباقي معايير الإدارة", o: ["17025 معيار كفاءة فنية مش بس نظام إدارة", "لا فرق بينهما إطلاقًا", "17025 يخص التسويق فقط"], a: "17025 معيار كفاءة فنية مش بس نظام إدارة", why: "17025 يربط بين نظام الإدارة والقدرة الفنية الفعلية على القياس بدقة." },
+            { t: "mcq", q: "من الأنشطة الثلاثة التي تُعرّف \"المعمل\" في المعيار", o: ["الاختبار، المعايرة، أخذ العينات", "التسويق، المبيعات، التوزيع", "التصنيع، التعبئة، الشحن"], a: "الاختبار، المعايرة، أخذ العينات", why: "بند 3.6 يحدد الأنشطة المعملية الثلاثة: testing وcalibration وsampling." },
+            { t: "fill", q: "السمة المميزة لآيزو 17025 في بند 8 هي وجود خيار A و ___ (حرف إنجليزي).", a: ["B"], why: "المعيار يسمح للمعمل باختيار Option A أو Option B لبناء نظام الإدارة." },
+            { t: "mcq", q: "معمل عنده شهادة آيزو 9001 سارية تغطي أنشطته المعملية يناسبه", o: ["الخيار B", "الخيار A", "لا يوجد خيار متاح له"], a: "الخيار B", why: "الخيار B مخصص للمعامل اللي عندها نظام إدارة معتمد فعليًا حسب آيزو 9001." }
+          ]
+        },
+        {
+          id: "c4", icon: "4", title: "المتطلبات العامة {General requirements}",
+          pts: [
+            "{4.1} النزاهة {impartiality}: المعمل لازم يدير أنشطته بحياد تام، وما يسمحش بضغوط تجارية أو مالية أو غيرها تأثر على موضوعية النتائج — ولازم يحدد مخاطر النزاهة بشكل مستمر مش مرة واحدة فقط.",
+            "مثال عملي: معمل معايرة ملك نفس الشركة المصنّعة للمعدات اللي بيعايرها — ده علاقة ممكن تهدد النزاهة (ملكية مشتركة)، فلازم المعمل يثبت إزاي بيلغي أو يقلل تأثير العلاقة دي على نتائج المعايرة.",
+            "{4.2} السرية {confidentiality}: المعمل مسؤول عن حماية كل المعلومات اللي يحصل عليها أو ينشئها أثناء العمل، ولازم يُعلم العميل مقدمًا بأي معلومات ناوي ينشرها للعامة — وأي معلومة تانية تُعتبر سرية افتراضيًا.",
+            "معلومة عن عميل توصل للمعمل من مصدر خارجي (شاكٍ أو جهة رقابية مثلًا): لازم تفضل سرية بين المعمل والعميل، ومصدر المعلومة نفسه برضو يفضل سري ومينفعش يتقال للعميل غير بموافقة المصدر.",
+            "بند 4 بالكامل سمة مميزة لآيزو 17025: معيار إدارة تاني زي 9001 مالوش بند مُفرد بهذا الوضوح لـ\"النزاهة\" — لأن نتيجة الاختبار أو المعايرة لازم تكون موضوعية 100% بلا أي تأثير خارجي."
+          ],
+          qs: [
+            { t: "mcq", q: "{Impartiality} تعني", o: ["حياد المعمل وعدم تأثره بضغوط تجارية أو مالية", "سرعة إنجاز الاختبارات", "تقليل تكلفة المعايرة"], a: "حياد المعمل وعدم تأثره بضغوط تجارية أو مالية", why: "النزاهة تعني وجود الموضوعية وعدم السماح لأي ضغط بالتأثير على النتائج." },
+            { t: "mcq", q: "معمل معايرة مملوك لنفس الشركة المصنّعة للمعدات اللي بيعايرها يمثل", o: ["خطرًا على النزاهة لازم يُدار", "ميزة تنافسية بلا أي مخاطر", "مخالفة تلقائية توجب إغلاق المعمل"], a: "خطرًا على النزاهة لازم يُدار", why: "بند 4.1.4 يشترط تحديد وإدارة مخاطر النزاهة الناتجة عن علاقات الملكية." },
+            { t: "mcq", q: "معلومة عن عميل وصلت من شاكٍ خارجي، مصدرها", o: ["يبقى سري ولا يُكشف للعميل إلا بموافقة المصدر", "يُبلَّغ به العميل فورًا", "يُنشر في التقرير الرسمي"], a: "يبقى سري ولا يُكشف للعميل إلا بموافقة المصدر", why: "بند 4.2.3 يحمي هوية مصدر المعلومات الخارجية عن العميل إلا بموافقته." },
+            { t: "fill", q: "بند ___ يخص السرية في آيزو 17025. (رقم)", a: ["4.2"], why: "بند 4.2 هو بند السرية (confidentiality) في المعيار." },
+            { t: "mcq", q: "سمة مميزة لآيزو 17025 عن آيزو 9001 في بند 4", o: ["إفراد بند كامل للنزاهة", "إلغاء الحاجة للسجلات", "استبعاد العملاء من المراجعة"], a: "إفراد بند كامل للنزاهة", why: "آيزو 17025 يخصص بندًا كاملًا للنزاهة لضمان موضوعية نتائج القياس والاختبار." }
+          ]
+        },
+        {
+          id: "c5", icon: "5", title: "المتطلبات الهيكلية {Structural requirements}",
+          pts: [
+            "{5.1} المعمل لازم يكون \"كيان قانوني\" {legal entity} أو جزء محدد من كيان قانوني، مسؤول قانونيًا عن أنشطته المعملية — والمعامل الحكومية تُعتبر كيان قانوني بحكم صفتها الحكومية.",
+            "{5.2-5.3} المعمل يحدد الإدارة المسؤولة عن كل الأنشطة، ويوثّق نطاق الأنشطة المعملية اللي بيدّعي مطابقتها للمعيار — ومينفعش يدّعي مطابقة لأنشطة بيقدمها معمل خارجي باستمرار.",
+            "{5.5} المعمل يحدد هيكله التنظيمي وعلاقة الإدارة بالعمليات الفنية وخدمات الدعم، ويحدد صلاحية ومسؤولية كل شخص يدير أو ينفذ أو يتحقق من عمل مؤثر على النتائج.",
+            "{5.6} لازم يكون فيه أفراد عندهم صلاحية وموارد كافية لتنفيذ مهام أساسية بغض النظر عن مسؤولياتهم التانية: تطبيق نظام الإدارة وتحسينه، اكتشاف أي انحراف عنه، اتخاذ إجراءات لمنعه، ورفع تقارير لإدارة المعمل عن أداء النظام.",
+            "مثال تطبيقي: معمل معايرة تابع لمصنع كبير — لازم يكون محدد بوضوح إن المعمل ده \"جزء معرَّف\" من الشركة الأم، بحدود ونطاق أنشطة واضحين، مش مجرد قسم غير موثق داخل المصنع."
+          ],
+          qs: [
+            { t: "mcq", q: "المعمل الحكومي يُعتبر كيانًا قانونيًا", o: ["بحكم صفته الحكومية", "فقط لو عنده سجل تجاري منفصل", "أبدًا تحت أي ظرف"], a: "بحكم صفته الحكومية", why: "ملاحظة بند 5.1 تنص صراحة على أن المعمل الحكومي يُعد كيانًا قانونيًا بحكم وضعه." },
+            { t: "mcq", q: "لا يجوز للمعمل أن يدّعي مطابقة للمعيار عن", o: ["أنشطة يقدمها معمل خارجي باستمرار", "أنشطته الداخلية الموثقة", "نطاقه المحدد والموثق"], a: "أنشطة يقدمها معمل خارجي باستمرار", why: "بند 5.3 يستبعد صراحة الأنشطة المعملية المقدمة خارجيًا بشكل مستمر من نطاق الادعاء بالمطابقة." },
+            { t: "fill", q: "بند ___ يخص تحديد نطاق الأنشطة المعملية الموثقة. (رقم)", a: ["5.3"], why: "بند 5.3 يشترط تحديد وتوثيق نطاق الأنشطة المعملية التي يدّعي المعمل مطابقتها." },
+            { t: "mcq", q: "من مهام الأفراد المذكورين في بند 5.6", o: ["رفع تقارير لإدارة المعمل عن أداء نظام الإدارة", "تحديد أسعار الخدمات", "التفاوض مع الموردين"], a: "رفع تقارير لإدارة المعمل عن أداء نظام الإدارة", why: "بند 5.6 يحدد من بين مهام هؤلاء الأفراد رفع تقارير الأداء لإدارة المعمل." },
+            { t: "mcq", q: "تحديد العلاقة بين الإدارة والعمليات الفنية وخدمات الدعم يخص بند", o: ["5.5", "6.4", "7.9"], a: "5.5", why: "بند 5.5 يحدد الهيكل التنظيمي وعلاقة الإدارة بالعمليات الفنية وخدمات الدعم." }
+          ]
+        },
+        {
+          id: "c6", icon: "6", title: "متطلبات الموارد {Resource requirements}",
+          pts: [
+            "{6.2} الأفراد: كل شخص (داخلي أو خارجي) ممكن يأثر على الأنشطة المعملية لازم يشتغل بحياد وكفاءة، والمعمل يوثّق متطلبات الكفاءة لكل وظيفة مؤثرة على النتائج (تعليم، تدريب، معرفة فنية، مهارات، خبرة).",
+            "{6.3} المرافق والظروف البيئية: لازم تكون مناسبة للأنشطة ومتأثرتش على صحة النتائج — أمثلة على عوامل مؤثرة: التلوث الميكروبي، الغبار، الاضطرابات الكهرومغناطيسية، الإشعاع، الرطوبة، درجة الحرارة، الصوت، والاهتزاز.",
+            "{6.4} المعدات: لازم تكون المعدات (أجهزة قياس، برمجيات، مواد مرجعية، كواشف) قادرة على تحقيق الدقة المطلوبة، وتتم معايرتها لو دقتها أو عدم يقينها بيأثر على صلاحية النتائج، أو لو المعايرة لازمة لإثبات \"التتبع المتري\" {metrological traceability}.",
+            "معدة اتعرضت لحمل زائد أو سوء استخدام أو أظهرت نتائج مشكوك فيها: لازم تُسحب من الخدمة فورًا وتُعزل أو تُوسم بوضوح، وتُفحص أثر العيب على النتائج السابقة قبل ما ترجع تشتغل تاني.",
+            "{6.5} التتبع المتري {metrological traceability}: نتائج القياس لازم تكون مرتبطة بمرجع دولي (نظام الوحدات الدولي {SI}) عن طريق \"سلسلة معايرات موثقة غير منقطعة\" {unbroken chain of calibrations}، كل حلقة فيها بتساهم بقيمة عدم يقين خاصة بيها.",
+            "{6.6} المنتجات والخدمات المقدَّمة خارجيًا: المعمل يتأكد إن أي منتج أو خدمة خارجية (مواد مرجعية، خدمات معايرة، اختبار كفاءة) مناسبة ومتوافقة قبل استخدامها أو تقديمها للعميل مباشرة."
+          ],
+          qs: [
+            { t: "mcq", q: "جهاز قياس أظهر نتائج مشكوك فيها بسبب حمل زائد يجب", o: ["سحبه من الخدمة فورًا وعزله أو وسمه بوضوح", "الاستمرار في استخدامه بحذر", "تجاهل الأمر لو النتائج قريبة من المعتاد"], a: "سحبه من الخدمة فورًا وعزله أو وسمه بوضوح", why: "بند 6.4.9 يشترط سحب المعدة المشكوك فيها فورًا من الخدمة وعزلها." },
+            { t: "mcq", q: "{Metrological traceability} تعتمد على", o: ["سلسلة معايرات موثقة غير منقطعة لمرجع دولي", "اعتماد المعمل من جهة تسويقية", "عدد سنوات خبرة الفني"], a: "سلسلة معايرات موثقة غير منقطعة لمرجع دولي", why: "التتبع المتري يُبنى على سلسلة معايرات موثقة وغير منقطعة ترتبط بمرجع دولي مثل SI." },
+            { t: "fill", q: "بند ___ يخص التتبع المتري (metrological traceability). (رقم)", a: ["6.5"], why: "بند 6.5 هو بند التتبع المتري في آيزو 17025." },
+            { t: "mcq", q: "الرطوبة ودرجة الحرارة والاهتزاز أمثلة على عوامل تؤثر على", o: ["صحة النتائج عبر المرافق والظروف البيئية", "كفاءة الأفراد فقط", "سرية البيانات"], a: "صحة النتائج عبر المرافق والظروف البيئية", why: "ملاحظة بند 6.3.1 تذكر هذه العوامل كأمثلة مؤثرة على صحة النتائج." },
+            { t: "mcq", q: "التأكد من ملاءمة مادة مرجعية مقدَّمة من مورد خارجي قبل استخدامها يخص بند", o: ["6.6 المنتجات والخدمات المقدَّمة خارجيًا", "7.9 الشكاوى", "8.8 التدقيق الداخلي"], a: "6.6 المنتجات والخدمات المقدَّمة خارجيًا", why: "بند 6.6 يشترط تقييم واعتماد المنتجات والخدمات الخارجية قبل استخدامها." }
+          ]
+        },
+        {
+          id: "c7a", icon: "7", title: "مراجعة الطلبات واختيار الطرق وأخذ العينات {Requests, Methods & Sampling}",
+          pts: [
+            "{7.1} مراجعة الطلبات والعروض والعقود: المعمل يتأكد إن متطلبات العميل محددة وموثقة ومفهومة، وإن عنده القدرة والموارد الكافية، وإن الطريقة المختارة قادرة على تلبية المتطلبات — وأي خلاف بين الطلب والعقد لازم يتحل قبل بدء العمل.",
+            "{7.1.3} قاعدة القرار {decision rule}: لو العميل طلب \"بيان مطابقة\" {statement of conformity} (زي ناجح/راسب، داخل التفاوت/خارجه)، لازم تتحدد بوضوح قاعدة القرار اللي هتحدد إزاي عدم اليقين في القياس هيتعامل معاه عند الحكم على المطابقة، وتتفق مع العميل عليها.",
+            "{7.2.1} اختيار والتحقق من الطرق {selection & verification of methods}: المعمل يستخدم أحدث نسخة صالحة من الطريقة، ولازم \"يتحقق\" {verify} إنه قادر يطبقها صح قبل ما يبدأ يستخدمها فعليًا مع العملاء، ويحتفظ بسجلات التحقق.",
+            "{7.2.2} التصديق على الطرق {validation of methods}: لازم يتصدَّق على الطرق غير القياسية، أو الطرق اللي طورها المعمل نفسه، أو الطرق القياسية المستخدمة برا نطاقها المعتاد — بتقنيات زي معايرة الانحياز والدقة، المقارنات بين المعامل، أو تقييم عدم اليقين.",
+            "{7.3} أخذ العينات {sampling}: لازم خطة وطريقة أخذ عينات موثقة ومتاحة في موقع أخذ العينة، تغطي اختيار العينات، طريقة التحضير، والعوامل المؤثرة على صحة نتائج الاختبار اللاحق.",
+            "{7.4} التعامل مع عناصر الاختبار أو المعايرة: إجراء موثق للنقل والاستلام والتعامل والحماية والتخزين والتخلص من العناصر، ونظام تعريف واضح يمنع الخلط بين العينات أو الأجزاء المُقسّمة منها."
+          ],
+          qs: [
+            { t: "mcq", q: "الفرق بين {verification} و{validation} للطرق في 17025", o: ["التحقق يثبت التطبيق الصحيح للطريقة، والتصديق يثبت ملاءمتها لطرق غير قياسية أو خارج نطاقها", "لا فرق بينهما إطلاقًا", "التصديق أسهل وأسرع من التحقق دائمًا"], a: "التحقق يثبت التطبيق الصحيح للطريقة، والتصديق يثبت ملاءمتها لطرق غير قياسية أو خارج نطاقها", why: "verification تؤكد تطبيق الطريقة القياسية بشكل صحيح، وvalidation مطلوبة للطرق غير القياسية أو المعدَّلة." },
+            { t: "mcq", q: "{Decision rule} لازم تُحدَّد عندما", o: ["يطلب العميل بيان مطابقة (statement of conformity)", "يطلب العميل تقرير بسيط بدون نتائج", "يطلب العميل تخفيض السعر"], a: "يطلب العميل بيان مطابقة (statement of conformity)", why: "بند 7.1.3 يشترط تحديد قاعدة القرار عند طلب بيان مطابقة لمواصفة أو معيار." },
+            { t: "fill", q: "بند ___ يخص أخذ العينات (sampling). (رقم)", a: ["7.3"], why: "بند 7.3 هو بند أخذ العينات في آيزو 17025." },
+            { t: "mcq", q: "نظام تعريف يمنع خلط العينات فيزيائيًا أو في السجلات يخص بند", o: ["7.4 التعامل مع عناصر الاختبار أو المعايرة", "7.1 مراجعة الطلبات", "6.2 الأفراد"], a: "7.4 التعامل مع عناصر الاختبار أو المعايرة", why: "بند 7.4.2 يشترط نظام تعريف واضح يمنع الخلط بين العناصر." },
+            { t: "mcq", q: "المقارنات بين المعامل (interlaboratory comparisons) تُستخدم كتقنية لـ", o: ["التصديق على الطرق (validation)", "مراجعة العقود فقط", "تحديد أسعار الخدمات"], a: "التصديق على الطرق (validation)", why: "ملاحظة بند 7.2.2.1 تذكر المقارنات بين المعامل كإحدى تقنيات التصديق على الطرق." }
+          ]
+        },
+        {
+          id: "c7b", icon: "7", title: "السجلات الفنية وعدم اليقين وإعداد التقارير {Records, Uncertainty & Reporting}",
+          pts: [
+            "{7.5} السجلات الفنية {technical records}: تحتوي النتائج والتقرير ومعلومات كافية لتحديد العوامل المؤثرة على النتيجة وعدم اليقين، وتسمح بإعادة تنفيذ النشاط بنفس الظروف تقريبًا — وأي تعديل لازم يكون تتبّعه ممكن للنسخة الأصلية.",
+            "{7.6} تقييم عدم اليقين في القياس {measurement uncertainty}: كل معمل معايرة لازم يقيّم عدم اليقين لكل معايرة يعملها، ومعمل الاختبار لازم يقيّمه كمان — لو الطريقة مانعة تقييم دقيق، يتعمل تقدير مبني على فهم نظري وخبرة عملية.",
+            "{7.7} ضمان صلاحية النتائج {ensuring validity of results}: المعمل يراقب أداءه باستمرار بوسائل زي استخدام مواد مرجعية، فحوصات وظيفية للمعدات، اختبارات متكررة، ومقارنات داخل المعمل {intralaboratory comparisons}.",
+            "مراقبة الأداء مع معامل تانية: المعمل يشارك في \"اختبار الكفاءة\" {proficiency testing} أو \"مقارنات بين المعامل\" {interlaboratory comparisons} علشان يتأكد إن نتائجه متسقة مع معامل تانية مستقلة — سمة مميزة لضمان الثقة في النتائج عالميًا.",
+            "{7.8} إعداد التقارير: المعيار يميّز بوضوح بين \"تقرير اختبار\" {test report} و\"شهادة معايرة\" {calibration certificate} — كل منهم له متطلبات خاصة؛ وشهادة المعايرة ممنوع تحتوي على توصية بفترة المعايرة القادمة إلا لو العميل طلب ده صراحةً.",
+            "{7.8.7} الآراء والتفسيرات {opinions and interpretations}: لازم تُعبَّر فقط من أفراد مُصرَّح لهم، وتُوثَّق الأساس اللي بُنيت عليه، ولازم تتميّز بوضوح عن \"بيان المطابقة\" نفسه."
+          ],
+          qs: [
+            { t: "mcq", q: "الفرق بين {proficiency testing} و{intralaboratory comparisons}", o: ["الأول مقارنة مع معامل خارجية مستقلة، والثاني مقارنة داخل نفس المعمل", "لا فرق بينهما إطلاقًا", "intralaboratory يتطلب جهة اعتماد دولية"], a: "الأول مقارنة مع معامل خارجية مستقلة، والثاني مقارنة داخل نفس المعمل", why: "proficiency testing نوع من المقارنة بين معامل مختلفة، بينما intralaboratory comparison تتم داخل نفس المعمل." },
+            { t: "mcq", q: "شهادة المعايرة ممنوع تحتوي على", o: ["توصية بفترة المعايرة القادمة، إلا لو العميل طلب ذلك", "نتيجة القياس", "بيان التتبع المتري"], a: "توصية بفترة المعايرة القادمة، إلا لو العميل طلب ذلك", why: "بند 7.8.4.3 يمنع إدراج توصية بفترة المعايرة في الشهادة إلا باتفاق مسبق مع العميل." },
+            { t: "fill", q: "بند ___ يخص تقييم عدم اليقين في القياس. (رقم)", a: ["7.6"], why: "بند 7.6 هو بند تقييم عدم اليقين في القياس (measurement uncertainty)." },
+            { t: "mcq", q: "الآراء والتفسيرات في التقرير يجب أن", o: ["تُعبَّر فقط من أفراد مُصرَّح لهم وتُوثَّق أساسها", "تُعبَّر من أي فرد في المعمل", "تحل محل بيان المطابقة"], a: "تُعبَّر فقط من أفراد مُصرَّح لهم وتُوثَّق أساسها", why: "بند 7.8.7.1 يشترط تفويضًا محددًا وتوثيقًا للأساس الذي بُنيت عليه الآراء." },
+            { t: "mcq", q: "معمل معايرة لازم يقيّم عدم اليقين", o: ["لكل معايرة يعملها، دون استثناء", "فقط لو طلب العميل ذلك", "مرة واحدة سنويًا بغض النظر عن المعايرات"], a: "لكل معايرة يعملها، دون استثناء", why: "بند 7.6.2 يشترط تقييم عدم اليقين لكل المعايرات التي يجريها معمل المعايرة." }
+          ]
+        },
+        {
+          id: "c7c", icon: "7", title: "الشكاوى والعمل غير المطابق وإدارة البيانات {Complaints & Nonconforming Work}",
+          pts: [
+            "{7.9} الشكاوى {complaints}: المعمل يحتفظ بعملية موثقة لاستلام وتقييم واتخاذ قرار بشأن الشكاوى، ولازم القرار النهائي يُراجَع أو يُعتمَد من أفراد ملهمش علاقة بالنشاط المعملي محل الشكوى — ضمانًا للموضوعية.",
+            "{7.10} العمل غير المطابق {nonconforming work}: إجراء يتفعّل لما أي جانب من العمل أو نتائجه ميطابقش إجراءات المعمل نفسه أو متطلبات العميل المتفق عليها — زي معدة أو ظروف بيئية خارج الحدود المحددة.",
+            "إجراءات التعامل مع العمل غير المطابق: تحديد المسؤوليات، اتخاذ إجراءات (إيقاف العمل، حجب التقارير) بناءً على مستوى الخطورة، تقييم الأثر على نتائج سابقة، واتخاذ قرار بشأن قبول العمل أو لا — ولو لزم الأمر، إخطار العميل واسترجاع العمل {recall}.",
+            "لو تقييم العمل غير المطابق أظهر احتمالية تكراره، أو شك في مطابقة عمليات المعمل لنظام إدارته، المعمل لازم يطبّق \"إجراء تصحيحي\" {corrective action} — وده الرابط بين بند 7.10 وبند 8.7 (الإجراءات التصحيحية) في نظام الإدارة.",
+            "{7.11} ضبط إدارة البيانات والمعلومات: أي نظام إلكتروني يستخدمه المعمل لجمع ومعالجة وتسجيل وتقديم واسترجاع البيانات لازم يكون \"مُصدَّق عليه\" {validated} للتأكد من وظائفه قبل الاستخدام، وأي تعديل عليه (حتى لو برنامج جاهز تجاريًا) لازم يكون موثق ومُصدَّق قبل التطبيق."
+          ],
+          qs: [
+            { t: "mcq", q: "القرار النهائي بشأن شكوى عميل لازم يُعتمد من", o: ["أفراد لم يشاركوا في النشاط المعملي محل الشكوى", "نفس الفني الذي نفّذ الاختبار", "العميل نفسه"], a: "أفراد لم يشاركوا في النشاط المعملي محل الشكوى", why: "بند 7.9.6 يشترط مراجعة أو اعتماد القرار من أفراد غير متورطين في النشاط الأصلي لضمان الموضوعية." },
+            { t: "mcq", q: "جهاز قياس أو ظروف بيئية خارج الحدود المحددة مثال على", o: ["عمل غير مطابق (nonconforming work)", "فرصة تحسين", "اختبار كفاءة"], a: "عمل غير مطابق (nonconforming work)", why: "بند 7.10.1 يذكر هذه الحالات كأمثلة صريحة على العمل غير المطابق." },
+            { t: "fill", q: "لو تقييم العمل غير المطابق أظهر احتمالية تكراره، يُطبَّق إجراء ___. (كلمة)", a: ["تصحيحي"], why: "بند 7.10.3 يربط العمل غير المطابق المتكرر بضرورة تطبيق إجراء تصحيحي." },
+            { t: "mcq", q: "أي نظام إلكتروني لإدارة بيانات المعمل لازم يكون", o: ["مُصدَّقًا عليه قبل الاستخدام", "مجانيًا دون أي تكلفة", "مطابقًا لنظام منافس معتمد عالميًا"], a: "مُصدَّقًا عليه قبل الاستخدام", why: "بند 7.11.2 يشترط التصديق على أنظمة إدارة بيانات المعمل قبل إدخالها حيز الاستخدام." },
+            { t: "mcq", q: "من إجراءات التعامل مع العمل غير المطابق عند الحاجة", o: ["إخطار العميل واسترجاع العمل", "تجاهل الأمر لحين شكوى رسمية", "إلغاء خدمة الاختبار نهائيًا"], a: "إخطار العميل واسترجاع العمل", why: "بند 7.10.1(e) يشترط إخطار العميل واسترجاع العمل عند الحاجة." }
+          ]
+        },
+        {
+          id: "c8", icon: "8", title: "نظام الإدارة: الخيار A مقابل الخيار B {Option A vs Option B}",
+          pts: [
+            "{8.1} المعمل لازم يطبّق نظام إدارة إما بـ\"الخيار A\" {Option A} أو \"الخيار B\" {Option B} فوق متطلبات البنود 4 إلى 7 — وده الاختيار الأكثر تميزًا في المعيار بالكامل.",
+            "الخيار A: المعمل يبني نظام إدارة خاص بيه يغطي كحد أدنى: وثائق النظام، ضبط الوثائق، ضبط السجلات، المخاطر والفرص، التحسين، الإجراءات التصحيحية، التدقيق الداخلي، ومراجعة الإدارة — يعني نظام إدارة كامل مستقل.",
+            "الخيار B: معمل عنده نظام إدارة مطبَّق ومعتمد فعليًا حسب آيزو 9001، وقادر يثبت إنه بيحقق متطلبات البنود 4-7 — بيُعتبر محقق على الأقل جوهر متطلبات بنود 8.2 لـ8.9 تلقائيًا، من غير ما يبني نظام منفصل.",
+            "مثال عملي: شركة أدوية عندها نظام جودة آيزو 9001 شامل بالفعل على مستوى الشركة كلها — معمل مراقبة الجودة التابع لها ممكن يستخدم الخيار B ويوفر ازدواجية التوثيق، بدل ما يبني نظام إدارة منفصل زي معمل مستقل صغير هيستخدم الخيار A.",
+            "{8.5} المخاطر والفرص (Option A): المعمل يحدد المخاطر والفرص المرتبطة بأنشطته لضمان تحقيق النظام نتائجه المقصودة، وتوسيع فرص تحقيق أهدافه — والإجراءات المتخذة لازم تكون متناسبة مع الأثر المحتمل على صلاحية النتائج.",
+            "{8.7-8.9} الإجراءات التصحيحية والتدقيق الداخلي ومراجعة الإدارة (Option A): نفس منطق باقي معايير الإدارة — عدم مطابقة يتبعها إجراء تصحيحي يعالج السبب الجذري، تدقيق داخلي دوري بمدققين محايدين، ومراجعة إدارة دورية تغطي مدخلات زي نتائج التدقيق والشكاوى وتقييم المخاطر وكفاية الموارد."
+          ],
+          qs: [
+            { t: "mcq", q: "الخيار A في بند 8 يعني", o: ["بناء المعمل لنظام إدارة خاص به يغطي كل متطلبات 8.2-8.9", "استخدام شهادة آيزو 9001 فقط", "إلغاء الحاجة لنظام إدارة"], a: "بناء المعمل لنظام إدارة خاص به يغطي كل متطلبات 8.2-8.9", why: "الخيار A يشترط بناء نظام إدارة كامل مستقل يغطي كل البنود من 8.2 إلى 8.9." },
+            { t: "mcq", q: "معمل تابع لشركة عندها نظام جودة آيزو 9001 شامل ومعتمد، الأنسب له", o: ["الخيار B لتفادي ازدواجية التوثيق", "الخيار A لبناء نظام مستقل من الصفر", "رفض تطبيق أي نظام إدارة"], a: "الخيار B لتفادي ازدواجية التوثيق", why: "الخيار B يسمح للمعمل بالاستفادة من نظام آيزو 9001 القائم فعليًا دون ازدواجية." },
+            { t: "fill", q: "بند ___ يحدد خيارات نظام الإدارة A وB. (رقم)", a: ["8.1"], why: "بند 8.1 هو البند الذي يحدد الخيارين A وB لبناء نظام الإدارة." },
+            { t: "mcq", q: "من مدخلات مراجعة الإدارة في آيزو 17025 (Option A)", o: ["نتائج التدقيق الداخلي وكفاية الموارد", "أسعار المنافسين", "جدول الإجازات السنوية"], a: "نتائج التدقيق الداخلي وكفاية الموارد", why: "بند 8.9.2 يحدد هذه العناصر من بين مدخلات مراجعة الإدارة الأساسية." },
+            { t: "mcq", q: "الإجراءات المتخذة لمعالجة المخاطر والفرص (8.5) يجب أن تكون", o: ["متناسبة مع الأثر المحتمل على صلاحية النتائج", "موحَّدة لكل المعامل بغض النظر عن نشاطها", "غير موثقة لتوفير الوقت"], a: "متناسبة مع الأثر المحتمل على صلاحية النتائج", why: "بند 8.5.3 يشترط أن تكون الإجراءات متناسبة مع تأثيرها المحتمل على صلاحية نتائج المعمل." }
+          ]
+        },
+        {
+          id: "sc1", icon: "!", kind: "scenario", unlockAfter: 5, title: "مواقف قرار: طبّق اللي اتعلّمته",
+          pts: [
+            "الموقف 1: معمل معايرة ميزان إلكتروني مملوك لنفس الشركة المصنّعة للموازين اللي بيعايرها. فكّر: ده تهديد لـ{impartiality} ولا {confidentiality}؟",
+            "الإجابة: ده تهديد لـ{impartiality} — علاقة الملكية المشتركة ممكن تأثر على موضوعية نتائج المعايرة، ولازم المعمل يديرها.",
+            "الموقف 2: عميل طلب من المعمل \"بيان مطابقة\" (ناجح/راسب) لنتيجة اختبار. فكّر: إيه اللي لازم يتحدد ويتفق عليه مع العميل أولًا؟",
+            "الإجابة: \"قاعدة القرار\" {decision rule} — اللي هتحدد إزاي هيتعامل المعمل مع عدم اليقين في القياس عند الحكم على المطابقة.",
+            "الموقف 3: جهاز قياس أظهر نتائج غريبة أثناء الاستخدام بسبب حمل زائد. فكّر: أول إجراء واجب؟",
+            "الإجابة: سحب الجهاز من الخدمة فورًا وعزله أو وسمه بوضوح، وفحص أثر العيب على النتائج السابقة — ضمن إدارة العمل غير المطابق.",
+            "الموقف 4: معمل تابع لشركة عندها شهادة آيزو 9001 سارية تغطي كل أنشطته المعملية. فكّر: الخيار A ولا B أنسب؟",
+            "الإجابة: الخيار {B} — لأنه بيغطي جوهر متطلبات بند 8 تلقائيًا من غير ازدواجية في بناء نظام إدارة منفصل.",
+            "الموقف 5: نتيجة اختبار طلع فيها انحراف عن إجراءات المعمل، واتضح من التقييم إنه ممكن يتكرر تاني. فكّر: المطلوب بعد التصحيح الفوري؟",
+            "الإجابة: تطبيق \"إجراء تصحيحي\" {corrective action} يعالج السبب الجذري لمنع التكرار — الرابط بين بند 7.10 وبند 8.7."
+          ],
+          qs: [
+            { t: "mcq", q: "معمل معايرة مملوك لنفس الشركة المصنّعة للمعدات يمثل خطرًا على", o: ["النزاهة (impartiality)", "السرية (confidentiality)", "التتبع المتري"], a: "النزاهة (impartiality)", why: "علاقة الملكية المشتركة تهدد موضوعية النتائج، فهي خطر على النزاهة." },
+            { t: "mcq", q: "عميل طلب بيان مطابقة لنتيجة اختبار يستوجب تحديد", o: ["قاعدة القرار (decision rule)", "خطة أخذ العينات فقط", "سياسة السرية فقط"], a: "قاعدة القرار (decision rule)", why: "بيان المطابقة يتطلب تحديد قاعدة القرار مسبقًا والاتفاق عليها مع العميل." },
+            { t: "mcq", q: "جهاز قياس أظهر نتائج مشكوك فيها بسبب حمل زائد، أول إجراء هو", o: ["سحبه من الخدمة وعزله فورًا", "الاستمرار في استخدامه بحذر أكبر", "تجاهل الأمر لحين الصيانة الدورية القادمة"], a: "سحبه من الخدمة وعزله فورًا", why: "بند 6.4.9 يشترط السحب الفوري للمعدة المشكوك فيها وعزلها أو وسمها." },
+            { t: "mcq", q: "معمل تابع لشركة عندها شهادة آيزو 9001 سارية تغطي أنشطته، الأنسب له", o: ["الخيار B", "الخيار A", "عدم تطبيق أي نظام"], a: "الخيار B", why: "الخيار B يتيح للمعمل الاستفادة من نظام آيزو 9001 القائم دون بناء نظام منفصل." },
+            { t: "mcq", q: "انحراف في نتيجة اختبار يُحتمل تكراره يستوجب تطبيق", o: ["إجراء تصحيحي (corrective action)", "تصحيح فوري فقط دون متابعة", "تجاهل الأمر لأنه حالة واحدة"], a: "إجراء تصحيحي (corrective action)", why: "بند 7.10.3 يشترط تطبيق إجراء تصحيحي عند احتمال تكرار العمل غير المطابق." },
+            { t: "fill", q: "الحياد التام وعدم السماح لأي ضغط تجاري أو مالي بالتأثير على النتائج يُسمى ___ (كلمة إنجليزي).", a: ["impartiality"], why: "impartiality = النزاهة، المفهوم المحوري في بند 4.1 من المعيار." }
+          ]
+        }
+      ],
+      vocab: [
+        ["impartiality", "النزاهة", "The laboratory identifies risks to its impartiality on an ongoing basis.", 1, "المعمل يحدد مخاطر الحياد بشكل مستمر."],
+        ["confidentiality", "السرية", "Confidentiality protects all information obtained during laboratory activities.", 1, "السرية تحمي كل المعلومات التي يتم الحصول عليها خلال أنشطة المعمل."],
+        ["laboratory", "معمل", "A laboratory performs testing, calibration or sampling.", 1, "المعمل يقوم بالاختبار أو المعايرة أو أخذ العينات."],
+        ["testing", "اختبار", "Testing determines one or more characteristics of an item.", 1, "الاختبار يحدد خاصية واحدة أو أكثر لعنصر ما."],
+        ["calibration", "معايرة", "Calibration relates instrument readings to a known reference.", 1, "المعايرة تربط قراءات الجهاز بمرجع معروف."],
+        ["sampling", "أخذ العينات", "Sampling follows a documented plan and method.", 1, "أخذ العينات يتبع خطة وطريقة موثقة."],
+        ["interlaboratory comparison", "مقارنة بين المعامل", "An interlaboratory comparison checks results across different labs.", 2, "المقارنة بين المعامل تفحص النتائج بين معامل مختلفة."],
+        ["intralaboratory comparison", "مقارنة داخل المعمل", "An intralaboratory comparison checks results within the same lab.", 2, "المقارنة داخل المعمل تفحص النتائج داخل المعمل نفسه."],
+        ["proficiency testing", "اختبار الكفاءة", "Proficiency testing evaluates performance against pre-established criteria.", 2, "اختبار الكفاءة يقيّم الأداء مقابل معايير محددة مسبقًا."],
+        ["decision rule", "قاعدة القرار", "The decision rule explains how uncertainty affects a conformity statement.", 3, "قاعدة القرار تفسّر كيف يؤثر عدم التأكد على بيان المطابقة."],
+        ["verification", "التحقق", "Verification confirms the lab can properly perform the method.", 2, "التحقق يؤكد أن المعمل يستطيع تنفيذ الطريقة بشكل صحيح."],
+        ["validation", "التصديق", "Validation confirms a non-standard method is fit for its intended use.", 2, "التصديق يؤكد أن الطريقة غير القياسية مناسبة للغرض المقصود منها."],
+        ["legal entity", "كيان قانوني", "The laboratory must be a legal entity responsible for its activities.", 2, "يجب أن يكون المعمل كيانًا قانونيًا مسؤولًا عن أنشطته."],
+        ["metrological traceability", "التتبع المتري", "Metrological traceability links results to the SI through an unbroken chain.", 3, "قابلية التتبع المترولوجي تربط النتائج بالنظام الدولي للوحدات عبر سلسلة غير منقطعة."],
+        ["unbroken chain of calibrations", "سلسلة معايرات غير منقطعة", "An unbroken chain of calibrations links the result to a reference.", 3, "سلسلة المعايرات غير المنقطعة تربط النتيجة بمرجع."],
+        ["measurement uncertainty", "عدم اليقين في القياس", "Measurement uncertainty is evaluated for every calibration.", 2, "عدم التأكد في القياس يُقيَّم لكل معايرة."],
+        ["test report", "تقرير اختبار", "The test report includes all results and necessary information.", 1, "تقرير الاختبار يشمل كل النتائج والمعلومات اللازمة."],
+        ["calibration certificate", "شهادة معايرة", "The calibration certificate states the measurement uncertainty.", 1, "شهادة المعايرة تذكر عدم التأكد في القياس."],
+        ["statement of conformity", "بيان مطابقة", "The statement of conformity applies the agreed decision rule.", 2, "بيان المطابقة يطبّق قاعدة القرار المتفق عليها."],
+        ["opinions and interpretations", "آراء وتفسيرات", "Opinions and interpretations are given only by authorized personnel.", 3, "الآراء والتفسيرات تُقدَّم فقط من الموظفين المخوَّلين."],
+        ["nonconforming work", "عمل غير مطابق", "Nonconforming work triggers a documented procedure.", 2, "العمل غير المطابق يستدعي إجراءً موثقًا."],
+        ["complaint", "شكوى", "The complaint was reviewed by personnel not involved in the activity.", 1, "تمت مراجعة الشكوى من موظفين غير مشاركين في النشاط."],
+        ["corrective action", "إجراء تصحيحي", "A corrective action addresses the root cause of the nonconformity.", 2, "الإجراء التصحيحي يعالج السبب الجذري لعدم المطابقة."],
+        ["internal audit", "التدقيق الداخلي", "Internal audits check conformity to the laboratory's own requirements.", 2, "التدقيق الداخلي يفحص المطابقة لمتطلبات المعمل الخاصة."],
+        ["management review", "مراجعة الإدارة", "The management review covers audit results and customer feedback.", 2, "مراجعة الإدارة تغطي نتائج التدقيق وملاحظات العملاء."],
+        ["Option A", "الخيار A", "Option A requires a full independent management system.", 2, "الخيار أ يتطلب نظام إدارة مستقلًا بالكامل."],
+        ["Option B", "الخيار B", "Option B relies on an established ISO 9001 management system.", 2, "الخيار ب يعتمد على نظام إدارة جودة مطابق لمواصفة ISO 9001."],
+        ["technical records", "سجلات فنية", "Technical records allow repetition of the laboratory activity.", 2, "السجلات الفنية تسمح بتكرار نشاط المعمل."],
+        ["reference material", "مادة مرجعية", "The reference material has a certified value with traceability.", 2, "المادة المرجعية لها قيمة معتمدة مع إمكانية التتبع."],
+        ["competence", "الكفاءة", "Competence requirements are documented for every function.", 1, "متطلبات الكفاءة موثقة لكل وظيفة."]
+      ].map(function (v, i) { return { id: "iso17025-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1, exAr: v[4] || "" }; })
     }
   };
-  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001"];
+  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso17025"];
   var QINDEX = {}, UNIT_BY_KEY = {};
   COURSE_ORDER.forEach(function (cid) {
     COURSES[cid].units.forEach(function (u) {
@@ -2422,7 +2919,7 @@ tr:last-child td { border-block-end: 0; }
   }
 
   /* learn */
-  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield" };
+  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso17025: "flask" };
   function courseDone(cid) { var c = COURSES[cid]; return c.units.filter(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }).length; }
   function unitOf(cid, id) { return COURSES[cid].units.filter(function (x) { return x.id === id; })[0]; }
   function learnView(now) {
@@ -2505,9 +3002,10 @@ tr:last-child td { border-block-end: 0; }
     }).join("") + '<button class="chipbtn' + (onlyNew ? " on" : "") + '" data-act="bank-new" data-c="' + cid + '">لسه ما حفظتهاش</button></div>';
     var rows = list.length ? list.map(function (v) {
       return '<div class="bankrow' + (known[v.id] ? " known" : "") + '">' +
-        '<div class="bw"><span class="en">' + esc(v.en) + "</span>" + spkBtn(v.en) + "</div>" +
+        '<div class="bw"><span class="en">' + esc(v.en) + "</span>" + spkBtn(v.ex || v.en) + "</div>" +
         '<div class="ar">' + esc(v.ar) + "</div>" +
         (v.ex ? '<div class="bex">' + fmtEn(v.ex) + "</div>" : "") +
+        (v.exAr ? '<div class="bex" style="direction:rtl;text-align:start">' + esc(v.exAr) + "</div>" : "") +
         '<button class="bankchk' + (known[v.id] ? " on" : "") + '" data-act="bank-toggle" data-id="' + v.id + '">' + (known[v.id] ? "✓ متعلّمة" : "علّمها كمعروفة") + "</button>" +
         "</div>";
     }).join("") : '<div class="bankempty">مفيش كلمات مطابقة للبحث أو الفلتر.</div>';
@@ -2655,7 +3153,7 @@ tr:last-child td { border-block-end: 0; }
     var c = state.card; if (!c) return "";
     if (c.i >= c.q.length) return '<div class="card"><h2>خلّصت مراجعة اليوم</h2><p class="muted" style="margin-block:6px 12px">عرفت <span class="num">' + c.known + "</span> من <span class=\"num\">" + c.q.length + '</span>. الكلمات اللي لم تعرفها ترجع لك غدًا.</p><button class="btn" data-act="lhome">رجوع</button></div>';
     var w = c.q[c.i];
-    var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + spkBtn(w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
+    var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + (w.exAr ? '<div class="muted" style="direction:rtl">' + esc(w.exAr) + "</div>" : "") + spkBtn(w.ex || w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
     return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + " · " + (LVL_LBL[w.lvl || 1]) + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
       (c.flip ? '<div class="row"><button class="btn grow" data-act="know" data-v="1">عرفتها</button><button class="btn alt grow" data-act="know" data-v="0">لم أعرفها</button></div>' : "") + "</div>";
   }
@@ -2870,14 +3368,32 @@ tr:last-child td { border-block-end: 0; }
   }
   async function unlock(code) {
     var btn = $("#pinbtn"); btn.disabled = true; $("#lockmsg").textContent = "";
+    var email = PIN_ACCOUNTS[code];
+    if (!email) { $("#lockmsg").textContent = "الرمز غير صحيح"; btn.disabled = false; return; }
     try {
-      var r = await store.sb.auth.signInWithPassword({ email: CFG.email, password: CFG.prefix + code });
+      var pass = CFG.prefix + code;
+      var r = await store.sb.auth.signInWithPassword({ email: email, password: pass });
       if (r.error) {
         var m = r.error.message || "";
-        $("#lockmsg").textContent = /invalid login/i.test(m) ? "الرمز غير صحيح" : "تعذّر الدخول: " + m;
-        btn.disabled = false; return;
+        if (/invalid login/i.test(m)) {
+          // First time this PIN is used: the account doesn't exist yet in Supabase Auth,
+          // so provision it transparently, then sign in.
+          var su = await store.sb.auth.signUp({ email: email, password: pass });
+          if (su.error) { $("#lockmsg").textContent = "تعذّر الدخول: " + (su.error.message || ""); btn.disabled = false; return; }
+          if (su.data && su.data.user && su.data.session) {
+            store.uid = su.data.user.id;
+          } else {
+            var r2 = await store.sb.auth.signInWithPassword({ email: email, password: pass });
+            if (r2.error) { $("#lockmsg").textContent = "تعذّر الدخول: " + (r2.error.message || ""); btn.disabled = false; return; }
+            store.uid = r2.data.user.id;
+          }
+        } else {
+          $("#lockmsg").textContent = "تعذّر الدخول: " + m;
+          btn.disabled = false; return;
+        }
+      } else {
+        store.uid = r.data.user.id;
       }
-      store.uid = r.data.user.id;
       $("#pin").value = ""; btn.textContent = "جارٍ التحميل…";
       // Keep the lock screen up until the real data has actually arrived, instead of
       // revealing the app shell's empty starting values (0 prayers, level 1, ...) for
@@ -2965,38 +3481,5 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
-
-<script>
-if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
-  window.addEventListener("load", function () {
-    navigator.serviceWorker.register("sw.js").catch(function () {});
-  });
-  navigator.serviceWorker.addEventListener("message", function (e) {
-    if (e.data && e.data.type === "masar-speak" && e.data.en) masarSpeakEnglish(e.data.en);
-  });
-}
-function masarSpeakEnglish(text) {
-  try {
-    if (!("speechSynthesis" in window) || !text) return;
-    var u = new SpeechSynthesisUtterance(text);
-    u.lang = "en-US";
-    u.rate = 0.9;
-    speechSynthesis.cancel();
-    speechSynthesis.speak(u);
-  } catch (e) {}
-}
-(function () {
-  try {
-    var p = new URLSearchParams(location.search);
-    var say = p.get("speak");
-    if (say) {
-      setTimeout(function () { masarSpeakEnglish(say); }, 500);
-      p.delete("speak");
-      var qs = p.toString();
-      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
-    }
-  } catch (e) {}
-})();
-</script>
 </body>
 </html>
