@@ -831,10 +831,15 @@ tr:last-child td { border-block-end: 0; }
     key: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd1b3J4emVqbXR2eXBpd3hyb2dmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk3MzI2NjksImV4cCI6MjEwNTMwODY2OX0.o95p3N83NLU8ZKZG5LtwS95iR1W3eN03qixqjsnWk_8",
     prefix: "masar-"
   };
-  var PIN_ACCOUNTS = {
-    "9876": "masar-user@example.com",
-    "1243": "masar-user2@example.com"
-  };
+  // All accounts the lock screen accepts. Unlock no longer looks a PIN up by key —
+  // it tries each account's email with the typed PIN as the password, in order,
+  // and signs in to whichever one accepts it. That means a PIN change (done from
+  // the admin dashboard, or by hand in Supabase) never needs a code change here.
+  var ACCOUNTS = [
+    { email: "masar-user@example.com", uid: "6190722f-b2ef-4003-8472-3a344bc0a32a", role: "user", label: "الحساب الأساسي" },
+    { email: "masar-user2@example.com", uid: "6ce60dd2-5adc-4182-94d7-8a39b61815c2", role: "user", label: "الحساب الثانوي" },
+    { email: "masar-admin@example.com", uid: "bd940509-27b2-4d6d-ab7c-4911a09e803a", role: "admin", label: "الأدمن" }
+  ];
   var store = { sb: null, uid: null };
   var LSKEY = "masar:v1";
   function localSave() {
@@ -3361,33 +3366,28 @@ tr:last-child td { border-block-end: 0; }
   }
   async function unlock(code) {
     var btn = $("#pinbtn"); btn.disabled = true; $("#lockmsg").textContent = "";
-    var email = PIN_ACCOUNTS[code];
-    if (!email) { $("#lockmsg").textContent = "الرمز غير صحيح"; btn.disabled = false; return; }
+    if (!/^\d{4,8}$/.test(code)) { $("#lockmsg").textContent = "الرمز غير صحيح"; btn.disabled = false; return; }
     try {
-      var pass = CFG.prefix + code;
-      var r = await store.sb.auth.signInWithPassword({ email: email, password: pass });
-      if (r.error) {
-        var m = r.error.message || "";
-        if (/invalid login/i.test(m)) {
-          // First time this PIN is used: the account doesn't exist yet in Supabase Auth,
-          // so provision it transparently, then sign in.
-          var su = await store.sb.auth.signUp({ email: email, password: pass });
-          if (su.error) { $("#lockmsg").textContent = "تعذّر الدخول: " + (su.error.message || ""); btn.disabled = false; return; }
-          if (su.data && su.data.user && su.data.session) {
-            store.uid = su.data.user.id;
-          } else {
-            var r2 = await store.sb.auth.signInWithPassword({ email: email, password: pass });
-            if (r2.error) { $("#lockmsg").textContent = "تعذّر الدخول: " + (r2.error.message || ""); btn.disabled = false; return; }
-            store.uid = r2.data.user.id;
-          }
-        } else {
-          $("#lockmsg").textContent = "تعذّر الدخول: " + m;
-          btn.disabled = false; return;
-        }
-      } else {
-        store.uid = r.data.user.id;
+      var pass = CFG.prefix + code, matched = null, lastErrMsg = "";
+      for (var i = 0; i < ACCOUNTS.length; i++) {
+        var r = await store.sb.auth.signInWithPassword({ email: ACCOUNTS[i].email, password: pass });
+        if (!r.error) { matched = { acc: ACCOUNTS[i], uid: r.data.user.id }; break; }
+        lastErrMsg = r.error.message || "";
       }
-      $("#pin").value = ""; btn.textContent = "جارٍ التحميل…";
+      if (!matched) {
+        $("#lockmsg").textContent = /invalid login/i.test(lastErrMsg) ? "الرمز غير صحيح" : "تعذّر الدخول: " + lastErrMsg;
+        btn.disabled = false; return;
+      }
+      store.uid = matched.uid;
+      $("#pin").value = "";
+      if (matched.acc.role === "admin") {
+        btn.textContent = "جارٍ التحميل…";
+        await loadAdminDashboard();
+        $("#lock").hidden = true; btn.textContent = "دخول";
+        btn.disabled = false;
+        return;
+      }
+      btn.textContent = "جارٍ التحميل…";
       // Keep the lock screen up until the real data has actually arrived, instead of
       // revealing the app shell's empty starting values (0 prayers, level 1, ...) for
       // the second or two the fetch takes — that brief flash of an empty-looking
@@ -3397,6 +3397,129 @@ tr:last-child td { border-block-end: 0; }
       clearInterval(store.poll); store.poll = setInterval(function () { if (!document.hidden) loadSupa(false); }, 60000);
     } catch (e) { $("#lockmsg").textContent = "تعذّر الاتصال. تحقق من الإنترنت."; }
     btn.disabled = false;
+  }
+
+  /* ---------------- admin dashboard (account 5912) ---------------- */
+  var ADMIN_FN_URL = CFG.url + "/functions/v1/admin-change-password";
+  function computeAccountStats(days, learn) {
+    var dayKeys = Object.keys(days);
+    var completeDays = dayKeys.filter(function (k) {
+      var d = days[k];
+      return PRAYERS.every(function (p) { return d[p.k] && d[p.k].t; });
+    }).length;
+    var totalPages = dayKeys.reduce(function (s, k) { return s + (days[k].q || 0); }, 0);
+    var xp = learn.xp || 0;
+    var level = Math.floor(Math.sqrt(xp / 40)) + 1;
+    var cards = learn.cards || {};
+    var vocabKnown = Object.keys(cards).filter(function (id) { return cards[id].box >= 3; }).length;
+    var totalVocab = 0, totalUnits = 0, unitsDone = 0;
+    COURSE_ORDER.forEach(function (cid) {
+      var c = COURSES[cid];
+      totalVocab += c.vocab.length;
+      totalUnits += c.units.length;
+      unitsDone += c.units.filter(function (u) { return ((learn.units || {})[cid + ":" + u.id] || {}).done; }).length;
+    });
+    var lastActive = dayKeys.length ? dayKeys.slice().sort().slice(-1)[0] : null;
+    return { totalDays: dayKeys.length, completeDays: completeDays, totalPages: totalPages, xp: xp, level: level, vocabKnown: vocabKnown, totalVocab: totalVocab, unitsDone: unitsDone, totalUnits: totalUnits, lastActive: lastActive };
+  }
+  function statTile(label, val) {
+    return '<div style="min-width:130px;margin:6px 0"><div class="muted" style="font-size:12.5px">' + esc(label) + '</div><div class="num" style="font-size:19px;font-weight:700">' + esc(String(val)) + "</div></div>";
+  }
+  function adminAccountCard(acc, s) {
+    return '<div class="card">' + "<h3 style=\"margin:0 0 6px\">" + esc(acc.label) + "</h3>" +
+      '<div class="row wrapr" style="gap:18px">' +
+      statTile("المستوى", "Lv " + s.level + " · " + s.xp + " XP") +
+      statTile("أيام مسجّلة", s.totalDays) +
+      statTile("أيام مكتملة بالكامل", s.completeDays) +
+      statTile("صفحات قرآن", s.totalPages) +
+      statTile("كلمات محفوظة", s.vocabKnown + " / " + s.totalVocab) +
+      statTile("وحدات مكتملة", s.unitsDone + " / " + s.totalUnits) +
+      statTile("آخر نشاط", s.lastActive ? greg(s.lastActive) : "—") +
+      "</div>" +
+      '<form class="row" data-act="admin-pw" data-uid="' + esc(acc.uid) + '" style="gap:8px;margin-block-start:12px;align-items:center">' +
+      '<input class="inp" type="text" inputmode="numeric" placeholder="رمز جديد (4 أرقام)" style="max-width:150px" required pattern="\\d{4,8}">' +
+      '<button class="btn sm" type="submit">تغيير الرمز</button>' +
+      '<span class="muted pwmsg" style="font-size:12.5px"></span>' +
+      "</form></div>";
+  }
+  function adminCompareHTML(stats) {
+    var rows = [
+      ["المستوى", function (s) { return "Lv " + s.level; }],
+      ["XP", function (s) { return s.xp; }],
+      ["أيام مسجّلة", function (s) { return s.totalDays; }],
+      ["أيام مكتملة", function (s) { return s.completeDays; }],
+      ["صفحات قرآن", function (s) { return s.totalPages; }],
+      ["كلمات محفوظة", function (s) { return s.vocabKnown + "/" + s.totalVocab; }],
+      ["وحدات مكتملة", function (s) { return s.unitsDone + "/" + s.totalUnits; }],
+      ["آخر نشاط", function (s) { return s.lastActive ? greg(s.lastActive) : "—"; }]
+    ];
+    var head = '<div class="row between" style="font-weight:700;border-block-end:1px solid var(--line);padding-block-end:8px;margin-block-end:4px">' +
+      "<span>المقياس</span><span>" + esc(stats[0].acc.label) + "</span><span>" + esc(stats[1].acc.label) + "</span></div>";
+    var body = rows.map(function (r) {
+      return '<div class="row between" style="padding-block:6px;border-block-end:1px dashed var(--line);font-size:14px">' +
+        '<span class="muted">' + esc(r[0]) + '</span><span class="num">' + esc(String(r[1](stats[0].s))) + '</span><span class="num">' + esc(String(r[1](stats[1].s))) + "</span></div>";
+    }).join("");
+    return '<div class="card"><h3 style="margin:0 0 10px">مقارنة بين الحسابين</h3>' + head + body + "</div>";
+  }
+  async function adminChangePassword(form) {
+    var uid = form.getAttribute("data-uid");
+    var input = form.querySelector("input");
+    var msgEl = form.querySelector(".pwmsg");
+    var newPin = (input.value || "").trim();
+    if (!/^\d{4,8}$/.test(newPin)) { msgEl.textContent = "لازم يكون رقم من 4 لـ 8 خانات."; return; }
+    msgEl.textContent = "جارٍ التغيير…";
+    try {
+      var sess = await store.sb.auth.getSession();
+      var token = sess.data && sess.data.session && sess.data.session.access_token;
+      if (!token) { msgEl.textContent = "انتهت الجلسة، سجّل دخول تاني."; return; }
+      var res = await fetch(ADMIN_FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + token, "apikey": CFG.key },
+        body: JSON.stringify({ targetUid: uid, newPin: newPin })
+      });
+      var j = await res.json().catch(function () { return {}; });
+      if (!res.ok || j.error) { msgEl.textContent = "تعذّر: " + (j.error || res.status); return; }
+      msgEl.textContent = "تم التغيير ✓"; input.value = "";
+    } catch (e) { msgEl.textContent = "تعذّر الاتصال."; }
+  }
+  function renderAdminDashboard(stats) {
+    var old = document.getElementById("admin"); if (old) old.remove();
+    var wrap = document.createElement("div");
+    wrap.id = "admin"; wrap.dir = "rtl"; wrap.lang = "ar";
+    wrap.style.cssText = "position:fixed;inset:0;z-index:200;overflow:auto;background:var(--bg);padding:16px";
+    wrap.innerHTML = '<div style="max-width:640px;margin-inline:auto;display:flex;flex-direction:column;gap:12px">' +
+      '<div class="row between" style="align-items:center"><h1 style="margin:0">لوحة المتابعة</h1><button class="chip" id="adminlock">قفل</button></div>' +
+      stats.map(function (s) { return adminAccountCard(s.acc, s.s); }).join("") +
+      adminCompareHTML(stats) +
+      "</div>";
+    document.body.appendChild(wrap);
+    document.getElementById("adminlock").addEventListener("click", function () {
+      try { store.sb.auth.signOut(); } catch (e) { }
+      store.uid = null;
+      var a = document.getElementById("admin"); if (a) a.remove();
+      showLock("");
+    });
+    wrap.querySelectorAll('[data-act="admin-pw"]').forEach(function (form) {
+      form.addEventListener("submit", function (e) { e.preventDefault(); adminChangePassword(form); });
+    });
+  }
+  async function loadAdminDashboard() {
+    if (!store.uid) return;
+    var dRes = await store.sb.from("masar_days").select("user_id,day,data");
+    var mRes = await store.sb.from("masar_meta").select("user_id,name,data");
+    if (dRes.error || mRes.error) {
+      toast("تعذّر تحميل بيانات اللوحة: " + ((dRes.error || mRes.error).message || ""));
+      return;
+    }
+    var accounts = ACCOUNTS.filter(function (a) { return a.role === "user"; });
+    var stats = accounts.map(function (acc) {
+      var days = {};
+      (dRes.data || []).forEach(function (r) { if (r.user_id === acc.uid) days[r.day] = r.data || {}; });
+      var learn = { xp: 0, units: {}, cards: {} };
+      (mRes.data || []).forEach(function (r) { if (r.user_id === acc.uid && r.name === "learn") learn = Object.assign({ xp: 0, units: {}, cards: {} }, r.data || {}); });
+      return { acc: acc, s: computeAccountStats(days, learn) };
+    });
+    renderAdminDashboard(stats);
   }
   async function loadSupa(first) {
     if (!store.uid) return;
