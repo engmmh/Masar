@@ -612,6 +612,26 @@ tr:last-child td { border-block-end: 0; }
       { label: "قرار لحظي وقت الكلام", ex: "I will answer it." }, { label: "خطة مرتبة من قبل", ex: "I am going to travel next week." }
     ] }
   ];
+  var NOTES_SEED_EN_V3 = [
+    { id: "count-uncount", ts: 1700000012000, title: "معدود وغير معدود: a/an أو some", rows: [
+      { label: "a/an + معدود مفرد", ex: "I've got an apple." },
+      { label: "some + معدود جمع (العدد مش مهم)", ex: "We've got some biscuits." },
+      { label: "some + غير معدود (من غير جمع)", ex: "I've got some bread / some milk / some cheese." },
+      { label: "الفعل مع غير المعدود بيفضل مفرد", ex: "This cheese is nice." }
+    ] },
+    { id: "pres-s-rule", ts: 1700000011000, title: "التصريف مع he/she/it: s أو es أو ies", rows: [
+      { label: "أغلب الأفعال (+ s)", ex: "He plays football." },
+      { label: "تنتهي بـ ch/sh/o/s/x (+ es)", ex: "She watches TV. / He does his homework." },
+      { label: "تنتهي بساكن + y (تتحول لـ ies)", ex: "He carries the bag. / She tries hard." },
+      { label: "نطق خاص", ex: "does /dʌz/, goes /gəʊz/, has /hæz/" }
+    ] },
+    { id: "demonstratives", ts: 1700000010000, title: "this / that / these / those", rows: [
+      { label: "قريب، مفرد", ex: "This is my book." },
+      { label: "بعيد، مفرد", ex: "That is her car." },
+      { label: "قريب، جمع", ex: "These are my shoes." },
+      { label: "بعيد، جمع", ex: "Those are his gloves." }
+    ] }
+  ];
   var NOTES_SEED_ISO = [
     { id: "i-corr", ts: 1700000006000, title: "Correction مقابل Corrective Action", rows: [
       { label: "Correction (تصحيح فوري)", ex: "استبدال القطعة المعيبة فورًا للعميل — بيعالج الأثر الظاهر بس." },
@@ -693,12 +713,13 @@ tr:last-child td { border-block-end: 0; }
     var have = {}; state.learn.notes[cid].forEach(function (n) { have[n.id] = true; });
     seedArr.forEach(function (n) { if (!have[n.id]) state.learn.notes[cid].push(n); });
   }
-  var NOTES_SEED_VERSION = 2;
+  var NOTES_SEED_VERSION = 3;
   function ensureNotesSeed() {
     var v = state.learn.notesSeeded || 0;
     if (v >= NOTES_SEED_VERSION) return;
     if (v < 1) seedNotesCourse("en", NOTES_SEED_EN);
     if (v < 2) { seedNotesCourse("iso", NOTES_SEED_ISO); seedNotesCourse("iso14001", NOTES_SEED_ISO14001); }
+    if (v < 3) seedNotesCourse("en", NOTES_SEED_EN_V3);
     state.learn.notesSeeded = NOTES_SEED_VERSION; saveMeta("learn", 0);
   }
   function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0 }; }
@@ -1212,7 +1233,42 @@ tr:last-child td { border-block-end: 0; }
         ["bread", "خبز", "We need a piece of bread.", 1], ["furniture", "أثاث", "We bought new furniture for the house.", 2],
         ["information", "معلومات", "I need more information about the job.", 2], ["foot", "قدم", "He hurt his foot.", 1],
         ["child", "طفل", "The child is playing outside.", 1], ["man", "رجل", "The man is a teacher.", 1],
-        ["woman", "امرأة", "The woman is from Jeddah.", 1]
+        ["woman", "امرأة", "The woman is from Jeddah.", 1],
+        ["bedroom", "غرفة نوم", "This is my bedroom.", 1], ["television", "تلفزيون", "We watch television in the evening.", 1],
+        ["computer", "كمبيوتر", "I have a new computer.", 1], ["guitar", "جيتار", "He plays the guitar.", 2],
+        ["camera", "كاميرا", "She has a new camera.", 1], ["piano", "بيانو", "My sister plays the piano.", 2],
+        ["ruler", "مسطرة", "Can I use your ruler?", 1], ["mobile phone", "موبايل / هاتف محمول", "Is this your mobile phone?", 1],
+        ["MP3 player", "جهاز إم بي 3", "He listens to music on his MP3 player.", 2], ["blond", "أشقر", "She has blond hair.", 2],
+        ["hair", "شعر", "He has short hair.", 1], ["eye", "عين", "She has brown eyes.", 1],
+        ["boot", "حذاء بوت / جزمة", "He wears boots in winter.", 2], ["sock", "شراب / جورب", "Where are my socks?", 1],
+        ["coat", "معطف", "Put on your coat, it's cold.", 1], ["shoe", "حذاء", "These shoes are new.", 1],
+        ["glove", "قفاز", "She wears gloves in winter.", 2], ["baseball cap", "كاب / قبعة", "He wears a baseball cap.", 2],
+        ["scarf", "وشاح / شال", "She has a red scarf.", 2], ["salad", "سلطة", "I eat salad every day.", 1],
+        ["chip", "بطاطس مقلية (شرائح)", "We have fish and chips.", 2], ["trousers", "بنطلون", "These trousers are too big.", 1],
+        ["newspaper", "جريدة", "My father reads the newspaper.", 1], ["biscuit", "بسكويت", "Would you like a biscuit?", 1],
+        ["orange juice", "عصير برتقال", "I drink orange juice every morning.", 1], ["sweet", "حلوى / حلو المذاق", "Children like sweets.", 1],
+        ["comic", "مجلة كوميكس / قصة مصورة", "He reads a comic.", 2], ["magazine", "مجلة", "She reads a magazine.", 1],
+        ["picnic", "نزهة / بيكنيك", "We have a picnic in the park.", 2], ["cheese", "جبن", "This cheese is nice.", 1],
+        ["onion", "بصلة", "She needs an onion for the salad.", 1], ["butter", "زبدة", "We've got some butter.", 1],
+        ["burger", "برجر", "He eats a burger for lunch.", 1], ["meat", "لحم", "We don't eat meat every day.", 1],
+        ["lemon", "ليمون", "She puts lemon in her tea.", 1], ["get up", "يستيقظ / ينهض", "I get up at seven o'clock.", 1],
+        ["walk", "يمشي", "They walk to school.", 1], ["wear", "يرتدي", "The children wear school uniform.", 1],
+        ["like", "يحب / يعجبه", "I like English.", 1], ["hate", "يكره", "He hates maths.", 2],
+        ["go", "يذهب", "We go home at three.", 1], ["home", "البيت / المنزل", "They go home at three thirty.", 1],
+        ["dinner", "عشاء", "We have dinner at seven.", 1], ["watch", "يشاهد", "They watch television after dinner.", 1],
+        ["game", "لعبة", "He plays computer games.", 1], ["use", "يستخدم", "Do you use the internet?", 1],
+        ["listen to", "يستمع إلى", "She listens to music in bed.", 1], ["bone", "عظمة", "The dog buries his bone.", 2],
+        ["bury", "يدفن", "He buries his bones in the garden.", 2], ["garden", "حديقة (منزل)", "The dog plays in the garden.", 1],
+        ["chase", "يطارد / يلاحق", "The dog chases the cat.", 2], ["sleep", "ينام", "The baby sleeps all day.", 1],
+        ["learn", "يتعلّم", "I learn new words every day.", 1], ["carry", "يحمل", "She carries the newspaper.", 1],
+        ["catch", "يمسك / يلحق بـ", "He catches the ball.", 1], ["tidy", "يرتّب", "She tidies her room every week.", 2],
+        ["try", "يحاول", "He tries hard in English class.", 1], ["help", "يساعد", "He helps in the kitchen.", 1],
+        ["kitchen", "مطبخ", "Mum is in the kitchen.", 1], ["club", "نادي", "He goes to the sports club.", 1],
+        ["run", "يجري / يركض", "The dog runs in the park.", 1], ["exercise", "تمرين / يمارس الرياضة", "He doesn't like exercise.", 1],
+        ["early", "مبكرًا", "They get up early.", 1], ["start", "يبدأ", "School starts at eight o'clock.", 1],
+        ["finish", "ينتهي", "School finishes at three thirty.", 1], ["drum", "طبلة", "Nick plays the drums.", 2],
+        ["read", "يقرأ", "She reads magazines in bed.", 1], ["cinema", "سينما", "They go to the cinema on Saturdays.", 1],
+        ["party", "حفلة", "The children are at a party.", 1]
       ].map(function (v, i) { return { id: "en-v" + i, en: v[0], ar: v[1], ex: v[2], lvl: v[3] || 1 }; })
     },
     iso: {
