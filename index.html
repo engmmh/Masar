@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0F5C5A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -3465,6 +3469,11 @@ tr:last-child td { border-block-end: 0; }
   var ADMIN_FN_URL = CFG.url + "/functions/v1/admin-change-password";
   var ACCOUNT_COLORS = ["var(--teal)", "var(--blue)", "var(--amber)", "var(--miss)"];
   function accColor(i) { return ACCOUNT_COLORS[i % ACCOUNT_COLORS.length]; }
+  function initialsOf(label) {
+    var parts = (label || "").trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return "؟";
+    return parts[0].slice(0, 1);
+  }
   function recentPages(days, n) {
     var today = nowR().key, out = [];
     for (var i = n - 1; i >= 0; i--) {
@@ -3497,14 +3506,22 @@ tr:last-child td { border-block-end: 0; }
   function statTile(label, val) {
     return '<div style="min-width:130px;margin:6px 0"><div class="muted" style="font-size:12.5px">' + esc(label) + '</div><div class="num" style="font-size:19px;font-weight:700">' + esc(String(val)) + "</div></div>";
   }
-  function adminAccountCard(acc, s, idx) {
+  var adminPinsVisible = {};
+  function adminAccountCard(acc, s, idx, pin) {
     var disabled = acc.active === false;
-    return '<div class="card">' +
-      '<div class="row between" style="align-items:center;margin-block-end:6px">' +
-      '<h3 style="margin:0"><span style="width:10px;height:10px;border-radius:3px;display:inline-block;margin-inline-end:6px;background:' + accColor(idx) + '"></span>' + esc(acc.label) + (disabled ? ' <span class="muted" style="font-size:12px;font-weight:400">(معطّل)</span>' : "") + "</h3>" +
+    var color = accColor(idx);
+    var shown = !!adminPinsVisible[acc.uid];
+    var pinDisplay = pin ? (shown ? esc(pin) : "••••") : "—";
+    return '<div class="card" style="overflow:hidden">' +
+      '<div class="row between" style="align-items:center;gap:10px">' +
+      '<div class="row" style="align-items:center;gap:10px">' +
+      '<div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;background:' + color + '">' + esc(initialsOf(acc.label)) + "</div>" +
+      '<div><h3 style="margin:0">' + esc(acc.label) + "</h3>" +
+      (disabled ? '<span class="muted" style="font-size:12px">معطّل حاليًا</span>' : '<span class="muted" style="font-size:12px">مفعّل</span>') +
+      "</div></div>" +
       '<button class="chip sm" type="button" data-act="admin-toggle" data-uid="' + esc(acc.uid) + '" data-active="' + (disabled ? "0" : "1") + '">' + (disabled ? "تفعيل" : "تعطيل") + "</button>" +
       "</div>" +
-      '<div class="row wrapr" style="gap:18px">' +
+      '<div class="row wrapr" style="gap:18px;margin-block-start:10px">' +
       statTile("المستوى", "Lv " + s.level + " · " + s.xp + " XP") +
       statTile("أيام مسجّلة", s.totalDays) +
       statTile("أيام مكتملة بالكامل", s.completeDays) +
@@ -3512,6 +3529,11 @@ tr:last-child td { border-block-end: 0; }
       statTile("كلمات محفوظة", s.vocabKnown + " / " + s.totalVocab) +
       statTile("وحدات مكتملة", s.unitsDone + " / " + s.totalUnits) +
       statTile("آخر نشاط", s.lastActive ? greg(s.lastActive) : "—") +
+      "</div>" +
+      '<div class="row" style="align-items:center;gap:8px;margin-block-start:12px;padding:8px 10px;border-radius:10px;background:var(--surface2)">' +
+      '<span class="muted" style="font-size:12.5px">رمز الدخول الحالي:</span>' +
+      '<span class="num" style="font-weight:700;letter-spacing:1px">' + pinDisplay + "</span>" +
+      '<button class="chip sm" type="button" data-act="admin-pintoggle" data-uid="' + esc(acc.uid) + '" style="margin-inline-start:auto">' + (shown ? "إخفاء" : "إظهار") + "</button>" +
       "</div>" +
       '<form class="row" data-act="admin-pw" data-uid="' + esc(acc.uid) + '" style="gap:8px;margin-block-start:12px;align-items:center">' +
       '<input class="inp" type="text" inputmode="numeric" placeholder="رمز جديد (4 أرقام)" style="max-width:150px" required pattern="\\d{4,8}">' +
@@ -3585,6 +3607,34 @@ tr:last-child td { border-block-end: 0; }
   function adminTrendCard(stats) {
     return '<div class="card"><h3 style="margin:0 0 6px">صفحات القرآن — آخر 14 يوم</h3>' + adminLegendHTML(stats) + trendChartSVG(stats) + "</div>";
   }
+  function donutChartSVG(stats, valueFn) {
+    var vals = stats.map(valueFn);
+    var total = vals.reduce(function (a, b) { return a + b; }, 0);
+    var size = 180, cx = size / 2, cy = size / 2, r = 70, sw = 26;
+    var circ = 2 * Math.PI * r;
+    var segs = "";
+    if (total <= 0) {
+      segs = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface2)" stroke-width="' + sw + '"/>';
+    } else {
+      var offset = 0;
+      for (var i = 0; i < stats.length; i++) {
+        var frac = vals[i] / total;
+        if (frac <= 0) continue;
+        var len = frac * circ;
+        segs += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + accColor(i) + '" stroke-width="' + sw + '" stroke-dasharray="' + len.toFixed(1) + " " + (circ - len).toFixed(1) + '" stroke-dashoffset="' + (-offset).toFixed(1) + '" transform="rotate(-90 ' + cx + " " + cy + ')"><title>' + esc(stats[i].acc.label) + ": " + vals[i] + "</title></circle>";
+        offset += len;
+      }
+    }
+    var centerLabel = total > 0 ? String(total) : "0";
+    return '<svg viewBox="0 0 ' + size + " " + size + '" style="width:180px;height:180px;display:block;margin-inline:auto" role="img" aria-label="توزيع صفحات القرآن بين الحسابات">' +
+      segs +
+      '<text x="' + cx + '" y="' + (cy - 3) + '" text-anchor="middle" font-size="22" font-weight="700" style="fill:var(--text)">' + centerLabel + "</text>" +
+      '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" font-size="10.5" style="fill:var(--muted)">إجمالي الصفحات</text>' +
+      "</svg>";
+  }
+  function adminDonutCard(stats) {
+    return '<div class="card"><h3 style="margin:0 0 10px">توزيع صفحات القرآن بين الحسابات</h3>' + adminLegendHTML(stats) + donutChartSVG(stats, function (st) { return st.s.totalPages; }) + "</div>";
+  }
   async function adminFnCall(payload) {
     var sess = await store.sb.auth.getSession();
     var token = sess.data && sess.data.session && sess.data.session.access_token;
@@ -3610,6 +3660,7 @@ tr:last-child td { border-block-end: 0; }
     var r = await adminFnCall({ action: "changePassword", targetUid: uid, newPin: newPin });
     if (r.error) { msgEl.textContent = "تعذّر: " + r.error; return; }
     msgEl.textContent = "تم التغيير ✓"; input.value = "";
+    await loadAdminDashboard();
   }
   async function adminToggleActive(btn) {
     var uid = btn.getAttribute("data-uid");
@@ -3648,17 +3699,34 @@ tr:last-child td { border-block-end: 0; }
       '<span class="muted createmsg" style="font-size:12.5px"></span>' +
       "</form></div>";
   }
-  function renderAdminDashboard(stats) {
+  var ADMIN_TABS = [
+    { id: "accounts", label: "الحسابات" },
+    { id: "compare", label: "مقارنة" },
+    { id: "charts", label: "رسوم بيانية" }
+  ];
+  function adminTabsNav(active) {
+    return '<div class="row wrapr" style="gap:8px;margin-block-end:4px">' +
+      ADMIN_TABS.map(function (t) {
+        return '<button class="chip' + (t.id === active ? " active" : "") + '" type="button" data-admtab="' + t.id + '" style="' + (t.id === active ? "background:var(--teal);color:#fff;border-color:var(--teal)" : "") + '">' + esc(t.label) + "</button>";
+      }).join("") +
+      "</div>";
+  }
+  function renderAdminDashboard(stats, pinMap) {
     var old = document.getElementById("admin"); if (old) old.remove();
     var wrap = document.createElement("div");
     wrap.id = "admin"; wrap.dir = "rtl"; wrap.lang = "ar";
     wrap.style.cssText = "position:fixed;inset:0;z-index:200;overflow:auto;background:var(--bg);padding:16px";
     var activeStats = stats.filter(function (st) { return st.acc.active !== false; });
+    var active = state.adminTab || "accounts";
+    var accountsHTML = stats.map(function (st, i) { return adminAccountCard(st.acc, st.s, i, (pinMap || {})[st.acc.uid]); }).join("") + adminAddAccountCard();
+    var compareHTML = activeStats.length >= 2 ? adminCompareHTML(activeStats) : '<div class="card muted" style="text-align:center;padding:24px">محتاج حسابين مفعّلين على الأقل للمقارنة.</div>';
+    var chartsHTML = activeStats.length >= 1 ? (adminDonutCard(activeStats) + (activeStats.length >= 2 ? adminTrendCard(activeStats) : "")) : '<div class="card muted" style="text-align:center;padding:24px">لا توجد بيانات كافية.</div>';
     wrap.innerHTML = '<div style="max-width:640px;margin-inline:auto;display:flex;flex-direction:column;gap:12px">' +
       '<div class="row between" style="align-items:center"><h1 style="margin:0">لوحة المتابعة</h1><button class="chip" id="adminlock">قفل</button></div>' +
-      stats.map(function (st, i) { return adminAccountCard(st.acc, st.s, i); }).join("") +
-      adminAddAccountCard() +
-      (activeStats.length >= 2 ? adminCompareHTML(activeStats) + adminTrendCard(activeStats) : "") +
+      adminTabsNav(active) +
+      '<div id="admtab-accounts" style="display:' + (active === "accounts" ? "flex" : "none") + ';flex-direction:column;gap:12px">' + accountsHTML + "</div>" +
+      '<div id="admtab-compare" style="display:' + (active === "compare" ? "flex" : "none") + ';flex-direction:column;gap:12px">' + compareHTML + "</div>" +
+      '<div id="admtab-charts" style="display:' + (active === "charts" ? "flex" : "none") + ';flex-direction:column;gap:12px">' + chartsHTML + "</div>" +
       "</div>";
     document.body.appendChild(wrap);
     document.getElementById("adminlock").addEventListener("click", function () {
@@ -3666,6 +3734,12 @@ tr:last-child td { border-block-end: 0; }
       store.uid = null;
       var a = document.getElementById("admin"); if (a) a.remove();
       showLock("");
+    });
+    wrap.querySelectorAll("[data-admtab]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        state.adminTab = btn.getAttribute("data-admtab");
+        renderAdminDashboard(stats, pinMap);
+      });
     });
     wrap.querySelectorAll('[data-act="admin-pw"]').forEach(function (form) {
       form.addEventListener("submit", function (e) { e.preventDefault(); adminChangePassword(form); });
@@ -3676,6 +3750,13 @@ tr:last-child td { border-block-end: 0; }
     wrap.querySelectorAll('[data-act="admin-create"]').forEach(function (form) {
       form.addEventListener("submit", function (e) { e.preventDefault(); adminCreateAccount(form); });
     });
+    wrap.querySelectorAll('[data-act="admin-pintoggle"]').forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var uid = btn.getAttribute("data-uid");
+        adminPinsVisible[uid] = !adminPinsVisible[uid];
+        renderAdminDashboard(stats, pinMap);
+      });
+    });
   }
   async function loadAdminDashboard() {
     if (!store.uid) return;
@@ -3685,6 +3766,11 @@ tr:last-child td { border-block-end: 0; }
       toast("تعذّر تحميل بيانات اللوحة: " + ((dRes.error || mRes.error).message || ""));
       return;
     }
+    var pinRes = await adminFnCall({ action: "listAccounts" });
+    var pinMap = {};
+    if (pinRes.ok && pinRes.data && pinRes.data.accounts) {
+      pinRes.data.accounts.forEach(function (a) { pinMap[a.uid] = a.pin; });
+    }
     var accounts = ACCOUNTS.filter(function (a) { return a.role === "user"; });
     var stats = accounts.map(function (acc) {
       var days = {};
@@ -3693,7 +3779,7 @@ tr:last-child td { border-block-end: 0; }
       (mRes.data || []).forEach(function (r) { if (r.user_id === acc.uid && r.name === "learn") learn = Object.assign({ xp: 0, units: {}, cards: {} }, r.data || {}); });
       return { acc: acc, s: computeAccountStats(days, learn) };
     });
-    renderAdminDashboard(stats);
+    renderAdminDashboard(stats, pinMap);
   }
   async function loadSupa(first) {
     if (!store.uid) return;
@@ -3771,5 +3857,38 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+  navigator.serviceWorker.addEventListener("message", function (e) {
+    if (e.data && e.data.type === "masar-speak" && e.data.en) masarSpeakEnglish(e.data.en);
+  });
+}
+function masarSpeakEnglish(text) {
+  try {
+    if (!("speechSynthesis" in window) || !text) return;
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    var say = p.get("speak");
+    if (say) {
+      setTimeout(function () { masarSpeakEnglish(say); }, 500);
+      p.delete("speak");
+      var qs = p.toString();
+      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
