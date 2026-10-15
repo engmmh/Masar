@@ -361,7 +361,7 @@ tr:last-child td { border-block-end: 0; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
 </style>
 
-<div id="lock" dir="rtl" lang="ar" hidden>
+<div id="lock" dir="rtl" lang="ar">
   <form id="lockform" autocomplete="on">
     <h1>مسار</h1>
     <p class="muted">اكتب الرمز للدخول</p>
@@ -958,6 +958,7 @@ tr:last-child td { border-block-end: 0; }
     if (window.supabase && CFG.url && CFG.key) { initSupa(); return; }
     state.mode = "local"; localLoad(); ensureNotesSeed();
     ready.days = ready.settings = ready.learn = ready.exp = true; checkLoaded(); render();
+    var lockEl = document.getElementById("lock"); if (lockEl) lockEl.hidden = true;
   }
 
   /* ---------------- prayer logic ---------------- */
