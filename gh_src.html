@@ -22,6 +22,7 @@
   --amber-bg: #FFF2D6;
   --blue: #3B6FED;
   --blue-deep: #2851B8;
+  --blue-bg: #E8EFFF;
   --done: #22B35E;
   --done-deep: #178A45;
   --done-bg: #DEF7E6;
@@ -38,7 +39,7 @@
     --teal: #35E2A0; --teal-deep: #159C6C; --teal-ink: #04231A;
     --amber: #FFC24A; --amber-deep: #C78A1E; --amber-bg: #3A2A0E;
     --done: #4FE08A; --done-deep: #269A5F; --done-bg: #123828;
-    --miss: #FF6B82; --miss-deep: #C73851; --miss-bg: #3A1620; --blue: #7EA2FF; --blue-deep: #4A6FD1;
+    --miss: #FF6B82; --miss-deep: #C73851; --miss-bg: #3A1620; --blue: #7EA2FF; --blue-deep: #4A6FD1; --blue-bg: #16233D;
   }
 }
 :root[data-theme="dark"] {
@@ -47,7 +48,7 @@
   --teal: #35E2A0; --teal-deep: #159C6C; --teal-ink: #04231A;
   --amber: #FFC24A; --amber-deep: #C78A1E; --amber-bg: #3A2A0E;
   --done: #4FE08A; --done-deep: #269A5F; --done-bg: #123828;
-  --miss: #FF6B82; --miss-deep: #C73851; --miss-bg: #3A1620; --blue: #7EA2FF; --blue-deep: #4A6FD1;
+  --miss: #FF6B82; --miss-deep: #C73851; --miss-bg: #3A1620; --blue: #7EA2FF; --blue-deep: #4A6FD1; --blue-bg: #16233D;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
@@ -198,6 +199,10 @@ tr:last-child td { border-block-end: 0; }
 .unit.done .no { background: linear-gradient(145deg, var(--done), var(--done-deep)); color: #fff; }
 .pts { display: grid; gap: 8px; margin-block: 8px 14px; padding: 0; list-style: none; }
 .pts li { background: var(--surface); border: 1px solid var(--line); border-inline-start: 3px solid var(--teal); border-radius: 10px; padding: 10px 14px; line-height: 1.55; }
+.pt-line { margin-block-end: 7px; line-height: 1.6; }
+.pt-line:last-child { margin-block-end: 0; }
+.pt-example { margin-block-start: 8px; background: var(--blue-bg); border: 1px solid var(--blue); border-radius: 8px; padding: 9px 12px; font-size: 14.5px; line-height: 1.6; }
+.pt-example b { color: var(--blue-deep); }
 .opts { display: grid; gap: 8px; margin-block: 12px; }
 .opt { min-height: 48px; border-radius: 13px; border: 2px solid var(--line); background: var(--surface); padding: 0 14px; text-align: start; direction: ltr; font-weight: 600; }
 .opt.ok { background: var(--done-bg); border-color: var(--done); color: var(--done); }
@@ -250,7 +255,8 @@ tr:last-child td { border-block-end: 0; }
 .ldots i.on { background: var(--teal); width: 20px; border-radius: 5px; }
 .lstep-card { min-height: 160px; display: grid; align-content: center; gap: 10px; text-align: center; padding: 22px 16px; }
 .lstep-card .tag { font-size: 13px; color: var(--muted); font-weight: 600; }
-.lstep-card .txt { font-size: 19px; line-height: 1.7; }
+.lstep-card .txt { font-size: 19px; line-height: 1.7; text-align: start; }
+.lstep-card .txt .pt-example { font-size: 15.5px; }
 .lnav { display: flex; gap: 10px; margin-block-start: 14px; }
 .lnav .btn { flex: 1; }
 
@@ -415,6 +421,18 @@ tr:last-child td { border-block-end: 0; }
   function $(s) { return document.querySelector(s); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function fmtEn(s) { return esc(s).replace(/\{([^}]+)\}/g, '<span class="en">$1</span>'); }
+  function fmtPt(s) {
+    var segs = String(s).split(/؛\s*/).map(function (t) { return t.trim(); }).filter(Boolean);
+    if (!segs.length) segs = [String(s)];
+    return segs.map(function (seg) {
+      var html = fmtEn(seg);
+      if (/مثال/.test(seg)) {
+        html = html.replace(/^(مثال[^:]*:)/, "<b>$1</b>");
+        return '<div class="pt-example">💡 ' + html + "</div>";
+      }
+      return '<div class="pt-line">• ' + html + "</div>";
+    }).join("");
+  }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function keyOf(d) { return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); }
   function addDays(key, n) { var p = key.split("-").map(Number); return keyOf(new Date(Date.UTC(p[0], p[1] - 1, p[2] + n))); }
@@ -3305,7 +3323,7 @@ tr:last-child td { border-block-end: 0; }
     return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button>' +
       '<div class="card"><h2>' + esc(u.icon + ". " + u.title) + '</h2>' +
       '<div class="ldots">' + dots + '</div>' +
-      '<div class="lstep-card"><span class="tag">نقطة <span class="num">' + (i + 1) + "</span> من <span class=\"num\">" + n + '</span></span><div class="txt">' + fmtEn(steps[i]) + '</div></div>' +
+      '<div class="lstep-card"><span class="tag">نقطة <span class="num">' + (i + 1) + "</span> من <span class=\"num\">" + n + '</span></span><div class="txt">' + fmtPt(steps[i]) + '</div></div>' +
       '<div class="lnav">' +
       '<button class="btn alt" data-act="lstep" data-c="' + cid + '" data-u="' + id + '" data-d="-1"' + (i === 0 ? " disabled" : "") + '>السابق</button>' +
       (last
@@ -3319,7 +3337,7 @@ tr:last-child td { border-block-end: 0; }
   function unitFlatHTML(cid, id) {
     var u = unitOf(cid, id), p = state.learn.units[cid + ":" + id] || {};
     return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button><div class="card"><h2>' + esc(u.icon + ". " + u.title) + '</h2><ul class="pts">' +
-      u.pts.map(function (t) { return "<li>" + fmtEn(t) + "</li>"; }).join("") + "</ul>" +
+      u.pts.map(function (t) { return "<li>" + fmtPt(t) + "</li>"; }).join("") + "</ul>" +
       '<button class="btn" data-act="quiz" data-c="' + cid + '" data-u="' + id + '">ابدأ التدريب (' + u.qs.length + " أسئلة)</button>" +
       (p.best != null ? '<p class="muted" style="font-size:14px;margin-block-start:8px">أفضل نتيجة: ' + p.best + "%</p>" : "") +
       (u.reading ? '<button class="btn alt" style="margin-block-start:10px" data-act="reading-open" data-c="' + cid + '" data-u="' + id + '">📖 فقرة قراءة · ' + esc(LVL_LBL[u.reading.lvl]) + '</button>' : "") + "</div>";
