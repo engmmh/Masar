@@ -4,6 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0F5C5A">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>body{margin:0}[hidden]{display:none!important}</style>
 <title>مسار</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -72,7 +76,7 @@ h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; line-heig
 p { margin: 0; }
 button { font: inherit; color: inherit; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease, background-color .15s ease; }
 button svg { width: 20px; height: 20px; flex: none; }
-.en { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 500; }
+.en { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 500; overflow-wrap: anywhere; }
 .num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; display: inline-block; }
 .muted { color: var(--muted); }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
@@ -206,10 +210,24 @@ tr:last-child td { border-block-end: 0; }
 .unit.done .no { background: linear-gradient(145deg, var(--done), var(--done-deep)); color: #fff; }
 .pts { display: grid; gap: 8px; margin-block: 8px 14px; padding: 0; list-style: none; }
 .pts li { background: var(--surface); border: 1px solid var(--line); border-inline-start: 3px solid var(--teal); border-radius: 10px; padding: 10px 14px; line-height: 1.55; }
-.pt-line { margin-block-end: 7px; line-height: 1.6; }
+.pt-line { margin-block-end: 7px; line-height: 1.6; overflow-wrap: anywhere; }
 .pt-line:last-child { margin-block-end: 0; }
-.pt-example { margin-block-start: 8px; background: var(--blue-bg); border: 1px solid var(--blue); border-radius: 8px; padding: 9px 12px; font-size: 14.5px; line-height: 1.6; }
+.pt-example { margin-block-start: 8px; background: var(--blue-bg); border: 1px solid var(--blue); border-radius: 8px; padding: 9px 12px; font-size: 14.5px; line-height: 1.6; overflow-wrap: anywhere; }
 .pt-example b { color: var(--blue-deep); }
+.icon-list { display: grid; gap: 8px; margin-block: 4px 2px; }
+.icon-row { display: flex; gap: 10px; align-items: flex-start; background: var(--surface2); border-radius: 10px; padding: 9px 11px; }
+.icon-row-e { font-size: 22px; line-height: 1.3; flex: none; }
+.icon-row-b { flex: 1; min-width: 0; font-size: 14.5px; line-height: 1.55; }
+.icon-row-b b { font-weight: 600; }
+.cmp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-block: 4px 2px; }
+.cmp-col { background: var(--surface2); border-radius: 10px; padding: 10px 12px; min-width: 0; }
+.cmp-col h4 { font-size: 13.5px; margin: 0 0 6px; color: var(--teal-deep); }
+.cmp-col ul { margin: 0; padding-inline-start: 16px; font-size: 13.5px; line-height: 1.55; }
+.cmp-col li { margin-block-end: 4px; }
+@media (max-width: 380px) { .cmp-grid { grid-template-columns: 1fr; } }
+.tree-chain { display: flex; flex-direction: column; align-items: stretch; gap: 2px; margin-block: 4px 2px; }
+.tree-step { background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-size: 14.5px; text-align: center; }
+.tree-arrow { text-align: center; color: var(--muted); font-size: 13px; line-height: 1.2; }
 .opts { display: grid; gap: 8px; margin-block: 12px; }
 .opt { min-height: 48px; border-radius: 13px; border: 2px solid var(--line); background: var(--surface); padding: 0 14px; text-align: start; direction: ltr; font-weight: 600; }
 .opt.ok { background: var(--done-bg); border-color: var(--done); color: var(--done); }
@@ -262,7 +280,7 @@ tr:last-child td { border-block-end: 0; }
 .ldots i.on { background: var(--teal); width: 20px; border-radius: 5px; }
 .lstep-card { min-height: 160px; display: grid; align-content: center; gap: 10px; text-align: center; padding: 22px 16px; }
 .lstep-card .tag { font-size: 13px; color: var(--muted); font-weight: 600; }
-.lstep-card .txt { font-size: 19px; line-height: 1.7; text-align: start; }
+.lstep-card .txt { font-size: 19px; line-height: 1.7; text-align: start; overflow-wrap: anywhere; }
 .lstep-card .txt .pt-example { font-size: 15.5px; }
 .lnav { display: flex; gap: 10px; margin-block-start: 14px; }
 .lnav .btn { flex: 1; }
@@ -439,6 +457,34 @@ tr:last-child td { border-block-end: 0; }
       }
       return '<div class="pt-line">• ' + html + "</div>";
     }).join("");
+  }
+  function renderIconList(b) {
+    return (b.title ? '<div class="pt-line" style="font-weight:600">• ' + fmtEn(b.title) + "</div>" : "") +
+      '<div class="icon-list">' + b.icons.map(function (it) {
+        return '<div class="icon-row"><span class="icon-row-e">' + esc(it.e) + '</span><div class="icon-row-b"><b>' +
+          (it.en ? '<span class="en">' + esc(it.en) + "</span>" + (it.ar ? " — " + esc(it.ar) : "") : esc(it.ar || "")) +
+          "</b>" + (it.note ? '<div class="muted" style="margin-block-start:2px">' + fmtEn(it.note) + "</div>" : "") + "</div></div>";
+      }).join("") + "</div>";
+  }
+  function renderCompare(b) {
+    return (b.title ? '<div class="pt-line" style="font-weight:600">• ' + fmtEn(b.title) + "</div>" : "") +
+      '<div class="cmp-grid">' + b.cols.map(function (col) {
+        return '<div class="cmp-col"><h4>' + fmtEn(col.title) + "</h4><ul>" + col.items.map(function (it) { return "<li>" + fmtEn(it) + "</li>"; }).join("") + "</ul></div>";
+      }).join("") + "</div>";
+  }
+  function renderTreeChain(b) {
+    return (b.title ? '<div class="pt-line" style="font-weight:600">• ' + fmtEn(b.title) + "</div>" : "") +
+      '<div class="tree-chain">' + b.steps.map(function (s, i) {
+        return (i > 0 ? '<div class="tree-arrow">↓</div>' : "") + '<div class="tree-step">' + fmtEn(s) + "</div>";
+      }).join("") + "</div>";
+  }
+  function renderPt(t) {
+    if (t && typeof t === "object") {
+      if (t.icons) return renderIconList(t);
+      if (t.cols) return renderCompare(t);
+      if (t.steps) return renderTreeChain(t);
+    }
+    return fmtPt(t);
   }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
   function keyOf(d) { return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); }
@@ -2427,18 +2473,43 @@ tr:last-child td { border-block-end: 0; }
         {
           id: "c1", icon: "★", title: "الباب الأول: الأساسيات",
           pts: [
-            "الميكروبيولوجيا الغذائية بتهتم بخمس مجموعات كائنات دقيقة: {Bacteria} بدائية النواة (مثل Salmonella, Listeria, Lactobacillus) — ممرضات وفساد وبادئات تخمر معًا؛ {Archaea} (Methanogens, Halophiles) أهميتها الغذائية قليلة؛ {Yeasts/Molds} حقيقية النواة (Saccharomyces, Aspergillus, Penicillium) — تخمر وفساد وسموم فطرية؛ {Viruses} (Norovirus, Hepatitis A) ممرضات غذائية مش بتحتاج خلايا عائل لتتكاثر في الغذاء نفسه؛ {Parasites} (Giardia, Cryptosporidium) مرتبطة بخضار ومياه ملوثة.",
-            "الفرق الجوهري {Eukaryote} مقابل {Prokaryote}: حقيقية النواة عندها نواة حقيقية بغشاء وعضيات (ميتوكوندريا)، ريبوسوم 80S (40S+60S)، وجدار Glucan/Chitin في الفطريات، حجمها 5-100 ميكرومتر؛ بدائية النواة مفيش عندها غشاء نووي (Nucleoid فقط) ولا عضيات، ريبوسوم 70S (30S+50S)، جدارها Peptidoglycan في معظم البكتيريا، وحجمها أصغر (0.5-5 ميكرومتر).",
-            "جدار الخلية البكتيرية {Peptidoglycan} هو أساس صبغة جرام (هدف لإنزيم Lysozyme والبنسلين)؛ الفرق بين {Gram-positive} (جدار سميك متعدد الطبقات، بنفسجي، فيه Teichoic acids، أمثلة Staphylococcus/Bacillus/Clostridium/Listeria) و{Gram-negative} (جدار رفيع مع غشاء خارجي فيه {LPS (Lipid A)} سبب الـEndotoxin ومقاومة الأصباغ، وردي، أمثلة Salmonella/E. coli/Pseudomonas/Campylobacter).",
+            { title: "الميكروبيولوجيا الغذائية بتهتم بخمس مجموعات كائنات دقيقة:", icons: [
+              { e: "🦠", en: "Bacteria", ar: "بدائية النواة", note: "مثل Salmonella, Listeria, Lactobacillus — ممرضات وفساد وبادئات تخمر معًا." },
+              { e: "🧫", en: "Archaea", ar: "بدائية النواة", note: "مثل Methanogens, Halophiles — أهميتها الغذائية قليلة." },
+              { e: "🍄", en: "Yeasts/Molds", ar: "حقيقية النواة", note: "مثل Saccharomyces, Aspergillus, Penicillium — تخمر وفساد وسموم فطرية." },
+              { e: "🧬", en: "Viruses", ar: "ممرضات غذائية", note: "مثل Norovirus, Hepatitis A — مش بتحتاج خلايا عائل لتتكاثر في الغذاء نفسه." },
+              { e: "🐛", en: "Parasites", ar: "حقيقية النواة", note: "مثل Giardia, Cryptosporidium — مرتبطة بخضار ومياه ملوثة." }
+            ] },
+            { title: "الفرق الجوهري {Eukaryote} مقابل {Prokaryote}:", cols: [
+              { title: "{Eukaryote} (حقيقية النواة)", items: ["نواة حقيقية بغشاء + عضيات (ميتوكوندريا)", "ريبوسوم 80S (40S+60S)", "جدار الخلية: Glucan/Chitin (في الفطريات)", "الحجم: حوالي 5-100 ميكرومتر"] },
+              { title: "{Prokaryote} (بدائية النواة)", items: ["مفيش غشاء نووي (Nucleoid فقط)، ولا عضيات", "ريبوسوم 70S (30S+50S)", "جدار الخلية: Peptidoglycan (في معظم البكتيريا)", "الحجم: أصغر، حوالي 0.5-5 ميكرومتر"] }
+            ] },
+            "جدار الخلية البكتيرية {Peptidoglycan} هو أساس صبغة جرام، وهدف لإنزيم Lysozyme والبنسلين.",
+            { title: "الفرق بين {Gram-positive} و{Gram-negative}:", cols: [
+              { title: "{Gram-positive}", items: ["جدار سميك متعدد الطبقات", "يحتوي Teichoic acids", "لون الصبغة: بنفسجي", "أمثلة: Staphylococcus, Bacillus, Clostridium, Listeria"] },
+              { title: "{Gram-negative}", items: ["جدار رفيع + غشاء خارجي فيه {LPS (Lipid A)}", "سبب الـEndotoxin ومقاومة الأصباغ", "لون الصبغة: وردي", "أمثلة: Salmonella, E. coli, Pseudomonas, Campylobacter"] }
+            ] },
             "{Endospores} (الجراثيم) عند Bacillus وClostridium: شكل مقاوم للحرارة والجفاف والمطهرات يتكوّن لما الظروف تسوء (نقص غذاء)، قلبها واقي الماء وفيه Dipicolinic acid وكالسيوم، وده سر مقاومتها. مش بتتكاثر وهي جرثومة؛ لازم تنبت {Germination} أول لما الظروف تتحسن عشان كده البسترة ما بتقتلهاش لكن التعقيم التجاري محتاج حرارة أعلى بكتير.",
             "منحنى النمو {Growth curve} في مزرعة مغلقة أربع مراحل: {Lag} (تأقلم، مفيش زيادة عدد ظاهرة)، {Exponential/Log} (انقسام بمعدل ثابت كل {Generation time}؛ عند E. coli في الظروف المثالية حوالي 20 دقيقة)، {Stationary} (نقص غذاء وتراكم فضلات = الانقسام ≈ الموت، وهنا بتتكوّن سموم بعض الأنواع)، {Death} (الموت أكبر من الانقسام). المعادلات: N = N0 × 2ⁿ، n = (log N − log N0) / 0.301، g = t / n.",
-            "علاقة الأكسجين بالنمو: {Obligate aerobe} محتاج أكسجين (Pseudomonas، معظم الأعفان)، {Obligate anaerobe} الأكسجين يضره (Clostridium botulinum, C. perfringens)، {Facultative anaerobe} بينمو بوجود أو غياب الأكسجين (E. coli, Salmonella, S. aureus, Listeria)، {Microaerophile} محتاج أكسجين قليل بس (Campylobacter)، {Aerotolerant} يتحمل الأكسجين لكن يتخمّر (بكتيريا حمض اللاكتيك).",
-            "مجموعات الحرارة: {Psychrotroph} الأمثل عند 7°م أو أقل -20°م (فساد المبردات والألبان، Pseudomonas/Listeria)، {Mesophile} الأمثل 30-40°م (معظم الممرضات، 20-45°م)، {Thermophile} الأمثل حوالي 50-60°م (Geobacillus، جراثيم في أغذية محفوظة ساخنة)، {Psychrophile} الأمثل 15°م أو أقل (نادرة في الأغذية، بحرية/قطبية).",
+            { title: "علاقة الأكسجين بالنمو:", icons: [
+              { e: "🫁", en: "Obligate aerobe", ar: "محتاج أكسجين", note: "مثل Pseudomonas ومعظم الأعفان." },
+              { e: "☠️", en: "Obligate anaerobe", ar: "الأكسجين يضره", note: "مثل Clostridium botulinum, C. perfringens." },
+              { e: "🔀", en: "Facultative anaerobe", ar: "بينمو بوجود أو غياب الأكسجين", note: "مثل E. coli, Salmonella, S. aureus, Listeria." },
+              { e: "🌬️", en: "Microaerophile", ar: "محتاج أكسجين قليل بس", note: "مثل Campylobacter." },
+              { e: "🧪", en: "Aerotolerant", ar: "يتحمل الأكسجين لكن يتخمّر", note: "مثل بكتيريا حمض اللاكتيك." }
+            ] },
+            { title: "مجموعات الحرارة:", icons: [
+              { e: "❄️", en: "Psychrotroph", ar: "الأمثل عند 7°م أو أقل، لحد -20°م", note: "فساد المبردات والألبان، مثل Pseudomonas وListeria." },
+              { e: "🌡️", en: "Mesophile", ar: "الأمثل 30-40°م (نطاق 20-45°م)", note: "معظم الممرضات الغذائية." },
+              { e: "🔥", en: "Thermophile", ar: "الأمثل حوالي 50-60°م", note: "مثل Geobacillus — جراثيم في أغذية محفوظة ساخنة." },
+              { e: "🧊", en: "Psychrophile", ar: "الأمثل 15°م أو أقل", note: "نادرة في الأغذية، بحرية/قطبية." }
+            ] },
             "{aw وpH}: معظم البكتيريا أحسن نمو عند pH قريب من التعادل (6.5-7.5)؛ تصنيف الأغذية {Low-acid} إذا pH أعلى من 4.6، و{Acid} إذا 4.6 أو أقل (الحد ده مرتبط بـC. botulinum). {Water activity (aw)} = ضغط بخار الماء في الغذاء ÷ ضغط بخار الماء النقي (الماء النقي aw=1.0). البكتيريا عمومًا محتاجة aw أعلى من الخمائر والأعفان؛ معظم الأعفان تقدر تنمو عند aw أقل من أو يساوي 0.85، وS. aureus ينمو لحد 0.83.",
             "الأيض {Metabolism}: {Catabolism} هدم المواد لتوليد طاقة ATP، و{Anabolism} بناء مكونات الخلية. المسار المركزي الجلوكوز يتحلل في {Glycolysis (EMP)} إلى Pyruvate بناتج صافي 2 ATP، وبعدها اختيارين: {Respiration (تنفس)} عبر Krebs cycle + Electron transport chain بمستقبل إلكترون نهائي أكسجين (هوائي) أو مركب غير عضوي زي النترات (لاهوائي)، وناتج طاقة كبير (حوالي 30-38 ATP)؛ أو {Fermentation (تخمر)} بمستقبل إلكترون عضوي (مشتق من Pyruvate نفسه) وناتج طاقة قليل (2 ATP فقط) مع أحماض/كحول/غازات.",
             "أنواع التخمر المهمة في الأغذية: {Homolactic} (Lactococcus, Lactobacillus → لاكتات فقط تقريبًا، زبادي وجبن)، {Heterolactic} (Leuconostoc → لاكتات+إيثانول/أسيتات+CO2، نكهة Diacetyl في بعض الأجبان)، {Propionic} (Propionibacterium → بروبيونات+أسيتات+CO2، عيون الجبن السويسري)، {Alcoholic} (خميرة Saccharomyces → إيثانول+CO2، عجين وخبز ومشروبات)، {Butyric} (Clostridium → حمض بيوتيريك+غازات، عيب الانتفاخ المتأخر في الجبن)، {Mixed acid} (E. coli وأقاربها → أحماض+غاز في Durham tube، أساس تحاليل coliform).",
             "الفساد كيميائيًا: {Proteolysis} تكسير البروتين لأحماض أمينية ثم أمينات (Putrescine, Cadaverine) وأمونيا وH2S ورائحة نتنة؛ {Lipolysis} تكسير الدهون لأحماض دهنية حرة وطعم صابوني أو زنخ؛ {Saccharolysis} تخمر السكريات لحموضة وغاز وانتفاخ. بعض البكتيريا تحوّل Histidine إلى Histamine في السمك (تسمم Scombroid)؛ إنزيمات بعض الـPsychrotrophs (مثل Pseudomonas في اللبن) تبقى نشطة حتى بعد المعاملة الحرارية.",
-            "التصنيف والتسمية: التسلسل التصنيفي Domain ← Phylum ← Class ← Order ← Family ← Genus ← Species، والاسم العلمي ثنائي (Genus + species) ويُكتب مائلًا مثل Escherichia coli. طرق التعريف: ظاهرية (شكل الخلية، صبغة جرام، اختبارات كيموحيوية) وجينية (تسلسل 16S rRNA، تسلسل الجينوم الكامل WGS). أشكال الخلية الأساسية: Cocci (كروية)، Bacilli (عصوية)، Spirilla/Vibrio (حلزونية/منحنية). الـPlasmids حلقات DNA صغيرة بتحمل غالبًا جينات مقاومة مضادات حيوية أو سموم، وتنتقل بين البكتيريا بـConjugation أو Transformation أو Transduction — سبب أساسي لانتشار الضراوة والمقاومة.",
+            { title: "التسلسل التصنيفي من الأعم للأخص:", steps: ["Domain", "Phylum", "Class", "Order", "Family", "Genus", "Species"] },
+            "الاسم العلمي ثنائي (Genus + species) ويُكتب مائلًا مثل Escherichia coli؛ طرق التعريف: ظاهرية (شكل الخلية، صبغة جرام، اختبارات كيموحيوية) وجينية (تسلسل 16S rRNA، تسلسل الجينوم الكامل WGS)؛ أشكال الخلية الأساسية: Cocci (كروية)، Bacilli (عصوية)، Spirilla/Vibrio (حلزونية/منحنية)؛ الـPlasmids حلقات DNA صغيرة بتحمل غالبًا جينات مقاومة مضادات حيوية أو سموم، وتنتقل بين البكتيريا بـConjugation أو Transformation أو Transduction — سبب أساسي لانتشار الضراوة والمقاومة.",
             "{Biochemistry} للميكروبيولوجي: الكربوهيدرات (مصدر طاقة + جدار الخلية)، البروتينات (إنزيمات وهيكل، والسموم البروتينية زي سم Botulinum وS. aureus هي بروتينات)، الدهون (غشاء الخلية، وتكسيرها = زنخ)، الأحماض النووية (DNA معلومات/RNA تنفيذ، وهدف تحاليل PCR و16S). الإنزيمات محفزات بروتينية تتخصص لمادة معينة (Substrate)؛ معادلة Michaelis-Menten: Km هو تركيز الـSubstrate عند نصف السرعة القصوى (Km أصغر = ألفة أعلى)؛ التثبيط إما Competitive (ينافس على الموقع النشط) أو Non-competitive (يرتبط بمكان آخر). اختبارات معملية مبنية على إنزيمات: Catalase (H2O2)، Oxidase، Coagulase، Urease، Lysine decarboxylase."
           ],
           qs: [
@@ -3330,7 +3401,7 @@ tr:last-child td { border-block-end: 0; }
     return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button>' +
       '<div class="card"><h2>' + esc(u.icon + ". " + u.title) + '</h2>' +
       '<div class="ldots">' + dots + '</div>' +
-      '<div class="lstep-card"><span class="tag">نقطة <span class="num">' + (i + 1) + "</span> من <span class=\"num\">" + n + '</span></span><div class="txt">' + fmtPt(steps[i]) + '</div></div>' +
+      '<div class="lstep-card"><span class="tag">نقطة <span class="num">' + (i + 1) + "</span> من <span class=\"num\">" + n + '</span></span><div class="txt">' + renderPt(steps[i]) + '</div></div>' +
       '<div class="lnav">' +
       '<button class="btn alt" data-act="lstep" data-c="' + cid + '" data-u="' + id + '" data-d="-1"' + (i === 0 ? " disabled" : "") + '>السابق</button>' +
       (last
@@ -3344,7 +3415,7 @@ tr:last-child td { border-block-end: 0; }
   function unitFlatHTML(cid, id) {
     var u = unitOf(cid, id), p = state.learn.units[cid + ":" + id] || {};
     return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button><div class="card"><h2>' + esc(u.icon + ". " + u.title) + '</h2><ul class="pts">' +
-      u.pts.map(function (t) { return "<li>" + fmtPt(t) + "</li>"; }).join("") + "</ul>" +
+      u.pts.map(function (t) { return "<li>" + renderPt(t) + "</li>"; }).join("") + "</ul>" +
       '<button class="btn" data-act="quiz" data-c="' + cid + '" data-u="' + id + '">ابدأ التدريب (' + u.qs.length + " أسئلة)</button>" +
       (p.best != null ? '<p class="muted" style="font-size:14px;margin-block-start:8px">أفضل نتيجة: ' + p.best + "%</p>" : "") +
       (u.reading ? '<button class="btn alt" style="margin-block-start:10px" data-act="reading-open" data-c="' + cid + '" data-u="' + id + '">📖 فقرة قراءة · ' + esc(LVL_LBL[u.reading.lvl]) + '</button>' : "") + "</div>";
@@ -4098,5 +4169,38 @@ tr:last-child td { border-block-end: 0; }
 })();
 </script>
 
+
+<script>
+if ("serviceWorker" in navigator && location.protocol.indexOf("http") === 0) {
+  window.addEventListener("load", function () {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  });
+  navigator.serviceWorker.addEventListener("message", function (e) {
+    if (e.data && e.data.type === "masar-speak" && e.data.en) masarSpeakEnglish(e.data.en);
+  });
+}
+function masarSpeakEnglish(text) {
+  try {
+    if (!("speechSynthesis" in window) || !text) return;
+    var u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+(function () {
+  try {
+    var p = new URLSearchParams(location.search);
+    var say = p.get("speak");
+    if (say) {
+      setTimeout(function () { masarSpeakEnglish(say); }, 500);
+      p.delete("speak");
+      var qs = p.toString();
+      history.replaceState(null, "", location.pathname + (qs ? "?" + qs : ""));
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>
