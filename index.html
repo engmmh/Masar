@@ -70,6 +70,7 @@ body { background: var(--bg); color: var(--text); font-family: var(--body); font
 #shell { position: fixed; inset: 0; max-width: 640px; margin-inline: auto; display: flex; flex-direction: column; background: var(--bg); }
 #top { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 8px; }
 #top h1 { font-size: 27px; letter-spacing: .01em; }
+.greet { font-size: 14px; color: var(--muted); margin-block-end: 10px; }
 #top .dates { font-size: 13px; color: var(--muted); line-height: 1.4; }
 #top .chip { border: 0; color: var(--text); min-height: 34px; cursor: pointer; }
 #pager { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
@@ -90,6 +91,9 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .top h1 { font-size: 27px; letter-spacing: -.01em; }
 .top .dates { font-size: 13.5px; color: var(--muted); font-weight: 500; line-height: 1.5; text-align: end; }
 .chip { display: inline-flex; gap: 6px; align-items: center; background: var(--surface2); border-radius: 99px; padding: 2px 12px; font-size: 14px; white-space: nowrap; }
+.chip.on { background: var(--teal); color: var(--teal-ink); font-weight: 700; }
+.chip[role="button"] { cursor: pointer; border: 1px solid var(--line); }
+.chip[role="button"].on { border-color: var(--teal); }
 .banner { background: var(--amber-bg); color: var(--text); border-radius: 12px; padding: 10px 14px; font-size: 14px; margin-block-end: 12px; }
 
 /* cards */
@@ -297,10 +301,24 @@ tr:last-child td { border-block-end: 0; }
 .bub.b { background: linear-gradient(135deg, var(--teal), var(--teal-deep)); color: var(--teal-ink); border-start-end-radius: 4px; justify-self: end; }
 .bub.b .ar { color: color-mix(in srgb, var(--teal-ink) 75%, transparent); }
 
+#welcome { position: fixed; inset: 0; z-index: 110; background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--teal) 22%, var(--bg)), var(--bg) 60%); display: grid; place-items: center; padding: 24px; overflow-y: auto; }
+#welcome[hidden] { display: none; }
+#welcome .wrap { width: 100%; max-width: 360px; text-align: center; padding-block: 24px; }
+#welcome svg { filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--teal) 45%, transparent)); }
+#welcome h1 { font-size: 36px; color: var(--teal); margin-block-start: 14px; }
+#welcome .tagline { color: var(--muted); font-size: 15px; margin-block-start: 4px; }
+#welcome .wfeat { display: grid; gap: 10px; margin-block: 24px; text-align: start; }
+#welcome .wfeat > div { display: flex; gap: 12px; align-items: center; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; }
+#welcome .wfeat .ic { flex: none; width: 42px; height: 42px; border-radius: 12px; background: var(--surface2); color: var(--teal); display: grid; place-items: center; }
+#welcome .wfeat .ic svg { width: 22px; height: 22px; }
+#welcome .wfeat b { display: block; font-size: 15px; }
+#welcome .wfeat span { display: block; font-size: 13px; color: var(--muted); margin-block-start: 2px; }
+#welcome .btn { width: 100%; }
 #lock { position: fixed; inset: 0; z-index: 100; background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--teal) 20%, var(--bg)), var(--bg) 60%); display: grid; place-items: center; padding: 24px; }
 #lock[hidden] { display: none; }
 #lockform { width: 100%; max-width: 320px; display: grid; gap: 12px; text-align: center; }
-#lockform h1 { font-size: 42px; color: var(--teal); }
+#lockform h1 { font-size: 42px; color: var(--teal); margin-block-start: 14px; }
+#lockform svg { filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--teal) 45%, transparent)); }
 #pin { font: inherit; font-size: 28px; letter-spacing: .4em; text-align: center; direction: ltr; background: var(--surface); color: var(--text); border: 2px solid var(--line); border-radius: 16px; min-height: 56px; width: 100%; }
 #lockmsg { min-height: 1.6em; font-size: 14px; color: var(--miss); }
 .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -412,8 +430,25 @@ tr:last-child td { border-block-end: 0; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
 </style>
 
+<div id="welcome" dir="rtl" lang="ar">
+  <div class="wrap">
+    <svg width="96" height="96" viewBox="0 0 100 100" aria-hidden="true" style="margin-inline:auto;display:block"><defs><linearGradient id="bmg-welcome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0DA66B"/><stop offset="1" stop-color="#087A4F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#bmg-welcome)"/><path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="#FFFFFF" transform="translate(0,2)"/><g fill="#F5B942"><circle cx="30" cy="71" r="2.6"/><circle cx="41" cy="76" r="3"/><circle cx="55" cy="77.5" r="3.4"/><circle cx="69" cy="75" r="2.8"/><circle cx="79" cy="70" r="2.2"/></g></svg>
+    <h1>مسار</h1>
+    <p class="tagline">رفيقك اليومي للصلاة والقرآن والتعلّم</p>
+    <div class="wfeat">
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></span><div><b>الصلاة</b><span>تابع صلواتك الخمس وقضاء الفايت أوتوماتيك</span></div></div>
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2H6"/></svg></span><div><b>القرآن</b><span>سجّل وردك اليومي وتابع تقدّم الختمة</span></div></div>
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg></span><div><b>الكورسات</b><span>إنجليزي وآيزو وميكروبيولوجيا بأسلوب تفاعلي</span></div></div>
+      <div><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="14" x2="8" y2="14.01"/><line x1="12" y1="14" x2="12" y2="14.01"/><line x1="16" y1="14" x2="16" y2="14.01"/></svg></span><div><b>الحاسبة</b><span>تابع مصروفك الشهري بسهولة</span></div></div>
+    </div>
+    <button class="btn" id="welcomeBtn" type="button">ابدأ</button>
+  </div>
+</div>
+<script>try{if(localStorage.getItem("masar:onboarded"))document.getElementById("welcome").hidden=true;}catch(e){}</script>
+
 <div id="lock" dir="rtl" lang="ar">
   <form id="lockform" autocomplete="on">
+    <svg width="84" height="84" viewBox="0 0 100 100" aria-hidden="true" style="margin-inline:auto"><defs><linearGradient id="bmg-lock" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0DA66B"/><stop offset="1" stop-color="#087A4F"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#bmg-lock)"/><path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="#FFFFFF" transform="translate(0,2)"/><g fill="#F5B942"><circle cx="30" cy="71" r="2.6"/><circle cx="41" cy="76" r="3"/><circle cx="55" cy="77.5" r="3.4"/><circle cx="69" cy="75" r="2.8"/><circle cx="79" cy="70" r="2.2"/></g></svg>
     <h1>مسار</h1>
     <p class="muted">اكتب الرمز للدخول</p>
     <input id="pin" type="password" inputmode="numeric" autocomplete="current-password" placeholder="••••" aria-label="الرمز" required>
@@ -423,7 +458,7 @@ tr:last-child td { border-block-end: 0; }
 </div>
 <div id="shell" dir="rtl" lang="ar">
   <header id="top">
-    <div><h1>مسار</h1><div class="dates" id="dates"></div></div>
+    <div><h1><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true" style="color:var(--teal);vertical-align:-4px;margin-inline-end:4px"><path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="currentColor" transform="translate(0,2)"/></svg>مسار</h1><div class="dates" id="dates"></div></div>
     <div class="row" style="gap:6px">
       <button class="chip" id="theme" data-act="theme" aria-label="تغيير المظهر">نهاري</button>
       <button class="chip" id="lockbtn" data-act="lock" hidden>قفل</button>
@@ -560,6 +595,18 @@ tr:last-child td { border-block-end: 0; }
     sec = Math.max(0, Math.floor(sec));
     var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
     return pad(h) + ":" + pad(m) + ":" + pad(s);
+  }
+  var brandMarkN = 0;
+  function brandMark(size, tile) {
+    brandMarkN++;
+    var gid = "bmg" + brandMarkN;
+    if (!tile) {
+      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true" style="color:var(--teal)"><path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="currentColor" transform="translate(0,2)"/></svg>';
+    }
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0DA66B"/><stop offset="1" stop-color="#087A4F"/></linearGradient></defs>' +
+      '<rect width="100" height="100" rx="22" fill="url(#' + gid + ')"/>' +
+      '<path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="#FFFFFF" transform="translate(0,2)"/>' +
+      '<g fill="#F5B942"><circle cx="30" cy="71" r="2.6"/><circle cx="41" cy="76" r="3"/><circle cx="55" cy="77.5" r="3.4"/><circle cx="69" cy="75" r="2.8"/><circle cx="79" cy="70" r="2.2"/></g></svg>';
   }
   function ico(name) {
     var s = {
@@ -1030,9 +1077,17 @@ tr:last-child td { border-block-end: 0; }
   ];
   async function loadAccountsList() {
     try {
-      var r = await store.sb.from("masar_accounts").select("uid,email,role,label,active");
+      // courses/sections are optional columns (added for per-account permissions).
+      // Try the richer select first; if the columns don't exist yet in this
+      // project (migration not run), fall back to the plain select so accounts
+      // still load normally — courses/sections just come back undefined, which
+      // every permission check below treats as "see everything".
+      var r = await store.sb.from("masar_accounts").select("uid,email,role,label,active,courses,sections");
+      if (r.error) r = await store.sb.from("masar_accounts").select("uid,email,role,label,active");
       if (!r.error && r.data && r.data.length) {
-        ACCOUNTS = r.data.map(function (row) { return { email: row.email, uid: row.uid, role: row.role, label: row.label, active: row.active !== false }; });
+        ACCOUNTS = r.data.map(function (row) {
+          return { email: row.email, uid: row.uid, role: row.role, label: row.label, active: row.active !== false, courses: row.courses || null, sections: row.sections || null };
+        });
         return;
       }
     } catch (e) { }
@@ -1199,6 +1254,13 @@ tr:last-child td { border-block-end: 0; }
   /* ---------------- learning content ---------------- */
   var COURSES = {};
   var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso17025", "micro"];
+  // ALLOWED_COURSES is what the logged-in account is permitted to see — a derived,
+  // per-session subset of COURSE_ORDER (never COURSE_ORDER itself, which must stay
+  // the full master list: it's still used to load/index every course's data so admin
+  // stats and lookups work regardless of which account is currently signed in).
+  // Reset to "everything" on every login attempt, then narrowed by applyPermissions()
+  // once an account's own courses/sections columns are known.
+  var ALLOWED_COURSES = COURSE_ORDER.slice();
   var QINDEX = {}, UNIT_BY_KEY = {};
   function loadCourses() {
     return Promise.all(COURSE_ORDER.map(function (cid) {
@@ -1236,7 +1298,7 @@ tr:last-child td { border-block-end: 0; }
     return n;
   }
   function dueCards(now, cid, lvl) {
-    var list = cid ? (COURSES[cid] ? COURSES[cid].vocab : []) : COURSE_ORDER.reduce(function (a, c) { return COURSES[c] ? a.concat(COURSES[c].vocab) : a; }, []);
+    var list = cid ? (COURSES[cid] ? COURSES[cid].vocab : []) : ALLOWED_COURSES.reduce(function (a, c) { return COURSES[c] ? a.concat(COURSES[c].vocab) : a; }, []);
     if (lvl) list = list.filter(function (v) { return (v.lvl || 1) === lvl; });
     return list.filter(function (v) { var c = state.learn.cards[v.id]; return !c || c.due <= now.key; });
   }
@@ -1255,7 +1317,7 @@ tr:last-child td { border-block-end: 0; }
     { id: "week7", icon: "flame", title: "أسبوع مذاكرة متواصل", desc: "ذاكرت 7 أيام متتالية من غير ما تفوّت يوم.",
       check: function (s, now) { return studyStreak(now) >= 7; } },
     { id: "course1", icon: "cert", title: "شهادة إتمام كورس", desc: "أنهيت كل وحدات كورس كامل.",
-      check: function (s) { return COURSE_ORDER.some(function (cid) { var c = COURSES[cid]; if (!c) return false; var done = c.units.filter(function (u) { var p = s.learn.units[cid + ":" + u.id]; return p && p.done; }).length; return done >= c.units.length; }); } },
+      check: function (s) { return ALLOWED_COURSES.some(function (cid) { var c = COURSES[cid]; if (!c) return false; var done = c.units.filter(function (u) { var p = s.learn.units[cid + ":" + u.id]; return p && p.done; }).length; return done >= c.units.length; }); } },
     { id: "speaker", icon: "vol", title: "متكلم واثق", desc: "خلصت تحدي نطق كامل بدقة 100%.",
       check: function (s) { return (s.learn.speakBest || 0) >= 100; } }
   ];
@@ -1271,7 +1333,7 @@ tr:last-child td { border-block-end: 0; }
   /* ---------------- daily challenge ---------------- */
   function dailyPool() {
     var pool = [];
-    COURSE_ORDER.forEach(function (cid) {
+    ALLOWED_COURSES.forEach(function (cid) {
       COURSES[cid].units.forEach(function (u) {
         var p = state.learn.units[cid + ":" + u.id];
         if (p && p.done && u.qs) pool = pool.concat(u.qs.map(function (q) { return q.id; }));
@@ -1567,13 +1629,21 @@ tr:last-child td { border-block-end: 0; }
       '<button class="btn" data-act="tab" data-t="learn">افتح الكورس</button></div>';
   }
 
+  function greetingHTML(now) {
+    var h = now.h, txt, ic;
+    if (h >= 4 && h < 11) { txt = "صباح الخير ☀️"; }
+    else if (h >= 11 && h < 17) { txt = "يوم سعيد 🌿"; }
+    else if (h >= 17 && h < 20) { txt = "مساء الخير 🌇"; }
+    else { txt = "مساء النور 🌙"; }
+    return '<div class="greet">' + txt + '</div>';
+  }
   function homeView(now) {
     if (state.hv === "weekly") return weeklyReportHTML(now);
     var sts = PRAYERS.map(function (p, k) { return status(now.key, k, now); }), doneN = sts.filter(isDone).length;
     var t = target(), n = pagesOn(now.key), L = level(), due = dueCards(now).length;
     var miss = state.loaded ? missedList(now).length : 0;
     var alert = miss ? '<div class="card alert"><div class="row between"><div><h2 style="margin:0">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + '</h2><p style="font-size:14px">سجّل القضاء من قسم الصلاة.</p></div><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div></div>' : "";
-    return bannerHTML() + streakBannerHTML(now) + heroHTML(now) + alert + pushCardHTML() + dailyCardHTML(now) +
+    return greetingHTML(now) + bannerHTML() + streakBannerHTML(now) + heroHTML(now) + alert + pushCardHTML() + dailyCardHTML(now) +
       '<div class="dual"><div class="stat"><b class="num">' + n + " / " + t + '</b><span>ورد اليوم (صفحة)</span><div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div></div>' +
       '<div class="stat"><b class="num">المستوى ' + L.lv + '</b><span><span class="num">' + L.xp + '</span> نقطة</span><div class="bar amber"><i style="width:' + L.pct + '%"></i></div></div></div>' +
       '<div class="sec-h">الأقسام</div><div class="tiles">' +
@@ -1720,8 +1790,9 @@ tr:last-child td { border-block-end: 0; }
     if (v.mode === "home") return top + courseHomeHTML(v.c, now);
     if (v.mode === "cert") return top + certHTML(v.c);
     // courses select
-    var cards = COURSE_ORDER.map(function (cid) {
-      var c = COURSES[cid], done = courseDone(cid), cpct = c.units.length ? Math.round(done / c.units.length * 100) : 0;
+    var cards = ALLOWED_COURSES.map(function (cid) {
+      var c = COURSES[cid]; if (!c) return "";
+      var done = courseDone(cid), cpct = c.units.length ? Math.round(done / c.units.length * 100) : 0;
       return '<button class="unit" data-act="course-open" data-c="' + cid + '"><span class="no">' + ico(COURSE_ICO[cid]) + '</span><span class="grow"><b>' + esc(c.title) + '</b><br><span class="muted" style="font-size:13px">' + esc(c.desc) + ' · ' + done + "/" + c.units.length + ' وحدة مكتملة</span><div class="bar" style="height:6px;margin-block-start:6px"><i style="width:' + cpct + "%\"></i></div></span></button>";
     }).join("");
     var L = level();
@@ -1974,6 +2045,7 @@ tr:last-child td { border-block-end: 0; }
       var p = state.learn.units[z.unit] || {};
       p.best = Math.max(p.best || 0, pct); p.tries = (p.tries || 0) + 1;
       if (pct >= 80 && !p.done) { p.done = true; gain += 30; }
+      p.date = now.key; // lets the admin dashboard show "last unit worked, when"
       state.learn.units[z.unit] = p;
     }
     if (z.daily && state.learn.daily) { state.learn.daily.done = true; state.learn.daily.score = pct; gain += 15; }
@@ -2080,6 +2152,26 @@ tr:last-child td { border-block-end: 0; }
 
   /* ---------------- render ---------------- */
   var TABS = ["home", "prayer", "quran", "learn", "exp"], panelCache = {};
+  // Per-account section permissions ("home" is always visible — only these four
+  // are ever toggled off). Hides the bottom-nav button and the panel itself, and
+  // bumps the user off a tab that just got hidden out from under them.
+  var TOGGLEABLE_SECTIONS = ["prayer", "quran", "learn", "exp"];
+  function applyPermissions(acc) {
+    ALLOWED_COURSES = (Array.isArray(acc && acc.courses) && acc.courses.length)
+      ? COURSE_ORDER.filter(function (c) { return acc.courses.indexOf(c) >= 0; })
+      : COURSE_ORDER.slice();
+    var allowedSections = (Array.isArray(acc && acc.sections) && acc.sections.length) ? acc.sections : null;
+    TOGGLEABLE_SECTIONS.forEach(function (s) {
+      var hide = !!(allowedSections && allowedSections.indexOf(s) < 0);
+      var btn = document.querySelector('.tabs button[data-t="' + s + '"]');
+      var li = btn && btn.closest("li");
+      if (li) li.hidden = hide;
+      var panel = document.getElementById("p-" + s);
+      if (panel) panel.hidden = hide;
+      if (hide && state.tab === s) goTab("home");
+    });
+  }
+  function resetPermissions() { applyPermissions(null); }
   var AR_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
   var THEMES = ["light", "dark", "auto"], THEME_LBL = { light: "نهاري", dark: "ليلي", auto: "تلقائي" };
   function getTheme() { try { return localStorage.getItem("masar:theme") || "light"; } catch (e) { return "light"; } }
@@ -2316,12 +2408,14 @@ tr:last-child td { border-block-end: 0; }
       store.uid = matched.uid;
       $("#pin").value = "";
       if (matched.acc.role === "admin") {
+        resetPermissions(); // the admin is never restricted — always sees everything
         btn.textContent = "جارٍ التحميل…";
         await loadAdminDashboard();
         $("#lock").hidden = true; btn.textContent = "دخول";
         btn.disabled = false;
         return;
       }
+      applyPermissions(matched.acc);
       btn.textContent = "جارٍ التحميل…";
       // Keep the lock screen up until the real data has actually arrived, instead of
       // revealing the app shell's empty starting values (0 prayers, level 1, ...) for
@@ -2334,175 +2428,94 @@ tr:last-child td { border-block-end: 0; }
     btn.disabled = false;
   }
 
-  /* ---------------- admin dashboard (account 5912) ---------------- */
+  /* ---------------- admin dashboard ---------------- */
   var ADMIN_FN_URL = CFG.url + "/functions/v1/admin-change-password";
   var ACCOUNT_COLORS = ["var(--teal)", "var(--blue)", "var(--amber)", "var(--miss)"];
+  var ADM_FOLLOWUP_DAYS = 3; // no activity for this many days or more -> "needs follow-up"
+  var ADM_SECTION_LABEL = { prayer: "الصلاة", quran: "القرآن", learn: "التعلّم", exp: "الحاسبة" };
   function accColor(i) { return ACCOUNT_COLORS[i % ACCOUNT_COLORS.length]; }
   function initialsOf(label) {
     var parts = (label || "").trim().split(/\s+/).filter(Boolean);
     if (!parts.length) return "؟";
     return parts[0].slice(0, 1);
   }
-  function recentPages(days, n) {
-    var today = nowR().key, out = [];
-    for (var i = n - 1; i >= 0; i--) {
-      var k = addDays(today, -i);
-      out.push({ key: k, pages: (days[k] && days[k].q) || 0 });
-    }
-    return out;
-  }
-  function computeAccountStats(days, learn) {
-    var dayKeys = Object.keys(days);
-    var completeDays = dayKeys.filter(function (k) {
-      var d = days[k];
-      return PRAYERS.every(function (p) { return d[p.k] && d[p.k].t; });
-    }).length;
-    var totalPages = dayKeys.reduce(function (s, k) { return s + (days[k].q || 0); }, 0);
-    var xp = learn.xp || 0;
-    var level = Math.floor(Math.sqrt(xp / 40)) + 1;
-    var cards = learn.cards || {};
-    var vocabKnown = Object.keys(cards).filter(function (id) { return cards[id].box >= 3; }).length;
-    var totalVocab = 0, totalUnits = 0, unitsDone = 0;
-    COURSE_ORDER.forEach(function (cid) {
-      var c = COURSES[cid];
-      totalVocab += c.vocab.length;
-      totalUnits += c.units.length;
-      unitsDone += c.units.filter(function (u) { return ((learn.units || {})[cid + ":" + u.id] || {}).done; }).length;
-    });
-    var lastActive = dayKeys.length ? dayKeys.slice().sort().slice(-1)[0] : null;
-    return { totalDays: dayKeys.length, completeDays: completeDays, totalPages: totalPages, xp: xp, level: level, vocabKnown: vocabKnown, totalVocab: totalVocab, unitsDone: unitsDone, totalUnits: totalUnits, lastActive: lastActive, recent: recentPages(days, 14) };
-  }
   function statTile(label, val) {
     return '<div style="min-width:130px;margin:6px 0"><div class="muted" style="font-size:12.5px">' + esc(label) + '</div><div class="num" style="font-size:19px;font-weight:700">' + esc(String(val)) + "</div></div>";
   }
-  var adminPinsVisible = {};
-  function adminAccountCard(acc, s, idx, pin) {
-    var disabled = acc.active === false;
-    var color = accColor(idx);
-    var shown = !!adminPinsVisible[acc.uid];
-    var pinDisplay = pin ? (shown ? esc(pin) : "••••") : "—";
-    return '<div class="card" style="overflow:hidden">' +
-      '<div class="row between" style="align-items:center;gap:10px">' +
-      '<div class="row" style="align-items:center;gap:10px">' +
-      '<div style="width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;color:#fff;background:' + color + '">' + esc(initialsOf(acc.label)) + "</div>" +
-      '<div><h3 style="margin:0">' + esc(acc.label) + "</h3>" +
-      (disabled ? '<span class="muted" style="font-size:12px">معطّل حاليًا</span>' : '<span class="muted" style="font-size:12px">مفعّل</span>') +
-      "</div></div>" +
-      '<button class="chip sm" type="button" data-act="admin-toggle" data-uid="' + esc(acc.uid) + '" data-active="' + (disabled ? "0" : "1") + '">' + (disabled ? "تفعيل" : "تعطيل") + "</button>" +
-      "</div>" +
-      '<div class="row wrapr" style="gap:18px;margin-block-start:10px">' +
-      statTile("المستوى", "Lv " + s.level + " · " + s.xp + " XP") +
-      statTile("أيام مسجّلة", s.totalDays) +
-      statTile("أيام مكتملة بالكامل", s.completeDays) +
-      statTile("صفحات قرآن", s.totalPages) +
-      statTile("كلمات محفوظة", s.vocabKnown + " / " + s.totalVocab) +
-      statTile("وحدات مكتملة", s.unitsDone + " / " + s.totalUnits) +
-      statTile("آخر نشاط", s.lastActive ? greg(s.lastActive) : "—") +
-      "</div>" +
-      '<div class="row" style="align-items:center;gap:8px;margin-block-start:12px;padding:8px 10px;border-radius:10px;background:var(--surface2)">' +
-      '<span class="muted" style="font-size:12.5px">رمز الدخول الحالي:</span>' +
-      '<span class="num" style="font-weight:700;letter-spacing:1px">' + pinDisplay + "</span>" +
-      '<button class="chip sm" type="button" data-act="admin-pintoggle" data-uid="' + esc(acc.uid) + '" style="margin-inline-start:auto">' + (shown ? "إخفاء" : "إظهار") + "</button>" +
-      "</div>" +
-      '<form class="row" data-act="admin-pw" data-uid="' + esc(acc.uid) + '" style="gap:8px;margin-block-start:12px;align-items:center">' +
-      '<input class="inp" type="text" inputmode="numeric" placeholder="رمز جديد (4 أرقام)" style="max-width:150px" required pattern="\\d{4,8}">' +
-      '<button class="btn sm" type="submit">تغيير الرمز</button>' +
-      '<span class="muted pwmsg" style="font-size:12.5px"></span>' +
-      "</form>" +
-      '<div class="muted togglemsg" style="font-size:12.5px;margin-block-start:6px"></div>' +
-      "</div>";
+  /* -- raw-days helpers: the admin works over OTHER accounts' days/learn objects,
+     never the logged-in state.days, so these take `days`/`learn` as plain args
+     instead of reading global state the way the main app's own streak()/status() do. */
+  function admDayComplete(days, key) {
+    var d = days[key];
+    return !!d && PRAYERS.every(function (p) { return d[p.k] && d[p.k].t; });
   }
-  function adminLegendHTML(stats) {
-    return '<div class="row wrapr" style="gap:16px;margin-block-end:10px;font-size:12.5px">' +
-      stats.map(function (st, i) {
-        return '<span class="row" style="gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:3px;display:inline-block;background:' + accColor(i) + '"></span>' + esc(st.acc.label) + "</span>";
-      }).join("") +
-      "</div>";
+  function admDayActivity(days, key) {
+    var d = days[key]; if (!d) return 0;
+    var n = PRAYERS.filter(function (p) { return d[p.k] && d[p.k].t; }).length;
+    if (n === 0 && !(d.q > 0)) return 0;
+    return n >= 5 ? 2 : 1;
   }
-  function adminCompareHTML(stats) {
-    var rows = [
-      ["المستوى", function (s) { return s.level; }, function (s) { return "Lv " + s.level; }],
-      ["XP", function (s) { return s.xp; }, function (s) { return String(s.xp); }],
-      ["أيام مسجّلة", function (s) { return s.totalDays; }, function (s) { return String(s.totalDays); }],
-      ["أيام مكتملة", function (s) { return s.completeDays; }, function (s) { return String(s.completeDays); }],
-      ["صفحات قرآن", function (s) { return s.totalPages; }, function (s) { return String(s.totalPages); }],
-      ["كلمات محفوظة", function (s) { return s.vocabKnown; }, function (s) { return s.vocabKnown + "/" + s.totalVocab; }],
-      ["وحدات مكتملة", function (s) { return s.unitsDone; }, function (s) { return s.unitsDone + "/" + s.totalUnits; }]
-    ];
-    var body = rows.map(function (r) {
-      var vals = stats.map(function (st) { return r[1](st.s); });
-      var max = Math.max.apply(null, vals.concat([1]));
-      var bars = stats.map(function (st, i) {
-        var v = r[1](st.s), w = Math.max(2, Math.round((v / max) * 100));
-        return '<div class="row" style="align-items:center;gap:6px;margin-block-start:' + (i === 0 ? "0" : "3") + 'px"><div style="flex:1;height:9px;border-radius:4px;background:var(--surface2);overflow:hidden"><div style="width:' + w + '%;height:100%;border-radius:4px;background:' + accColor(i) + '"></div></div><span class="num" style="min-width:46px;text-align:end;font-size:12.5px">' + esc(r[2](st.s)) + "</span></div>";
-      }).join("");
-      return '<div style="margin-block-end:10px">' +
-        '<div class="muted" style="font-size:12.5px;margin-block-end:3px">' + esc(r[0]) + "</div>" +
-        bars +
-        "</div>";
-    }).join("");
-    var lastRow = '<div class="row between wrapr" style="font-size:12.5px;padding-block-start:6px;border-block-start:1px dashed var(--line);gap:10px"><span class="muted">آخر نشاط</span><span class="num">' +
-      stats.map(function (st) { return esc(st.acc.label) + ": " + (st.s.lastActive ? greg(st.s.lastActive) : "—"); }).join(" · ") + "</span></div>";
-    return '<div class="card"><h3 style="margin:0 0 10px">مقارنة بين الحسابات</h3>' + adminLegendHTML(stats) + body + lastRow + "</div>";
+  function admStreak(days, now) {
+    var k = now.key, n = 0;
+    if (!admDayComplete(days, k)) k = addDays(k, -1);
+    while (admDayComplete(days, k) && n < 5000) { n++; k = addDays(k, -1); }
+    return n;
   }
-  function trendChartSVG(stats) {
-    var n = stats[0].s.recent.length;
-    var w = 640, h = 160, padL = 6, padB = 20, padT = 8, padR = 6;
-    var plotW = w - padL - padR, plotH = h - padT - padB;
-    var maxV = Math.max(1, Math.max.apply(null, stats.map(function (st) { return Math.max.apply(null, st.s.recent.map(function (d) { return d.pages; })); })));
-    var groupW = plotW / n;
-    var count = stats.length;
-    var barW = Math.min(13, groupW / Math.max(count, 1) - 3);
-    if (barW < 1) barW = 1;
-    var bars = "";
+  function admLastActiveKey(days) {
+    var keys = Object.keys(days).filter(function (k) { return admDayActivity(days, k) > 0; }).sort();
+    return keys.length ? keys[keys.length - 1] : null;
+  }
+  function admDaysSince(key, now) {
+    if (!key) return null;
+    var p = key.split("-").map(Number), q = now.key.split("-").map(Number);
+    var a = Date.UTC(p[0], p[1] - 1, p[2]), b = Date.UTC(q[0], q[1] - 1, q[2]);
+    return Math.round((b - a) / 86400000);
+  }
+  function admAllowedCourses(acc) {
+    return (Array.isArray(acc.courses) && acc.courses.length) ? COURSE_ORDER.filter(function (c) { return acc.courses.indexOf(c) >= 0; }) : COURSE_ORDER.slice();
+  }
+  function admAllowedSections(acc) {
+    return (Array.isArray(acc.sections) && acc.sections.length) ? acc.sections.slice() : TOGGLEABLE_SECTIONS.slice();
+  }
+  function admWeekBars(days, now) {
+    var out = "";
+    for (var i = 6; i >= 0; i--) {
+      var k = addDays(now.key, -i), d = days[k], n = d ? PRAYERS.filter(function (p) { return d[p.k] && d[p.k].t; }).length : 0;
+      out += '<div><span class="col"><i class="' + (n === 5 ? "full" : "") + '" style="height:' + Math.round(n / 5 * 100) + '%"></i></span><b class="num" style="font-weight:500">' + n + "</b><span>" + WD_S[dowOf(k)] + "</span></div>";
+    }
+    return out;
+  }
+  var ADM_FILTERS = [{ id: "week", label: "الأسبوع ده", n: 7 }, { id: "month", label: "الشهر ده", n: 30 }, { id: "all", label: "الكل", n: 36500 }];
+  function admFilterDef() { return ADM_FILTERS.filter(function (f) { return f.id === (state.adminFilter || "week"); })[0] || ADM_FILTERS[0]; }
+  // Period stats for one account: prayer/Quran/XP totals over the filtered window,
+  // plus per-course progress — each course's total/done counted only within that
+  // account's own allowed-course set when it's restricted (locked courses still
+  // appear in the list, dimmed, so the admin can see what's hidden from them).
+  function admPeriodStats(acc, days, learn, now, f) {
+    var prayDone = 0, prayTotal = 0, pages = 0, xp = 0, completeDays = 0, n = f.n;
+    if (f.id === "all") {
+      // "all time" means since this account's own earliest recorded day, not a
+      // fixed huge window — otherwise the denominator would include years before
+      // the account even existed and make its percentage look artificially bad.
+      var keys = Object.keys(days).sort();
+      n = keys.length ? Math.max(1, admDaysSince(keys[0], now) + 1) : 1;
+    }
     for (var i = 0; i < n; i++) {
-      var gx = padL + i * groupW;
-      var totalBarsW = count * barW + (count - 1) * 2;
-      var startX = gx + groupW / 2 - totalBarsW / 2;
-      for (var j = 0; j < count; j++) {
-        var v = stats[j].s.recent[i].pages;
-        var hgt = Math.max(1, (v / maxV) * plotH);
-        var xj = startX + j * (barW + 2);
-        bars += '<rect x="' + xj.toFixed(1) + '" y="' + (padT + plotH - hgt).toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + hgt.toFixed(1) + '" rx="2" style="fill:' + accColor(j) + '"><title>' + esc(stats[j].acc.label) + " — " + esc(stats[j].s.recent[i].key) + ": " + v + " صفحة</title></rect>";
-      }
-      if (i % 2 === 0 || n <= 7) {
-        var lbl = stats[0].s.recent[i].key.slice(8) + "/" + stats[0].s.recent[i].key.slice(5, 7);
-        bars += '<text x="' + (gx + groupW / 2).toFixed(1) + '" y="' + (h - 4) + '" text-anchor="middle" font-size="9" style="fill:var(--muted)">' + lbl + "</text>";
-      }
+      var k = addDays(now.key, -i), d = days[k];
+      var pd = d ? PRAYERS.filter(function (p) { return d[p.k] && d[p.k].t; }).length : 0;
+      prayDone += pd; prayTotal += 5; if (pd === 5) completeDays++;
+      pages += (d && d.q) || 0;
+      xp += (learn.study && learn.study[k]) || 0;
     }
-    bars += '<line x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (padL + plotW) + '" y2="' + (padT + plotH) + '" style="stroke:var(--line)" stroke-width="1"/>';
-    return '<svg viewBox="0 0 ' + w + " " + h + '" style="width:100%;height:140px;display:block" role="img" aria-label="صفحات القرآن في آخر 14 يوم لكل حساب">' + bars + "</svg>";
-  }
-  function adminTrendCard(stats) {
-    return '<div class="card"><h3 style="margin:0 0 6px">صفحات القرآن — آخر 14 يوم</h3>' + adminLegendHTML(stats) + trendChartSVG(stats) + "</div>";
-  }
-  function donutChartSVG(stats, valueFn) {
-    var vals = stats.map(valueFn);
-    var total = vals.reduce(function (a, b) { return a + b; }, 0);
-    var size = 180, cx = size / 2, cy = size / 2, r = 70, sw = 26;
-    var circ = 2 * Math.PI * r;
-    var segs = "";
-    if (total <= 0) {
-      segs = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface2)" stroke-width="' + sw + '"/>';
-    } else {
-      var offset = 0;
-      for (var i = 0; i < stats.length; i++) {
-        var frac = vals[i] / total;
-        if (frac <= 0) continue;
-        var len = frac * circ;
-        segs += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + accColor(i) + '" stroke-width="' + sw + '" stroke-dasharray="' + len.toFixed(1) + " " + (circ - len).toFixed(1) + '" stroke-dashoffset="' + (-offset).toFixed(1) + '" transform="rotate(-90 ' + cx + " " + cy + ')"><title>' + esc(stats[i].acc.label) + ": " + vals[i] + "</title></circle>";
-        offset += len;
-      }
-    }
-    var centerLabel = total > 0 ? String(total) : "0";
-    return '<svg viewBox="0 0 ' + size + " " + size + '" style="width:180px;height:180px;display:block;margin-inline:auto" role="img" aria-label="توزيع صفحات القرآن بين الحسابات">' +
-      segs +
-      '<text x="' + cx + '" y="' + (cy - 3) + '" text-anchor="middle" font-size="22" font-weight="700" style="fill:var(--text)">' + centerLabel + "</text>" +
-      '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" font-size="10.5" style="fill:var(--muted)">إجمالي الصفحات</text>' +
-      "</svg>";
-  }
-  function adminDonutCard(stats) {
-    return '<div class="card"><h3 style="margin:0 0 10px">توزيع صفحات القرآن بين الحسابات</h3>' + adminLegendHTML(stats) + donutChartSVG(stats, function (st) { return st.s.totalPages; }) + "</div>";
+    var allowed = admAllowedCourses(acc);
+    var courses = COURSE_ORDER.map(function (cid) {
+      var c = COURSES[cid]; if (!c) return null;
+      var done = c.units.filter(function (u) { return ((learn.units || {})[cid + ":" + u.id] || {}).done; }).length;
+      var lastDate = null;
+      c.units.forEach(function (u) { var p = (learn.units || {})[cid + ":" + u.id]; if (p && p.date && (!lastDate || p.date > lastDate)) lastDate = p.date; });
+      return { cid: cid, title: c.title, done: done, total: c.units.length, allowed: allowed.indexOf(cid) >= 0, lastDate: lastDate };
+    }).filter(Boolean);
+    return { prayDone: prayDone, prayTotal: prayTotal, pages: pages, xp: xp, completeDays: completeDays, courses: courses };
   }
   async function adminFnCall(payload) {
     var sess = await store.sb.auth.getSession();
@@ -2529,18 +2542,13 @@ tr:last-child td { border-block-end: 0; }
     var r = await adminFnCall({ action: "changePassword", targetUid: uid, newPin: newPin });
     if (r.error) { msgEl.textContent = "تعذّر: " + r.error; return; }
     msgEl.textContent = "تم التغيير ✓"; input.value = "";
-    await loadAdminDashboard();
   }
-  async function adminToggleActive(btn) {
-    var uid = btn.getAttribute("data-uid");
-    var curActive = btn.getAttribute("data-active") === "1";
-    var msgEl = btn.closest(".card").querySelector(".togglemsg");
-    btn.disabled = true;
-    if (msgEl) msgEl.textContent = "جارٍ التنفيذ…";
-    var r = await adminFnCall({ action: "setActive", targetUid: uid, active: !curActive });
-    if (r.error) { if (msgEl) msgEl.textContent = "تعذّر: " + r.error; btn.disabled = false; return; }
+  async function adminToggleActive(uid, nextActive) {
+    var r = await adminFnCall({ action: "setActive", targetUid: uid, active: nextActive });
+    if (r.error) return r;
     await loadAccountsList();
     await loadAdminDashboard();
+    return r;
   }
   async function adminCreateAccount(form) {
     var labelInput = form.querySelector('[name="label"]');
@@ -2558,6 +2566,14 @@ tr:last-child td { border-block-end: 0; }
     await loadAccountsList();
     await loadAdminDashboard();
   }
+  // Writes courses/sections for one account. This calls the SAME edge function as
+  // changePassword/setActive/create (consistent with how every other admin write in
+  // this app is already secured) via a new "setPermissions" action. Until that
+  // action is deployed server-side, this fails with a clear "needs an update" message
+  // instead of silently doing nothing.
+  async function adminSetPermissions(uid, courses, sections) {
+    return adminFnCall({ action: "setPermissions", targetUid: uid, courses: courses, sections: sections });
+  }
   function adminAddAccountCard() {
     return '<div class="card">' +
       '<h3 style="margin:0 0 10px">إضافة حساب جديد</h3>' +
@@ -2569,63 +2585,282 @@ tr:last-child td { border-block-end: 0; }
       "</form></div>";
   }
   var ADMIN_TABS = [
-    { id: "accounts", label: "الحسابات" },
-    { id: "compare", label: "مقارنة" },
-    { id: "charts", label: "رسوم بيانية" }
+    { id: "overview", label: "نظرة عامة" },
+    { id: "details", label: "التفاصيل" },
+    { id: "perm", label: "الصلاحيات" },
+    { id: "compare", label: "مقارنة" }
   ];
   function adminTabsNav(active) {
     return '<div class="row wrapr" style="gap:8px;margin-block-end:4px">' +
       ADMIN_TABS.map(function (t) {
-        return '<button class="chip' + (t.id === active ? " active" : "") + '" type="button" data-admtab="' + t.id + '" style="' + (t.id === active ? "background:var(--teal);color:#fff;border-color:var(--teal)" : "") + '">' + esc(t.label) + "</button>";
+        return '<button class="chip' + (t.id === active ? " on" : "") + '" type="button" data-admtab="' + t.id + '">' + esc(t.label) + "</button>";
       }).join("") +
       "</div>";
   }
-  function renderAdminDashboard(stats, pinMap) {
+  function admAccountPicker(stats, into) {
+    if (!stats.length) return '<div class="card muted" style="text-align:center;padding:24px">مفيش حسابات لسه.</div>';
+    return '<div class="card"><h3 style="margin:0 0 10px">اختار حساب</h3><div class="row wrapr" style="gap:8px">' +
+      stats.map(function (st) { return '<button class="chip" type="button" data-admopen="' + esc(st.acc.uid) + '" data-into="' + into + '">' + esc(st.acc.label) + "</button>"; }).join("") +
+      "</div></div>";
+  }
+  function admOverviewHTML(stats, now) {
+    var activeToday = 0, activeWeek = 0, followUp = [];
+    stats.forEach(function (st) {
+      if (st.acc.active === false) return;
+      if (admDayActivity(st.days, now.key) > 0) activeToday++;
+      var weekAny = false;
+      for (var i = 0; i < 7; i++) if (admDayActivity(st.days, addDays(now.key, -i)) > 0) { weekAny = true; break; }
+      if (weekAny) activeWeek++;
+      var last = admLastActiveKey(st.days), since = admDaysSince(last, now);
+      if (since === null || since >= ADM_FOLLOWUP_DAYS) followUp.push({ st: st, since: since, last: last });
+    });
+    var kpis = '<div class="row wrapr" style="gap:18px">' +
+      statTile("نشط النهارده", activeToday) + statTile("نشط الأسبوع ده", activeWeek) +
+      statTile("محتاج متابعة", followUp.length) + "</div>";
+    var alerts = followUp.map(function (f) {
+      var since = f.since === null ? "من غير أي نشاط لسه" : "بقاله " + fmtDaysAr(f.since) + " من غير نشاط";
+      return '<div class="card alert"><div class="row between" style="align-items:center"><span>' + esc(f.st.acc.label) + " " + since + (f.last ? " · آخر نشاط " + greg(f.last) : "") + '</span><button class="btn sm" data-admopen="' + esc(f.st.acc.uid) + '" data-into="details">شوف</button></div></div>';
+    }).join("");
+    var rows = stats.map(function (st, i) {
+      var disabled = st.acc.active === false;
+      var color = accColor(i), s = admStreak(st.days, now), last = admLastActiveKey(st.days), since = admDaysSince(last, now);
+      var statusTag = disabled ? '<span class="chip" style="color:var(--muted)">معطّل</span>'
+        : (admDayActivity(st.days, now.key) > 0 ? '<span class="chip" style="background:var(--ok-soft,var(--surface2));color:var(--teal)">نشط النهارده</span>'
+          : (since === null ? '<span class="chip" style="color:var(--amber-deep)">من غير نشاط</span>' : '<span class="chip" style="color:var(--amber-deep)">غايب ' + fmtDaysAr(since) + "</span>"));
+      return '<button class="card" type="button" style="text-align:start;display:block;width:100%" data-admopen="' + esc(st.acc.uid) + '" data-into="details">' +
+        '<div class="row between" style="align-items:center;gap:10px">' +
+        '<div class="row" style="align-items:center;gap:10px">' +
+        '<div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;background:' + color + '">' + esc(initialsOf(st.acc.label)) + "</div>" +
+        '<div><h3 style="margin:0;font-size:15px">' + esc(st.acc.label) + '</h3><span class="muted" style="font-size:12px">' + (s ? "سلسلة " + fmtDaysAr(s) : "لا توجد سلسلة حالية") + "</span></div></div>" +
+        statusTag + "</div><div class=\"week\" style=\"height:46px;margin-block-start:8px\">" + admWeekBars(st.days, now).replace(/<b class="num"[^<]*<\/b>/g, "") + "</div></button>";
+    }).join("");
+    return kpis + alerts + '<div class="sec-h">الحسابات</div>' + rows;
+  }
+  function admDetailsHTML(stats, now) {
+    var st = stats.filter(function (s) { return s.acc.uid === state.adminDetailUid; })[0];
+    if (!st) return admAccountPicker(stats, "details");
+    var f = admFilterDef(), p = admPeriodStats(st.acc, st.days, st.learn, now, f);
+    var filterSeg = '<div class="seg2" style="margin-block:6px 12px">' + ADM_FILTERS.map(function (fd) {
+      return '<button data-admfilter="' + fd.id + '" aria-pressed="' + (fd.id === f.id) + '">' + esc(fd.label) + "</button>";
+    }).join("") + "</div>";
+    var kpis = '<div class="row wrapr" style="gap:18px">' +
+      statTile("صلوات", p.prayDone + "/" + p.prayTotal) + statTile("صفحات قرآن", p.pages) + statTile("XP", "+" + p.xp) + "</div>";
+    var courses = p.courses.map(function (c) {
+      var pct = c.total ? Math.round(c.done / c.total * 100) : 0;
+      var lastTxt = c.lastDate ? "آخر وحدة: " + greg(c.lastDate) : (c.done ? "" : "ماتحركش لسه");
+      if (!c.allowed) {
+        return '<div style="margin-block-end:10px;opacity:.5"><div class="row between" style="font-size:13px"><span>' + esc(c.title) + '</span><span class="muted">مش مسموح</span></div><div class="bar" style="margin-block-start:4px"><i style="width:0"></i></div></div>';
+      }
+      return '<div style="margin-block-end:10px"><div class="row between" style="font-size:13px"><span>' + esc(c.title) + "</span><span class=\"num\">" + c.done + "/" + c.total + "</span></div><div class=\"bar\" style=\"margin-block-start:4px\"><i style=\"width:" + pct + '%"></i></div>' + (lastTxt ? '<span class="muted" style="font-size:12px">' + esc(lastTxt) + "</span>" : "") + "</div>";
+    }).join("");
+    return '<div class="row between" style="align-items:center"><h3 style="margin:0">' + esc(st.acc.label) + '</h3><button class="chip" type="button" data-act="admin-back">رجوع</button></div>' +
+      filterSeg + '<div class="card">' + kpis + "</div>" +
+      '<div class="card"><h3 style="margin:0 0 10px">تقدّم الكورسات</h3>' + courses + "</div>";
+  }
+  function admPermHTML(stats, now) {
+    var st = stats.filter(function (s) { return s.acc.uid === state.adminDetailUid; })[0];
+    if (!st) return admAccountPicker(stats, "perm");
+    var acc = st.acc, allowedC = admAllowedCourses(acc), allowedS = admAllowedSections(acc);
+    var courseChips = COURSE_ORDER.map(function (cid) {
+      var c = COURSES[cid]; if (!c) return "";
+      var on = allowedC.indexOf(cid) >= 0;
+      return '<span class="chip' + (on ? " on" : "") + '" data-permcourse="' + cid + '" role="button" tabindex="0">' + esc(c.title) + "</span>";
+    }).join("");
+    var sectionToggles = TOGGLEABLE_SECTIONS.map(function (s) {
+      var on = allowedS.indexOf(s) >= 0;
+      return '<div class="row between" style="padding-block:6px;border-block-start:1px solid var(--line)"><span>' + esc(ADM_SECTION_LABEL[s]) + '</span><button class="chip' + (on ? " on" : "") + '" type="button" data-permsection="' + s + '">' + (on ? "مفعّل" : "متوقف") + "</button></div>";
+    }).join("");
+    var disabled = acc.active === false;
+    return '<div class="row between" style="align-items:center"><h3 style="margin:0">صلاحيات: ' + esc(acc.label) + '</h3><button class="chip" type="button" data-act="admin-back">رجوع</button></div>' +
+      '<div class="card" id="permCourseBox" data-uid="' + esc(acc.uid) + '">' +
+      '<h4 class="muted" style="margin:0 0 8px;font-size:13px">الكورسات اللي تظهر للحساب ده</h4>' +
+      '<div class="row wrapr" style="gap:6px">' + courseChips + "</div>" +
+      '<div class="row wrapr" style="gap:8px;margin-block-start:10px"><button class="chip sm" type="button" data-act="perm-all">اختار الكل</button><button class="chip sm" type="button" data-act="perm-none">شيل الكل</button></div>' +
+      "</div>" +
+      '<div class="card"><h4 class="muted" style="margin:0 0 4px;font-size:13px">الأقسام</h4>' + sectionToggles + "</div>" +
+      '<div class="row wrapr" style="gap:8px"><button class="btn" type="button" data-act="perm-save" data-uid="' + esc(acc.uid) + '">حفظ الصلاحيات</button><span class="muted" id="permmsg" style="font-size:12.5px"></span></div>' +
+      '<div class="card"><h4 class="muted" style="margin:0 0 8px;font-size:13px">رمز الدخول</h4>' +
+      '<form class="row" data-act="admin-pw" data-uid="' + esc(acc.uid) + '" style="gap:8px;align-items:center">' +
+      '<input class="inp" type="text" inputmode="numeric" placeholder="رمز جديد (4 أرقام)" style="max-width:150px" required pattern="\\d{4,8}">' +
+      '<button class="btn sm" type="submit">تغيير الرمز</button><span class="muted pwmsg" style="font-size:12.5px"></span></form></div>' +
+      '<div class="card"><h4 class="muted" style="margin:0 0 8px;font-size:13px">حالة الحساب</h4>' +
+      '<div class="row between" style="align-items:center"><span>' + (disabled ? "معطّل حاليًا" : "مفعّل") + '</span><button class="chip" type="button" data-act="admin-toggle" data-uid="' + esc(acc.uid) + '" data-active="' + (disabled ? "0" : "1") + '">' + (disabled ? "تفعيل" : "تعطيل") + "</button></div>" +
+      '<div id="deactivateConfirm" hidden style="margin-block-start:10px;padding-block-start:10px;border-block-start:1px solid var(--line)">' +
+      '<p class="muted" style="font-size:12.5px;margin:0 0 6px">للتأكيد، اكتب اسم الحساب بالظبط: <b>' + esc(acc.label) + "</b></p>" +
+      '<div class="row" style="gap:8px"><input class="inp" type="text" id="deactivateInput" style="max-width:200px"><button class="btn sm" type="button" id="deactivateConfirmBtn" disabled>تأكيد التعطيل</button></div>' +
+      '<div class="muted togglemsg" style="font-size:12.5px;margin-block-start:6px"></div></div></div>' +
+      adminAddAccountCard();
+  }
+  function admCompareHTML(stats, now) {
+    var activeStats = stats.filter(function (st) { return st.acc.active !== false; });
+    if (activeStats.length < 2) return '<div class="card muted" style="text-align:center;padding:24px">محتاج حسابين مفعّلين على الأقل للمقارنة.</div>';
+    var f = admFilterDef();
+    var filterSeg = '<div class="seg2" style="margin-block:6px 12px">' + ADM_FILTERS.map(function (fd) {
+      return '<button data-admfilter="' + fd.id + '" aria-pressed="' + (fd.id === f.id) + '">' + esc(fd.label) + "</button>";
+    }).join("") + "</div>";
+    var withP = activeStats.map(function (st) { return { acc: st.acc, days: st.days, p: admPeriodStats(st.acc, st.days, st.learn, now, f) }; });
+    var shared = COURSE_ORDER.filter(function (cid) { return withP.every(function (w) { return admAllowedCourses(w.acc).indexOf(cid) >= 0; }); });
+    var legend = '<div class="row wrapr" style="gap:16px;margin-block-end:10px;font-size:12.5px">' +
+      withP.map(function (w, i) { return '<span class="row" style="gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:3px;display:inline-block;background:' + accColor(i) + '"></span>' + esc(w.acc.label) + "</span>"; }).join("") + "</div>";
+    function barsFor(label, valFn, fmtFn) {
+      var vals = withP.map(valFn), max = Math.max.apply(null, vals.concat([1]));
+      var bars = withP.map(function (w, i) {
+        var v = valFn(w), width = Math.max(2, Math.round(v / max * 100));
+        return '<div class="row" style="align-items:center;gap:6px;margin-block-start:' + (i === 0 ? "0" : "3") + 'px"><div style="flex:1;height:9px;border-radius:4px;background:var(--surface2);overflow:hidden"><div style="width:' + width + '%;height:100%;border-radius:4px;background:' + accColor(i) + '"></div></div><span class="num" style="min-width:46px;text-align:end;font-size:12.5px">' + esc(fmtFn(w)) + "</span></div>";
+      }).join("");
+      return '<div style="margin-block-end:10px"><div class="muted" style="font-size:12.5px;margin-block-end:3px">' + esc(label) + "</div>" + bars + "</div>";
+    }
+    var generalRows = barsFor("صلوات", function (w) { return w.p.prayDone; }, function (w) { return w.p.prayDone + "/" + w.p.prayTotal; }) +
+      barsFor("صفحات قرآن", function (w) { return w.p.pages; }, function (w) { return String(w.p.pages); }) +
+      barsFor("XP فترة المقارنة", function (w) { return w.p.xp; }, function (w) { return String(w.p.xp); });
+    var courseRows = shared.length ? shared.map(function (cid) {
+      var c = COURSES[cid]; if (!c) return "";
+      return barsFor(c.title, function (w) { var pc = w.p.courses.filter(function (x) { return x.cid === cid; })[0]; return pc ? pc.done : 0; }, function (w) { var pc = w.p.courses.filter(function (x) { return x.cid === cid; })[0]; return pc ? pc.done + "/" + pc.total : "0"; });
+    }).join("") : '<p class="muted" style="font-size:13px">مفيش كورسات مشتركة بين الحسابات دي.</p>';
+    var donut = donutChartSVG(withP.map(function (w, i) { return { acc: w.acc, s: { totalPages: w.p.pages } }; }), function (x) { return x.s.totalPages; });
+    return filterSeg +
+      '<div class="card"><h3 style="margin:0 0 10px">مقارنة عامة</h3>' + legend + generalRows + "</div>" +
+      '<div class="card"><h3 style="margin:0 0 10px">مقارنة الكورسات المشتركة</h3>' + legend + courseRows + "</div>" +
+      '<div class="card"><h3 style="margin:0 0 10px">توزيع صفحات القرآن</h3>' + legend + donut + "</div>";
+  }
+  function donutChartSVG(stats, valueFn) {
+    var vals = stats.map(valueFn);
+    var total = vals.reduce(function (a, b) { return a + b; }, 0);
+    var size = 180, cx = size / 2, cy = size / 2, r = 70, sw = 26;
+    var circ = 2 * Math.PI * r;
+    var segs = "";
+    if (total <= 0) {
+      segs = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="var(--surface2)" stroke-width="' + sw + '"/>';
+    } else {
+      var offset = 0;
+      for (var i = 0; i < stats.length; i++) {
+        var frac = vals[i] / total;
+        if (frac <= 0) continue;
+        var len = frac * circ;
+        segs += '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="none" stroke="' + accColor(i) + '" stroke-width="' + sw + '" stroke-dasharray="' + len.toFixed(1) + " " + (circ - len).toFixed(1) + '" stroke-dashoffset="' + (-offset).toFixed(1) + '" transform="rotate(-90 ' + cx + " " + cy + ')"><title>' + esc(stats[i].acc.label) + ": " + vals[i] + "</title></circle>";
+        offset += len;
+      }
+    }
+    var centerLabel = total > 0 ? String(total) : "0";
+    return '<svg viewBox="0 0 ' + size + " " + size + '" style="width:180px;height:180px;display:block;margin-inline:auto" role="img" aria-label="توزيع صفحات القرآن بين الحسابات">' +
+      segs +
+      '<text x="' + cx + '" y="' + (cy - 3) + '" text-anchor="middle" font-size="22" font-weight="700" style="fill:var(--text)">' + centerLabel + "</text>" +
+      '<text x="' + cx + '" y="' + (cy + 16) + '" text-anchor="middle" font-size="10.5" style="fill:var(--muted)">إجمالي الصفحات</text>' +
+      "</svg>";
+  }
+  var admIdleTimer = null;
+  function admResetIdleTimer() {
+    clearTimeout(admIdleTimer);
+    admIdleTimer = setTimeout(function () {
+      var a = document.getElementById("admin");
+      if (a) { try { store.sb.auth.signOut(); } catch (e) { } store.uid = null; a.remove(); showLock("اتقفلت اللوحة تلقائيًا بعد عدم الاستخدام."); }
+    }, 10 * 60 * 1000);
+  }
+  function renderAdminDashboard(stats) {
     var old = document.getElementById("admin"); if (old) old.remove();
     var wrap = document.createElement("div");
     wrap.id = "admin"; wrap.dir = "rtl"; wrap.lang = "ar";
     wrap.style.cssText = "position:fixed;inset:0;z-index:200;overflow:auto;background:var(--bg);padding:16px";
-    var activeStats = stats.filter(function (st) { return st.acc.active !== false; });
-    var active = state.adminTab || "accounts";
-    var accountsHTML = stats.map(function (st, i) { return adminAccountCard(st.acc, st.s, i, (pinMap || {})[st.acc.uid]); }).join("") + adminAddAccountCard();
-    var compareHTML = activeStats.length >= 2 ? adminCompareHTML(activeStats) : '<div class="card muted" style="text-align:center;padding:24px">محتاج حسابين مفعّلين على الأقل للمقارنة.</div>';
-    var chartsHTML = activeStats.length >= 1 ? (adminDonutCard(activeStats) + (activeStats.length >= 2 ? adminTrendCard(activeStats) : "")) : '<div class="card muted" style="text-align:center;padding:24px">لا توجد بيانات كافية.</div>';
+    var now = nowR();
+    var active = state.adminTab || "overview";
+    var body = active === "overview" ? admOverviewHTML(stats, now)
+      : active === "details" ? admDetailsHTML(stats, now)
+        : active === "perm" ? admPermHTML(stats, now)
+          : admCompareHTML(stats, now);
     wrap.innerHTML = '<div style="max-width:640px;margin-inline:auto;display:flex;flex-direction:column;gap:12px">' +
       '<div class="row between" style="align-items:center"><h1 style="margin:0">لوحة المتابعة</h1><button class="chip" id="adminlock">قفل</button></div>' +
       adminTabsNav(active) +
-      '<div id="admtab-accounts" style="display:' + (active === "accounts" ? "flex" : "none") + ';flex-direction:column;gap:12px">' + accountsHTML + "</div>" +
-      '<div id="admtab-compare" style="display:' + (active === "compare" ? "flex" : "none") + ';flex-direction:column;gap:12px">' + compareHTML + "</div>" +
-      '<div id="admtab-charts" style="display:' + (active === "charts" ? "flex" : "none") + ';flex-direction:column;gap:12px">' + chartsHTML + "</div>" +
+      '<div id="admtab-body" style="display:flex;flex-direction:column;gap:12px">' + body + "</div>" +
       "</div>";
     document.body.appendChild(wrap);
     document.getElementById("adminlock").addEventListener("click", function () {
+      clearTimeout(admIdleTimer);
       try { store.sb.auth.signOut(); } catch (e) { }
       store.uid = null;
       var a = document.getElementById("admin"); if (a) a.remove();
       showLock("");
     });
+    wrap.addEventListener("click", admResetIdleTimer);
+    wrap.addEventListener("keydown", admResetIdleTimer);
+    admResetIdleTimer();
     wrap.querySelectorAll("[data-admtab]").forEach(function (btn) {
+      btn.addEventListener("click", function () { state.adminTab = btn.getAttribute("data-admtab"); renderAdminDashboard(stats); });
+    });
+    wrap.querySelectorAll("[data-admopen]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        state.adminTab = btn.getAttribute("data-admtab");
-        renderAdminDashboard(stats, pinMap);
+        state.adminDetailUid = btn.getAttribute("data-admopen");
+        state.adminTab = btn.getAttribute("data-into") || "details";
+        renderAdminDashboard(stats);
       });
     });
+    wrap.querySelectorAll("[data-admfilter]").forEach(function (btn) {
+      btn.addEventListener("click", function () { state.adminFilter = btn.getAttribute("data-admfilter"); renderAdminDashboard(stats); });
+    });
+    var backBtn = wrap.querySelector('[data-act="admin-back"]');
+    if (backBtn) backBtn.addEventListener("click", function () { state.adminTab = "overview"; renderAdminDashboard(stats); });
     wrap.querySelectorAll('[data-act="admin-pw"]').forEach(function (form) {
       form.addEventListener("submit", function (e) { e.preventDefault(); adminChangePassword(form); });
-    });
-    wrap.querySelectorAll('[data-act="admin-toggle"]').forEach(function (btn) {
-      btn.addEventListener("click", function () { adminToggleActive(btn); });
     });
     wrap.querySelectorAll('[data-act="admin-create"]').forEach(function (form) {
       form.addEventListener("submit", function (e) { e.preventDefault(); adminCreateAccount(form); });
     });
-    wrap.querySelectorAll('[data-act="admin-pintoggle"]').forEach(function (btn) {
+    // deactivate needs the admin to type the account's exact name first; reactivating is one click
+    var toggleBtn = wrap.querySelector('[data-act="admin-toggle"]');
+    if (toggleBtn) {
+      toggleBtn.addEventListener("click", function () {
+        var uid = toggleBtn.getAttribute("data-uid"), curActive = toggleBtn.getAttribute("data-active") === "1";
+        if (!curActive) { adminToggleActive(uid, true); return; }
+        var box = document.getElementById("deactivateConfirm");
+        if (box) box.hidden = !box.hidden;
+      });
+    }
+    var deactInput = document.getElementById("deactivateInput"), deactBtn = document.getElementById("deactivateConfirmBtn");
+    if (deactInput && deactBtn && toggleBtn) {
+      var expectLabel = (stats.filter(function (s) { return s.acc.uid === state.adminDetailUid; })[0] || {}).acc;
+      deactInput.addEventListener("input", function () { deactBtn.disabled = !(expectLabel && deactInput.value.trim() === expectLabel.label); });
+      deactBtn.addEventListener("click", async function () {
+        var uid = toggleBtn.getAttribute("data-uid");
+        deactBtn.disabled = true; deactBtn.textContent = "جارٍ التنفيذ…";
+        var r = await adminToggleActive(uid, false);
+        var msgEl = document.querySelector(".togglemsg");
+        if (r && r.error && msgEl) { msgEl.textContent = "تعذّر: " + r.error; deactBtn.disabled = false; deactBtn.textContent = "تأكيد التعطيل"; }
+      });
+    }
+    // course/section permission editing
+    var permBox = document.getElementById("permCourseBox");
+    if (permBox) {
+      permBox.querySelectorAll("[data-permcourse]").forEach(function (chip) {
+        chip.addEventListener("click", function () { chip.classList.toggle("on"); });
+      });
+    }
+    var permAll = wrap.querySelector('[data-act="perm-all"]'), permNone = wrap.querySelector('[data-act="perm-none"]');
+    if (permAll) permAll.addEventListener("click", function () { wrap.querySelectorAll("[data-permcourse]").forEach(function (c) { c.classList.add("on"); }); });
+    if (permNone) permNone.addEventListener("click", function () { wrap.querySelectorAll("[data-permcourse]").forEach(function (c) { c.classList.remove("on"); }); });
+    wrap.querySelectorAll("[data-permsection]").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var uid = btn.getAttribute("data-uid");
-        adminPinsVisible[uid] = !adminPinsVisible[uid];
-        renderAdminDashboard(stats, pinMap);
+        var on = btn.classList.toggle("on");
+        btn.textContent = on ? "مفعّل" : "متوقف";
       });
     });
+    var permSave = wrap.querySelector('[data-act="perm-save"]');
+    if (permSave) {
+      permSave.addEventListener("click", async function () {
+        var uid = permSave.getAttribute("data-uid");
+        var courseChips = Array.from(wrap.querySelectorAll("[data-permcourse]"));
+        var allOn = courseChips.every(function (c) { return c.classList.contains("on"); });
+        var courses = allOn ? null : courseChips.filter(function (c) { return c.classList.contains("on"); }).map(function (c) { return c.getAttribute("data-permcourse"); });
+        var sectionBtns = Array.from(wrap.querySelectorAll("[data-permsection]"));
+        var allSecOn = sectionBtns.every(function (b) { return b.classList.contains("on"); });
+        var sections = allSecOn ? null : sectionBtns.filter(function (b) { return b.classList.contains("on"); }).map(function (b) { return b.getAttribute("data-permsection"); });
+        var msgEl = document.getElementById("permmsg");
+        msgEl.textContent = "جارٍ الحفظ…"; permSave.disabled = true;
+        var r = await adminSetPermissions(uid, courses, sections);
+        permSave.disabled = false;
+        if (r.error) { msgEl.textContent = "تعذّر الحفظ: " + r.error + (/unknown action|not found|404/i.test(r.error) ? " — محتاج تحدّث الـ Edge Function الأول." : ""); return; }
+        msgEl.textContent = "تم الحفظ ✓";
+        await loadAccountsList();
+      });
+    }
   }
   async function loadAdminDashboard() {
     if (!store.uid) return;
@@ -2635,20 +2870,16 @@ tr:last-child td { border-block-end: 0; }
       toast("تعذّر تحميل بيانات اللوحة: " + ((dRes.error || mRes.error).message || ""));
       return;
     }
-    var pinRes = await adminFnCall({ action: "listAccounts" });
-    var pinMap = {};
-    if (pinRes.ok && pinRes.data && pinRes.data.accounts) {
-      pinRes.data.accounts.forEach(function (a) { pinMap[a.uid] = a.pin; });
-    }
     var accounts = ACCOUNTS.filter(function (a) { return a.role === "user"; });
     var stats = accounts.map(function (acc) {
       var days = {};
       (dRes.data || []).forEach(function (r) { if (r.user_id === acc.uid) days[r.day] = r.data || {}; });
-      var learn = { xp: 0, units: {}, cards: {} };
-      (mRes.data || []).forEach(function (r) { if (r.user_id === acc.uid && r.name === "learn") learn = Object.assign({ xp: 0, units: {}, cards: {} }, r.data || {}); });
-      return { acc: acc, s: computeAccountStats(days, learn) };
+      var learn = { xp: 0, units: {}, cards: {}, study: {} };
+      (mRes.data || []).forEach(function (r) { if (r.user_id === acc.uid && r.name === "learn") learn = Object.assign({ xp: 0, units: {}, cards: {}, study: {} }, r.data || {}); });
+      return { acc: acc, days: days, learn: learn };
     });
-    renderAdminDashboard(stats, pinMap);
+    if (!state.adminDetailUid && stats.length) state.adminDetailUid = stats[0].acc.uid;
+    renderAdminDashboard(stats);
   }
   async function loadSupa(first) {
     if (!store.uid) return;
@@ -2682,6 +2913,7 @@ tr:last-child td { border-block-end: 0; }
     state.exp = { categories: [], items: [], salary: {} }; state.expMonth = null; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
     state.quiz = null; state.card = null; state.spk = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; state.hv = "dashboard"; state.az = null; state.azProgress = {}; panelCache = {};
+    resetPermissions(); // clear any restriction the previous account left behind
     $("#pager").scrollTo({ left: 0 }); render(); showLock("");
   }
   $("#lockform").addEventListener("submit", function (e) { e.preventDefault(); var v = $("#pin").value.trim(); if (v) unlock(v); });
@@ -2743,6 +2975,17 @@ tr:last-child td { border-block-end: 0; }
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
       navigator.serviceWorker.register("sw.js").catch(function () { });
+    });
+  }
+
+  // First-run welcome screen: shown once before the lock screen, then
+  // dismissed for good via a localStorage flag.
+  var welcomeBtn = document.getElementById("welcomeBtn");
+  if (welcomeBtn) {
+    welcomeBtn.addEventListener("click", function () {
+      try { localStorage.setItem("masar:onboarded", "1"); } catch (e) { }
+      var w = document.getElementById("welcome");
+      if (w) w.hidden = true;
     });
   }
 })();
