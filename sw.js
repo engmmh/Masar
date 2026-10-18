@@ -1,57 +1,52 @@
-// مسار service worker: يفتح الموقع بسرعة ويعمل دون إنترنت للواجهة (البيانات تتزامن عند الاتصال)
-const CACHE = "masar-v13";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
-self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));
-});
-self.addEventListener("activate", (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
-});
-self.addEventListener("fetch", (e) => {
-  const req = e.request, url = new URL(req.url);
-  if (req.method !== "GET") return;
-  if (url.hostname.endsWith("supabase.co")) return; // البيانات دائمًا من الشبكة
-  if (req.mode === "navigate") {
-    e.respondWith(fetch(req).then((r) => { const cp = r.clone(); caches.open(CACHE).then((c) => c.put("./index.html", cp)); return r; }).catch(() => caches.match("./index.html")));
-    return;
-  }
-  e.respondWith(caches.match(req).then((hit) => {
-    const net = fetch(req).then((r) => { if (r && (r.ok || r.type === "opaque")) { const cp = r.clone(); caches.open(CACHE).then((c) => c.put(req, cp)); } return r; }).catch(() => hit);
-    return hit || net;
-  }));
+// مسار — service worker: makes the app installable on the phone's home screen
+// and lets it still open (with the last-known content) when offline.
+// Strategy: network-first for same-origin files (always prefer fresh content,
+// courses/settings/etc. come from Supabase and are never touched here),
+// falling back to the cache only when the network is unavailable.
+var CACHE_NAME = "masar-v2";
+var PRECACHE = [
+  "./",
+  "./index.html",
+  "./manifest.webmanifest",
+  "./jspdf.umd.min.js",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./icons/apple-touch-icon.png"
+];
+
+self.addEventListener("install", function (event) {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(function (cache) {
+      return cache.addAll(PRECACHE).catch(function () { /* ignore individual failures */ });
+    }).then(function () { return self.skipWaiting(); })
+  );
 });
 
-// تذكير يومي (كلمة/جملة إنجليزي) عبر Web Push
-self.addEventListener("push", (e) => {
-  let data = {};
-  try { data = e.data ? e.data.json() : {}; } catch (er) {}
-  const title = data.title || "مسار";
-  const body = data.body || "";
-  const en = data.en || "";
-  e.waitUntil(self.registration.showNotification(title, {
-    body,
-    icon: "./icon-192.png",
-    badge: "./icon-192.png",
-    dir: "rtl",
-    lang: "ar",
-    tag: "masar-daily-" + Date.now(),
-    requireInteraction: true,
-    silent: false,
-    vibrate: [200, 100, 200],
-    data: { en }
-  }));
+self.addEventListener("activate", function (event) {
+  event.waitUntil(
+    caches.keys().then(function (names) {
+      return Promise.all(names.filter(function (n) { return n !== CACHE_NAME; }).map(function (n) { return caches.delete(n); }));
+    }).then(function () { return self.clients.claim(); })
+  );
 });
-self.addEventListener("notificationclick", (e) => {
-  e.notification.close();
-  const en = (e.notification.data && e.notification.data.en) || "";
-  const target = "./" + (en ? "?speak=" + encodeURIComponent(en) : "");
-  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
-    for (const c of list) {
-      if ("focus" in c) {
-        if (en) c.postMessage({ type: "masar-speak", en: en });
-        return c.focus();
+
+self.addEventListener("fetch", function (event) {
+  var req = event.request;
+  if (req.method !== "GET") return;
+  var url = new URL(req.url);
+  if (url.origin !== self.location.origin) return; // leave Supabase/CDN/font requests alone
+
+  event.respondWith(
+    fetch(req).then(function (res) {
+      if (res && res.ok) {
+        var copy = res.clone();
+        caches.open(CACHE_NAME).then(function (cache) { cache.put(req, copy); });
       }
-    }
-    if (self.clients.openWindow) return self.clients.openWindow(target);
-  }));
+      return res;
+    }).catch(function () {
+      return caches.match(req).then(function (cached) {
+        return cached || caches.match("./index.html");
+      });
+    })
+  );
 });
