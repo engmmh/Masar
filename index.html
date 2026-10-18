@@ -2872,28 +2872,32 @@ tr:last-child td { border-block-end: 0; }
   }
   async function loadAdminDashboard() {
     if (!store.uid) return;
-    var dRes = await store.sb.from("masar_days").select("user_id,day,data");
-    var mRes = await store.sb.from("masar_meta").select("user_id,name,data");
-    if (dRes.error || mRes.error) {
-      toast("تعذّر تحميل بيانات اللوحة: " + ((dRes.error || mRes.error).message || ""));
+    // Reading other accounts' masar_days/masar_meta rows directly (with the
+    // anon key) depends on an RLS policy letting the admin cross-read, which
+    // turned out to be fragile in practice — so instead this goes through the
+    // same secured Edge Function used for every other admin write, which
+    // reads with the service-role key and so always sees every row.
+    var r = await adminFnCall({ action: "getDashboardData" });
+    if (r.error) {
+      toast("تعذّر تحميل بيانات اللوحة: " + r.error);
       return;
     }
+    var dRows = r.data.days || [], mRows = r.data.meta || [];
     var accounts = ACCOUNTS.filter(function (a) { return a.role === "user"; });
     var stats = accounts.map(function (acc) {
       var days = {};
-      (dRes.data || []).forEach(function (r) { if (r.user_id === acc.uid) days[r.day] = r.data || {}; });
+      dRows.forEach(function (row) { if (row.user_id === acc.uid) days[row.day] = row.data || {}; });
       var learn = { xp: 0, units: {}, cards: {}, study: {} };
-      (mRes.data || []).forEach(function (r) { if (r.user_id === acc.uid && r.name === "learn") learn = Object.assign({ xp: 0, units: {}, cards: {}, study: {} }, r.data || {}); });
+      mRows.forEach(function (row) { if (row.user_id === acc.uid && row.name === "learn") learn = Object.assign({ xp: 0, units: {}, cards: {}, study: {} }, row.data || {}); });
       return { acc: acc, days: days, learn: learn };
     });
     if (!state.adminDetailUid && stats.length) state.adminDetailUid = stats[0].acc.uid;
-    // TEMP diagnostic (remove once the "Details tab shows zero" bug is found):
-    // shows raw row counts from Supabase alongside what each account matched to,
-    // so we can tell a fetch/RLS problem apart from a uid-mismatch problem apart
-    // from a rendering problem, without needing direct DB access.
+    // TEMP diagnostic (remove once the "Details tab shows zero" bug is confirmed fixed):
+    // shows raw row counts from the Edge Function alongside what each account
+    // matched to, so a fetch problem is easy to tell apart from a uid mismatch.
     state.adminDebug = {
-      dRows: (dRes.data || []).length,
-      mRows: (mRes.data || []).length,
+      dRows: dRows.length,
+      mRows: mRows.length,
       perAcc: stats.map(function (s) {
         return { uid: s.acc.uid, label: s.acc.label, days: Object.keys(s.days).length, xp: s.learn.xp, units: Object.keys(s.learn.units || {}).length };
       })
