@@ -1128,6 +1128,7 @@ tr:last-child td { border-block-end: 0; }
         u.qs.forEach(function (q, i) { q.id = cid + "-" + u.id + "-q" + i; q.u = u.id; q.c = cid; QINDEX[q.id] = q; });
       });
       (COURSES[cid].vocab || []).forEach(function (v) { v.c = cid; });
+      (COURSES[cid].examBank || []).forEach(function (q, i) { q.id = cid + "-bank-" + i; q.c = cid; QINDEX[q.id] = q; });
     });
   }
   var INTERVALS = [0, 1, 3, 7];
@@ -1659,6 +1660,7 @@ tr:last-child td { border-block-end: 0; }
       (c.vocab && c.vocab.length ? '<button class="btn alt" data-act="speak-start" data-c="' + cid + '">' + ico("vol") + " تحدي النطق</button>" : "") +
       (c.vocab && c.vocab.length ? '<button class="btn alt" data-act="bank-open" data-c="' + cid + '">' + ico("book") + " بنك الكلمات <span class=\"chip num\">" + c.vocab.length + "</span></button>" : "") +
       '<button class="btn alt" data-act="notes-open" data-c="' + cid + '">' + ico("pin") + " المهم" + (notesCount ? ' <span class="chip num">' + notesCount + "</span>" : "") + "</button>" +
+      (c.examBank && c.examBank.length ? '<button class="btn alt" data-act="exambank" data-c="' + cid + '">' + ico("cap") + " بنك أسئلة آيزو <span class=\"chip num\">" + c.examBank.length + "</span></button>" : "") +
       "</div>" + lvlChips + "</div>" +
       '<div class="row between" style="margin-block:14px 4px"><h2>' + esc(c.title) + '</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
       pathHTML(cid, c.units, done);
@@ -1920,6 +1922,8 @@ tr:last-child td { border-block-end: 0; }
       case "cardlvl": state.cardLvl = Number(el.getAttribute("data-lvl")) || 0; render(); break;
       case "cards": var cc = el.getAttribute("data-c"); state.lv.c = cc; state.card = { q: shuffle(dueCards(now, cc, state.cardLvl || 0)).slice(0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards", c: cc }; render(); break;
       case "daily-review": state.card = { q: shuffle(dueCards(now)).slice(0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
+      case "exambank": var ebC = el.getAttribute("data-c"), ebCourse = COURSES[ebC]; if (!ebCourse || !ebCourse.examBank || !ebCourse.examBank.length) break;
+        state.lv.c = ebC; startQuiz(shuffle(ebCourse.examBank.slice()).slice(0, Math.min(20, ebCourse.examBank.length)), "بنك أسئلة آيزو · " + ebCourse.title, null); break;
       case "flip": if (state.card) { state.card.flip = true; render(); } break;
       case "know": knowCard(el.getAttribute("data-v") === "1"); break;
       case "exp-month": state.expMonth = shiftMonth(curExpMonth(now), Number(el.getAttribute("data-n"))); state.expAdd = false; render(); break;
