@@ -118,9 +118,6 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .next .nm { font-family: var(--display); font-size: 30px; font-weight: 700; line-height: 1.15; }
 .next .cd { font-size: 20px; font-weight: 700; }
 .next .sub { font-size: 14px; opacity: .85; }
-.streak { display: inline-flex; gap: 6px; align-items: center; margin-block-start: 8px; color: var(--amber); font-weight: 700; font-size: 15px; }
-.streak svg { width: 18px; height: 18px; }
-
 /* alerts */
 .alert { background: var(--miss-bg); border: 1px solid var(--miss); }
 .alert h2 { color: var(--miss); font-size: 18px; }
@@ -324,6 +321,26 @@ tr:last-child td { border-block-end: 0; }
 .card.daily .btn { background: #2B1C02; color: var(--amber); box-shadow: 0 4px 0 #000; }
 .card.daily.done { background: var(--surface); color: var(--text); border: 1px solid var(--line); box-shadow: none; }
 .card.daily.done h3, .card.daily.done p.muted { color: inherit; opacity: 1; }
+.streakbanner { display: flex; align-items: center; gap: 14px; }
+.streakbanner.on { background: linear-gradient(135deg, var(--amber), var(--amber-deep)); color: #2B1C02; border-color: transparent; box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--amber) 55%, transparent); }
+.streakbanner.off { background: var(--surface2); color: var(--text); }
+.streakbanner .sb-ico { flex: none; width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, #2B1C02 14%, transparent); }
+.streakbanner.off .sb-ico { background: var(--surface); color: var(--muted); }
+.streakbanner .sb-ico svg { width: 30px; height: 30px; }
+.streakbanner .sb-body { flex: 1; min-width: 0; }
+.streakbanner .sb-num { display: flex; align-items: baseline; gap: 6px; }
+.streakbanner .sb-num b { font-family: var(--display); font-size: 36px; font-weight: 700; line-height: 1; }
+.streakbanner .sb-num span { font-size: 14px; opacity: .85; }
+.streakbanner .sb-sub { font-size: 14px; margin-block-start: 2px; opacity: .9; }
+.streakbanner .sb-best { flex: none; text-align: center; font-size: 12px; opacity: .85; }
+.streakbanner .sb-best b { display: block; font-family: var(--display); font-size: 20px; }
+.streakbanner.off h3 { margin: 0 0 2px; }
+.azcard { display: block; width: 100%; text-align: start; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-block-end: 10px; position: relative; }
+.azcard .az-text { font-family: var(--display); font-size: 18px; line-height: 2; padding-inline-end: 56px; }
+.azcard .az-note { font-size: 13px; margin-block-start: 8px; }
+.azcard .az-count { position: absolute; inset-inline-end: 14px; inset-block-start: 14px; min-width: 34px; height: 34px; border-radius: 50%; background: var(--amber-bg); color: var(--amber-deep); font-weight: 700; display: grid; place-items: center; font-size: 15px; }
+.azcard.done { opacity: .55; }
+.azcard.done .az-count { background: var(--done-bg); color: var(--done-deep); }
 .badgerow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-block-end: 14px; }
 .badge { display: grid; gap: 4px; justify-items: center; background: none; border: 0; padding: 4px; text-align: center; }
 .badge .ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface2); color: var(--muted); }
@@ -444,6 +461,44 @@ tr:last-child td { border-block-end: 0; }
   var WD = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
   var WD_S = ["أحد", "اثنين", "ثلاثاء", "أربعاء", "خميس", "جمعة", "سبت"];
   var UNITS = { page: { n: "صفحات", f: 1 }, half: { n: "نصف جزء", f: 10 }, juz: { n: "أجزاء", f: 20 } };
+
+  /* ---------------- azkar (morning / evening remembrance) ---------------- */
+  var AZKAR = {
+    morning: [
+      { t: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ", n: 1, note: "آية الكرسي" },
+      { t: "قُلْ هُوَ اللَّهُ أَحَدٌ، اللَّهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", n: 3, note: "سورة الإخلاص" },
+      { t: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، مِن شَرِّ مَا خَلَقَ، وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ، وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ، وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", n: 3, note: "سورة الفلق" },
+      { t: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ، مَلِكِ النَّاسِ، إِلَٰهِ النَّاسِ، مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ، الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ، مِنَ الْجِنَّةِ وَالنَّاسِ", n: 3, note: "سورة الناس" },
+      { t: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذَا الْيَوْمِ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ", n: 1 },
+      { t: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ", n: 1 },
+      { t: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", n: 1, note: "سيد الاستغفار — من قالها موقنًا بها حين يصبح فمات من يومه دخل الجنة" },
+      { t: "اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ", n: 4 },
+      { t: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلَٰهَ إِلَّا أَنْتَ", n: 3 },
+      { t: "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ", n: 7 },
+      { t: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", n: 3 },
+      { t: "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا", n: 3 },
+      { t: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", n: 3 },
+      { t: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", n: 100, note: "من قالها مئة مرة حُطّت خطاياه وإن كانت مثل زبد البحر" },
+      { t: "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ", n: 10 }
+    ],
+    evening: [
+      { t: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ", n: 1, note: "آية الكرسي" },
+      { t: "قُلْ هُوَ اللَّهُ أَحَدٌ، اللَّهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", n: 3, note: "سورة الإخلاص" },
+      { t: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، مِن شَرِّ مَا خَلَقَ، وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ، وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ، وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", n: 3, note: "سورة الفلق" },
+      { t: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ، مَلِكِ النَّاسِ، إِلَٰهِ النَّاسِ، مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ، الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ، مِنَ الْجِنَّةِ وَالنَّاسِ", n: 3, note: "سورة الناس" },
+      { t: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذِهِ اللَّيْلَةِ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا", n: 1 },
+      { t: "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ", n: 1 },
+      { t: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", n: 1, note: "سيد الاستغفار — من قالها موقنًا بها حين يمسي فمات من ليلته دخل الجنة" },
+      { t: "اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ", n: 4 },
+      { t: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلَٰهَ إِلَّا أَنْتَ", n: 3 },
+      { t: "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ", n: 7 },
+      { t: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", n: 3 },
+      { t: "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا", n: 3 },
+      { t: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", n: 3 },
+      { t: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", n: 100, note: "من قالها مئة مرة حُطّت خطاياه وإن كانت مثل زبد البحر" },
+      { t: "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ", n: 10 }
+    ]
+  };
 
   /* ---------------- helpers ---------------- */
   function $(s) { return document.querySelector(s); }
@@ -950,7 +1005,8 @@ tr:last-child td { border-block-end: 0; }
     learn: freshLearn(),
     exp: { categories: [], items: [], salary: {} },
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
-    tab: "home", pv: "today", archiveN: 30, lv: { mode: "courses" }, quiz: null, card: null, spk: null
+    tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, quiz: null, card: null, spk: null,
+    az: null, azProgress: {}
   };
   var ready = { days: false, settings: false, learn: false, exp: false };
 
@@ -1084,6 +1140,30 @@ tr:last-child td { border-block-end: 0; }
       else { cur = 0; prev = null; }
     });
     return best;
+  }
+  function fmtDaysAr(n) {
+    if (n === 1) return "يوم";
+    if (n === 2) return "يومين";
+    if (n >= 3 && n <= 10) return n + " أيام";
+    return n + " يوم";
+  }
+  var STREAK_MILESTONES = [
+    { d: 3, label: "3 أيام" }, { d: 7, label: "أسبوع كامل" }, { d: 14, label: "أسبوعين" },
+    { d: 30, label: "شهر كامل" }, { d: 50, label: "50 يوم" }, { d: 100, label: "100 يوم" },
+    { d: 200, label: "200 يوم" }, { d: 365, label: "سنة كاملة" }
+  ];
+  function streakBannerHTML(now) {
+    var st = streak(now), best = bestStreak();
+    if (!st) {
+      return '<div class="card streakbanner off"><div class="sb-ico">' + ico("flame") + '</div><div class="sb-body"><h3>ابدأ سلسلتك اليوم</h3><p class="muted" style="font-size:14px">خلّص الصلوات الخمس النهاردة عشان تبدأ سلسلة جديدة' + (best ? " · أفضل سلسلة سابقة " + best + " يوم" : "") + "</p></div></div>";
+    }
+    var hit = STREAK_MILESTONES.filter(function (m) { return m.d === st; })[0];
+    var next = STREAK_MILESTONES.filter(function (m) { return m.d > st; })[0];
+    var sub = hit ? "🎉 وصلت لـ" + hit.label + "! استمر كده"
+      : (next ? "كمان " + fmtDaysAr(next.d - st) + " لـ" + next.label + " 🔥"
+        : "رقم قياسي! استمر على البركة");
+    return '<div class="card streakbanner on"><div class="sb-ico">' + ico("flame") + '</div><div class="sb-body"><div class="sb-num"><b class="num">' + st + '</b><span>' + (st === 1 ? "يوم متواصل" : "أيام متواصلة") + '</span></div><p class="sb-sub">' + esc(sub) + "</p></div>" +
+      (best > st ? '<div class="sb-best">أفضل<b class="num">' + best + "</b></div>" : "") + "</div>";
   }
   function togglePrayer(key, i) {
     var now = nowR(), st = status(key, i, now), d = state.days[key] || (state.days[key] = {}), k = PRAYERS[i].k;
@@ -1378,6 +1458,40 @@ tr:last-child td { border-block-end: 0; }
     return out;
   }
 
+  function weeklyStats(now) {
+    var doneP = 0, totalPray = 0, fullDays = 0, missedP = 0, pages = 0, xp = 0;
+    for (var i = 6; i >= 0; i--) {
+      var k = addDays(now.key, -i), n = 0, miss = 0;
+      for (var j = 0; j < 5; j++) { var st = status(k, j, now); if (isDone(st)) n++; if (st === "missed") miss++; }
+      doneP += n; totalPray += 5; missedP += miss; if (n === 5) fullDays++;
+      pages += pagesOn(k);
+      xp += (state.learn.study[k] || 0);
+    }
+    var t = target(), weeklyTarget = t * 7;
+    return { doneP: doneP, totalPray: totalPray, fullDays: fullDays, missedP: missedP, pages: pages, weeklyTarget: weeklyTarget, xp: xp, pct: totalPray ? Math.round(doneP / totalPray * 100) : 0 };
+  }
+  function weeklyMsg(pct) {
+    if (pct >= 95) return "أسبوع ممتاز ما شاء الله 🌟";
+    if (pct >= 75) return "أسبوع جيد جدًا، كمّل كده";
+    if (pct >= 50) return "أسبوع لا بأس به، فيه مجال تتحسّن";
+    return "حاول تركّز أكتر الأسبوع الجاي";
+  }
+  function weeklyReportHTML(now) {
+    var s = weeklyStats(now);
+    var startK = addDays(now.key, -6);
+    var rangeLbl = startK.slice(8) + "/" + startK.slice(5, 7) + " - " + now.key.slice(8) + "/" + now.key.slice(5, 7);
+    return '<button class="linkbtn" data-act="weekly-close">← رجوع</button>' +
+      '<div class="card"><div class="row between"><h2 style="margin:0">تقرير الأسبوع</h2><span class="chip">' + rangeLbl + "</span></div>" +
+      '<p class="muted" style="font-size:14px;margin-block-start:6px">' + weeklyMsg(s.pct) + "</p></div>" +
+      '<div class="card"><h3>الصلاة</h3>' +
+      '<div class="row between" style="margin-block-end:6px"><span class="muted">' + s.doneP + " من " + s.totalPray + " صلاة (" + s.pct + "%)</span><span class=\"chip\">" + s.fullDays + " أيام كاملة</span></div>" +
+      '<div class="bar"><i style="width:' + s.pct + '%"></i></div>' +
+      (s.missedP ? '<p class="muted" style="font-size:13px;margin-block-start:8px">فاتتك ' + s.missedP + (s.missedP === 1 ? " صلاة" : " صلوات") + " الأسبوع ده</p>" : "") +
+      '<div class="card" style="margin:14px 0 0;background:var(--surface2);border:0"><div class="week">' + weekBars(now) + "</div></div></div>" +
+      '<div class="card"><h3>القرآن</h3><div class="row between"><span class="muted">' + s.pages + " من " + s.weeklyTarget + " صفحة مستهدفة</span><span class=\"chip\">" + Math.round(s.pages / 7 * 10) / 10 + " صفحة/يوم</span></div>" +
+      '<div class="bar amber" style="margin-block-start:8px"><i style="width:' + Math.min(100, Math.round(s.pages / s.weeklyTarget * 100)) + '%"></i></div></div>' +
+      '<div class="card"><h3>التعلّم</h3><div class="row between"><span class="muted">نقاط اكتسبتها الأسبوع ده</span><span class="chip num">+' + s.xp + "</span></div></div>";
+  }
   function ringSVG(sts) {
     var r = 58, C = 2 * Math.PI * r, gap = 9, seg = C / 5 - gap, s = '<svg viewBox="0 0 140 140" class="ring" aria-hidden="true">';
     sts.forEach(function (st, i) {
@@ -1400,12 +1514,10 @@ tr:last-child td { border-block-end: 0; }
       if (nx < 0) { nx = 0; tk = addDays(key, 1); }
       lbl = "الصلاة القادمة"; nm = pname(tk, nx); target = sched(tk).times[nx] + (tk === key ? 0 : 24); sub = "بعد";
     }
-    var st = streak(now);
     return '<div class="card"><div class="hero"><div class="ringbox">' + ringSVG(sts) +
       '<div class="ringtxt"><b class="num">' + doneN + '/5</b><span>صلوات اليوم</span></div></div>' +
       '<div class="next grow"><div class="lbl">' + lbl + '</div><div class="nm">' + esc(nm) + '</div>' +
-      '<div class="sub">' + sub + ' <span class="cd num" id="cd" data-t="' + target + '">' + fmtDur((target - now.h) * 3600) + '</span></div>' +
-      '<div class="streak">' + ico("flame") + (st > 0 ? "سلسلة " + st + (st === 1 ? " يوم" : " أيام") : "ابدأ سلسلتك اليوم") + '</div></div></div></div>';
+      '<div class="sub">' + sub + ' <span class="cd num" id="cd" data-t="' + target + '">' + fmtDur((target - now.h) * 3600) + '</span></div></div></div></div>';
   }
 
   function alertHTML(now) {
@@ -1456,11 +1568,12 @@ tr:last-child td { border-block-end: 0; }
   }
 
   function homeView(now) {
+    if (state.hv === "weekly") return weeklyReportHTML(now);
     var sts = PRAYERS.map(function (p, k) { return status(now.key, k, now); }), doneN = sts.filter(isDone).length;
     var t = target(), n = pagesOn(now.key), L = level(), due = dueCards(now).length;
     var miss = state.loaded ? missedList(now).length : 0;
     var alert = miss ? '<div class="card alert"><div class="row between"><div><h2 style="margin:0">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + '</h2><p style="font-size:14px">سجّل القضاء من قسم الصلاة.</p></div><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div></div>' : "";
-    return bannerHTML() + heroHTML(now) + alert + pushCardHTML() + dailyCardHTML(now) +
+    return bannerHTML() + streakBannerHTML(now) + heroHTML(now) + alert + pushCardHTML() + dailyCardHTML(now) +
       '<div class="dual"><div class="stat"><b class="num">' + n + " / " + t + '</b><span>ورد اليوم (صفحة)</span><div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div></div>' +
       '<div class="stat"><b class="num">المستوى ' + L.lv + '</b><span><span class="num">' + L.xp + '</span> نقطة</span><div class="bar amber"><i style="width:' + L.pct + '%"></i></div></div></div>' +
       '<div class="sec-h">الأقسام</div><div class="tiles">' +
@@ -1469,7 +1582,7 @@ tr:last-child td { border-block-end: 0; }
       tile("learn", "cap", "الكورسات", '<span class="num">' + due + "</span> كلمة للمراجعة", 0) +
       tile("exp", "calc", "الحاسبة", expHomeSub(now), 0) + "</div>" +
       dailyReviewCardHTML(due) +
-      '<div class="card" style="margin-block-start:12px"><h3>الصلوات آخر 7 أيام</h3><div class="week">' + weekBars(now) + "</div></div>";
+      '<div class="card" style="margin-block-start:12px"><div class="row between"><h3 style="margin:0">الصلوات آخر 7 أيام</h3><button class="linkbtn" data-act="weekly-open">تقرير الأسبوع ←</button></div><div class="week">' + weekBars(now) + "</div></div>";
   }
   function dailyReviewCardHTML(due) {
     if (!due) return "";
@@ -1477,9 +1590,30 @@ tr:last-child td { border-block-end: 0; }
     return '<div class="card" style="margin-block-start:12px"><div class="row between"><div><h3 style="margin:0">مراجعة يومية موحّدة</h3><p class="muted" style="font-size:14px;margin-block-start:4px">' + n + ' كلمات من كل كورساتك مع بعض</p></div><button class="btn" data-act="daily-review">ابدأ</button></div></div>';
   }
   function prayerView(now) {
+    if (state.az) return azkarListHTML(state.az);
     var pv = state.pv;
     return '<div class="seg2 two" style="margin-block:6px 12px"><button data-act="pv" data-v="today" aria-pressed="' + (pv === "today") + '">اليوم</button><button data-act="pv" data-v="archive" aria-pressed="' + (pv === "archive") + '">الأرشيف والفائت</button></div>' +
-      (pv === "archive" ? archiveView(now) : alertHTML(now) + prayersHTML(now));
+      (pv === "archive" ? archiveView(now) : alertHTML(now) + azkarEntryCardHTML() + prayersHTML(now));
+  }
+  function azkarEntryCardHTML() {
+    return '<div class="card"><h3>الأذكار</h3><p class="muted" style="font-size:14px;margin-block:4px 10px">أذكار الصباح والمساء من حصن المسلم</p><div class="row wrapr">' +
+      '<button class="btn" data-act="azkar-open" data-k="morning">🌅 أذكار الصباح</button>' +
+      '<button class="btn alt" data-act="azkar-open" data-k="evening">🌙 أذكار المساء</button></div></div>';
+  }
+  function azkarListHTML(key) {
+    var list = AZKAR[key];
+    var prog = state.azProgress[key];
+    if (!prog || prog.length !== list.length) prog = state.azProgress[key] = list.map(function (it) { return it.n; });
+    var doneCount = prog.filter(function (c) { return c <= 0; }).length;
+    var items = list.map(function (it, i) {
+      var left = prog[i], done = left <= 0;
+      return '<button class="azcard' + (done ? " done" : "") + '" data-act="azkar-tap" data-k="' + key + '" data-i="' + i + '"' + (done ? " disabled" : "") + '><p class="az-text">' + esc(it.t) + "</p>" +
+        (it.note ? '<p class="az-note muted">' + esc(it.note) + "</p>" : "") +
+        '<span class="az-count">' + (done ? "✓" : left) + "</span></button>";
+    }).join("");
+    return '<button class="linkbtn" data-act="azkar-close">← رجوع</button><div class="card"><div class="row between"><h2 style="margin:0">' + (key === "morning" ? "أذكار الصباح" : "أذكار المساء") + '</h2><span class="chip">' + doneCount + " / " + list.length + '</span></div>' +
+      '<p class="muted" style="font-size:13px;margin-block-start:6px">اضغط على الذكر كل ما قلته مرة، للعدّاد يوصل صفر</p></div>' + items +
+      '<button class="btn alt" data-act="azkar-reset" data-k="' + key + '" style="width:100%;margin-block-start:4px">إعادة البدء</button>';
   }
 
   function archiveView(now) {
@@ -2014,6 +2148,13 @@ tr:last-child td { border-block-end: 0; }
       case "pgdone": setPages(Math.max(pagesOn(now.key), target())); toast("تقبّل الله ورد اليوم"); break;
       case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
+      case "weekly-open": state.hv = "weekly"; $("#p-home").scrollTop = 0; render(); break;
+      case "weekly-close": state.hv = "dashboard"; render(); break;
+      case "azkar-open": state.az = el.getAttribute("data-k"); $("#p-prayer").scrollTop = 0; render(); break;
+      case "azkar-close": state.az = null; render(); break;
+      case "azkar-tap": var azK = el.getAttribute("data-k"), azI = Number(el.getAttribute("data-i"));
+        if (state.azProgress[azK] && state.azProgress[azK][azI] > 0) state.azProgress[azK][azI]--; render(); break;
+      case "azkar-reset": var azRk = el.getAttribute("data-k"); state.azProgress[azRk] = AZKAR[azRk].map(function (it) { return it.n; }); render(); break;
       case "lcourses": state.lv = { mode: "courses" }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
       case "course-open": state.lv = { mode: "home", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
       case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
@@ -2540,7 +2681,7 @@ tr:last-child td { border-block-end: 0; }
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
     state.exp = { categories: [], items: [], salary: {} }; state.expMonth = null; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
-    state.quiz = null; state.card = null; state.spk = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; panelCache = {};
+    state.quiz = null; state.card = null; state.spk = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; state.hv = "dashboard"; state.az = null; state.azProgress = {}; panelCache = {};
     $("#pager").scrollTo({ left: 0 }); render(); showLock("");
   }
   $("#lockform").addEventListener("submit", function (e) { e.preventDefault(); var v = $("#pin").value.trim(); if (v) unlock(v); });
