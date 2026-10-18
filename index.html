@@ -1127,6 +1127,7 @@ tr:last-child td { border-block-end: 0; }
         UNIT_BY_KEY[cid + ":" + u.id] = u;
         u.qs.forEach(function (q, i) { q.id = cid + "-" + u.id + "-q" + i; q.u = u.id; q.c = cid; QINDEX[q.id] = q; });
       });
+      (COURSES[cid].vocab || []).forEach(function (v) { v.c = cid; });
     });
   }
   var INTERVALS = [0, 1, 3, 7];
@@ -1459,7 +1460,13 @@ tr:last-child td { border-block-end: 0; }
       tile("quran", "book", "القرآن", '<span class="num">' + n + " / " + t + "</span> صفحة", 0) +
       tile("learn", "cap", "الكورسات", '<span class="num">' + due + "</span> كلمة للمراجعة", 0) +
       tile("exp", "calc", "الحاسبة", expHomeSub(now), 0) + "</div>" +
+      dailyReviewCardHTML(due) +
       '<div class="card" style="margin-block-start:12px"><h3>الصلوات آخر 7 أيام</h3><div class="week">' + weekBars(now) + "</div></div>";
+  }
+  function dailyReviewCardHTML(due) {
+    if (!due) return "";
+    var n = Math.min(10, due);
+    return '<div class="card" style="margin-block-start:12px"><div class="row between"><div><h3 style="margin:0">مراجعة يومية موحّدة</h3><p class="muted" style="font-size:14px;margin-block-start:4px">' + n + ' كلمات من كل كورساتك مع بعض</p></div><button class="btn" data-act="daily-review">ابدأ</button></div></div>';
   }
   function prayerView(now) {
     var pv = state.pv;
@@ -1797,10 +1804,12 @@ tr:last-child td { border-block-end: 0; }
   }
   function cardsHTML() {
     var c = state.card; if (!c) return "";
-    if (c.i >= c.q.length) return '<div class="card"><h2>خلّصت مراجعة اليوم</h2><p class="muted" style="margin-block:6px 12px">عرفت <span class="num">' + c.known + "</span> من <span class=\"num\">" + c.q.length + '</span>. الكلمات اللي لم تعرفها ترجع لك غدًا.</p><button class="btn" data-act="lhome">رجوع</button></div>';
+    var exitAct = state.lv.c ? ' data-act="lhome" data-c="' + state.lv.c + '"' : ' data-act="lcourses"';
+    if (c.i >= c.q.length) return '<div class="card"><h2>خلّصت مراجعة اليوم</h2><p class="muted" style="margin-block:6px 12px">عرفت <span class="num">' + c.known + "</span> من <span class=\"num\">" + c.q.length + '</span>. الكلمات اللي لم تعرفها ترجع لك غدًا.</p><button class="btn"' + exitAct + '>رجوع</button></div>';
     var w = c.q[c.i];
+    var courseTag = c.global && w.c && COURSES[w.c] ? '<span class="chip" style="margin-inline-start:6px">' + esc(COURSES[w.c].title) + "</span>" : "";
     var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + (w.exAr ? '<div class="muted" style="direction:rtl">' + esc(w.exAr) + "</div>" : "") + spkBtn(w.ex || w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
-    return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + " · " + (LVL_LBL[w.lvl || 1]) + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
+    return '<button class="linkbtn"' + exitAct + '>← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + " · " + (LVL_LBL[w.lvl || 1]) + courseTag + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
       (c.flip ? '<div class="row"><button class="btn grow" data-act="know" data-v="1">عرفتها</button><button class="btn alt grow" data-act="know" data-v="0">لم أعرفها</button></div>' : "") + "</div>";
   }
   function speakHTML() {
@@ -1910,6 +1919,7 @@ tr:last-child td { border-block-end: 0; }
       case "qnext": state.quiz.i++; state.quiz.ans = null; state.quiz.pick = []; if (state.quiz.i >= state.quiz.qs.length) finishQuiz(); render(); break;
       case "cardlvl": state.cardLvl = Number(el.getAttribute("data-lvl")) || 0; render(); break;
       case "cards": var cc = el.getAttribute("data-c"); state.lv.c = cc; state.card = { q: shuffle(dueCards(now, cc, state.cardLvl || 0)).slice(0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards", c: cc }; render(); break;
+      case "daily-review": state.card = { q: shuffle(dueCards(now)).slice(0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "flip": if (state.card) { state.card.flip = true; render(); } break;
       case "know": knowCard(el.getAttribute("data-v") === "1"); break;
       case "exp-month": state.expMonth = shiftMonth(curExpMonth(now), Number(el.getAttribute("data-n"))); state.expAdd = false; render(); break;
