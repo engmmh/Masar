@@ -10,6 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="مسار">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script src="jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
@@ -935,10 +936,10 @@ tr:last-child td { border-block-end: 0; }
     if (v < 8) seedNotesCourse("micro", NOTES_SEED_MICRO);
     state.learn.notesSeeded = NOTES_SEED_VERSION; saveMeta("learn", 0);
   }
-  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0 }; }
+  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0, exam: {} }; }
   var state = {
     loaded: false, mode: "local",
-    settings: { startDate: today0, unit: "page", amount: 5, startPage: 1 },
+    settings: { startDate: today0, unit: "page", amount: 5, startPage: 1, certName: "" },
     days: {},
     learn: freshLearn(),
     exp: { categories: [], items: [], salary: {} },
@@ -1548,6 +1549,18 @@ tr:last-child td { border-block-end: 0; }
   /* learn */
   var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso17025: "flask", micro: "flask" };
   function courseDone(cid) { var c = COURSES[cid]; return c.units.filter(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }).length; }
+  function finalExamPool(cid) {
+    var c = COURSES[cid]; if (!c) return [];
+    var qs = [];
+    (c.units || []).forEach(function (u) { (u.qs || []).forEach(function (q) { qs.push(q); }); });
+    (c.examBank || []).forEach(function (q) { qs.push(q); });
+    return qs;
+  }
+  function fmtArDate(key) {
+    var p = String(key).split("-").map(Number);
+    if (p.length < 3) return key;
+    return p[2] + " " + AR_MONTHS[p[1] - 1] + " " + p[0];
+  }
   function unitOf(cid, id) { return COURSES[cid].units.filter(function (x) { return x.id === id; })[0]; }
   function learnView(now) {
     var v = state.lv;
@@ -1565,6 +1578,7 @@ tr:last-child td { border-block-end: 0; }
     if (v.mode === "dialogue") return top + dialogueHTML(v.c, v.u);
     if (v.mode === "reading") return top + readingHTML(v.c, v.u);
     if (v.mode === "home") return top + courseHomeHTML(v.c, now);
+    if (v.mode === "cert") return top + certHTML(v.c);
     // courses select
     var cards = COURSE_ORDER.map(function (cid) {
       var c = COURSES[cid], done = courseDone(cid), cpct = c.units.length ? Math.round(done / c.units.length * 100) : 0;
@@ -1647,6 +1661,20 @@ tr:last-child td { border-block-end: 0; }
       lvlChips + "</div>" +
       '<div class="sec-h">الكلمات (' + list.length + ")</div>" + rows;
   }
+  function finalExamCardHTML(cid, c, done) {
+    var total = c.units.length, pool = finalExamPool(cid);
+    var rec = (state.learn.exam || {})[cid];
+    var locked = done < total;
+    var info = locked
+      ? '<p class="muted" style="font-size:14px;margin-block-start:4px">أكمل كل وحدات الكورس (' + done + "/" + total + ') لفتح الامتحان النهائي</p>'
+      : '<p class="muted" style="font-size:14px;margin-block-start:4px">' + Math.min(30, pool.length) + ' سؤال من كل الكورس · النجاح من 80%' + (rec ? " · أفضل نتيجة <span class=\"num\">" + rec.best + "%</span>" : "") + "</p>";
+    var actions = locked ? "" :
+      '<div class="row wrapr">' +
+      (rec && rec.passed ? '<button class="btn alt" data-act="cert-open" data-c="' + cid + '">' + ico("cert") + " شهادتي</button>" : "") +
+      '<button class="btn" data-act="final-exam" data-c="' + cid + '">' + (rec ? "أعد الامتحان" : "ابدأ الامتحان") + "</button>" +
+      "</div>";
+    return '<div class="card" style="margin-block-start:14px"><div class="row between"><div><h3 style="margin:0">الامتحان النهائي</h3>' + info + "</div>" + actions + "</div></div>";
+  }
   function courseHomeHTML(cid, now) {
     var c = COURSES[cid], lvl = state.cardLvl || 0, due = dueCards(now, cid, lvl).length, ms = mistakeIds(cid).length, done = courseDone(cid);
     var notesCount = (state.learn.notes[cid] || []).length;
@@ -1662,6 +1690,7 @@ tr:last-child td { border-block-end: 0; }
       '<button class="btn alt" data-act="notes-open" data-c="' + cid + '">' + ico("pin") + " المهم" + (notesCount ? ' <span class="chip num">' + notesCount + "</span>" : "") + "</button>" +
       (c.examBank && c.examBank.length ? '<button class="btn alt" data-act="exambank" data-c="' + cid + '">' + ico("cap") + " بنك أسئلة آيزو <span class=\"chip num\">" + c.examBank.length + "</span></button>" : "") +
       "</div>" + lvlChips + "</div>" +
+      finalExamCardHTML(cid, c, done) +
       '<div class="row between" style="margin-block:14px 4px"><h2>' + esc(c.title) + '</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
       pathHTML(cid, c.units, done);
   }
@@ -1787,6 +1816,13 @@ tr:last-child td { border-block-end: 0; }
     var pct = Math.round(z.ok / z.qs.length * 100);
     var retryC = "", retryU = "";
     if (z.unit) { var parts = z.unit.split(":"); retryC = parts[0]; retryU = parts[1]; }
+    if (z.final) {
+      var passed = pct >= 80, cTitle = COURSES[z.examCid] ? COURSES[z.examCid].title : "";
+      return '<div class="card"><h2>' + (passed ? "🎉 نجحت في الامتحان النهائي" : "لم تصل لنسبة النجاح") + '</h2><p style="font-size:22px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p><p class="muted" style="margin-block:6px 12px">' +
+        (passed ? "تهانينا! أنهيت كورس " + esc(cTitle) + " بنجاح. " : "النجاح يتطلب 80% على الأقل. ") + "حصلت على <span class=\"num\">" + z.gain + "</span> نقطة.</p><div class=\"row wrapr\"><button class=\"btn\" data-act=\"lhome\" data-c=\"" + z.examCid + "\">رجوع</button>" +
+        (passed ? '<button class="btn alt" data-act="cert-open" data-c="' + z.examCid + '">' + ico("cert") + " الحصول على الشهادة</button>" : '<button class="btn alt" data-act="final-exam" data-c="' + z.examCid + '">أعد الامتحان</button>') +
+        "</div></div>";
+    }
     return '<div class="card"><h2>' + (pct >= 80 ? "ممتاز" : (pct >= 50 ? "جيد" : "كمّل وراجع")) + '</h2><p style="font-size:20px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p><p class="muted" style="margin-block:6px 12px">حصلت على <span class="num">' + z.gain + "</span> نقطة." + (z.wrong.length ? " الأسئلة الخاطئة ستظهر في مراجعة الأخطاء." : "") + '</p><div class="row wrapr"><button class="btn" data-act="lhome">رجوع</button>' +
       (z.unit ? '<button class="btn alt" data-act="quiz" data-c="' + retryC + '" data-u="' + retryU + '">أعد التدريب</button>' : "") + "</div></div>";
   }
@@ -1801,8 +1837,79 @@ tr:last-child td { border-block-end: 0; }
       state.learn.units[z.unit] = p;
     }
     if (z.daily && state.learn.daily) { state.learn.daily.done = true; state.learn.daily.score = pct; gain += 15; }
+    if (z.final && z.examCid) {
+      if (!state.learn.exam) state.learn.exam = {};
+      var er = state.learn.exam[z.examCid] || { best: 0, passed: false };
+      er.best = Math.max(er.best || 0, pct); er.tries = (er.tries || 0) + 1;
+      if (pct >= 80) { if (!er.passed) gain += 50; er.passed = true; er.date = now.key; }
+      state.learn.exam[z.examCid] = er;
+    }
     z.gain = gain; addXp(gain, now); saveMeta("learn", 0);
     checkAchievements(now);
+  }
+  function certHTML(cid) {
+    var c = COURSES[cid]; if (!c) return "";
+    var rec = (state.learn.exam || {})[cid];
+    if (!rec || !rec.passed) {
+      return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع</button><div class="card"><h2>لسه معندك شهادة</h2><p class="muted" style="margin-block-start:6px">لازم تنجح في الامتحان النهائي لكورس ' + esc(c.title) + " بنسبة 80% فأكثر الأول.</p></div>";
+    }
+    var name = state.settings.certName || "";
+    return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع</button>' +
+      '<div class="card"><h2>شهادة إتمام الكورس</h2>' +
+      '<label class="field" style="margin-block-start:10px">اكتب اسمك كما يظهر في الشهادة<input id="certNameInput" type="text" value="' + esc(name) + '" placeholder="اسمك بالكامل" dir="auto"></label>' +
+      '<div class="row wrapr" style="margin-block-start:8px"><button class="btn alt" data-act="cert-name-save">حفظ الاسم</button></div>' +
+      '<div style="margin-block-start:16px;overflow:auto"><canvas id="certCanvas" width="1200" height="850" style="width:100%;max-width:720px;display:block;margin:0 auto;border-radius:12px;background:#fff"></canvas></div>' +
+      '<div class="row wrapr" style="margin-block-start:14px">' +
+      (name ? '<button class="btn" data-act="cert-download" data-c="' + cid + '">⬇ تحميل الشهادة PDF</button>' : '<p class="muted">اكتب اسمك واحفظه الأول عشان تقدر تنزّل الشهادة</p>') +
+      "</div></div>";
+  }
+  function drawCertOnCanvas(canvas, cid) {
+    var c = COURSES[cid]; if (!c || !canvas) return;
+    var rec = (state.learn.exam || {})[cid] || {};
+    var name = state.settings.certName || "";
+    var ctx = canvas.getContext("2d"); if (!ctx) return;
+    var W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, W, H);
+    ctx.strokeStyle = "#2F8F5B"; ctx.lineWidth = 10; ctx.strokeRect(20, 20, W - 40, H - 40);
+    ctx.strokeStyle = "#CFE8DA"; ctx.lineWidth = 2; ctx.strokeRect(42, 42, W - 84, H - 84);
+    ctx.textAlign = "center"; ctx.direction = "rtl";
+    ctx.fillStyle = "#2F8F5B"; ctx.font = "bold 34px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText("مسار", W / 2, 110);
+    ctx.fillStyle = "#17301F"; ctx.font = "bold 48px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText("شهادة إتمام", W / 2, 190);
+    ctx.fillStyle = "#4b5b50"; ctx.font = "22px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText("تشهد منصّة مسار بأن", W / 2, 240);
+    ctx.fillStyle = "#1b4332"; ctx.font = "bold 54px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText(name || "——", W / 2, 330);
+    ctx.strokeStyle = "#2F8F5B"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(W / 2 - 220, 352); ctx.lineTo(W / 2 + 220, 352); ctx.stroke();
+    ctx.fillStyle = "#4b5b50"; ctx.font = "24px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText("أكمل بنجاح كورس", W / 2, 405);
+    ctx.fillStyle = "#1b4332"; ctx.font = "bold 38px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText(c.title, W / 2, 455);
+    ctx.fillStyle = "#4b5b50"; ctx.font = "22px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText("بتقدير " + (rec.best || 0) + "% في الامتحان النهائي", W / 2, 515);
+    ctx.fillText("بتاريخ " + fmtArDate(rec.date || ""), W / 2, 555);
+    ctx.fillStyle = "#8aa092"; ctx.font = "16px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillText("مسار · رحلتك في التعلم والعبادة", W / 2, H - 55);
+  }
+  function drawCertPreview(cid) {
+    var canvas = document.getElementById("certCanvas"); if (!canvas) return;
+    try { drawCertOnCanvas(canvas, cid); } catch (e) { }
+  }
+  function downloadCertificate(cid) {
+    var c = COURSES[cid]; if (!c) return;
+    try {
+      var canvas = document.createElement("canvas"); canvas.width = 1200; canvas.height = 850;
+      drawCertOnCanvas(canvas, cid);
+      var img = canvas.toDataURL("image/png");
+      if (!window.jspdf || !window.jspdf.jsPDF) { toast("تعذر تحميل مكتبة إنشاء PDF"); return; }
+      var pageW = 842, pageH = 595; // A4 landscape, in points — a normal printable page size
+      var doc = new window.jspdf.jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+      doc.addImage(img, "PNG", 0, 0, pageW, pageH, undefined, "FAST");
+      doc.save("masar-certificate-" + cid + ".pdf");
+    } catch (e) { toast("حصل خطأ أثناء إنشاء الشهادة"); }
   }
   function cardsHTML() {
     var c = state.card; if (!c) return "";
@@ -1863,6 +1970,7 @@ tr:last-child td { border-block-end: 0; }
     var h = hijri(now.key); $("#dates").textContent = greg(now.key) + (h ? " · " + h : "");
     $("#lockbtn").hidden = state.mode !== "supa";
     markTabs();
+    if (state.tab === "learn" && state.lv && state.lv.mode === "cert") drawCertPreview(state.lv.c);
     lastSig = signature();
   }
   var lastSig = "";
@@ -1924,6 +2032,14 @@ tr:last-child td { border-block-end: 0; }
       case "daily-review": state.card = { q: shuffle(dueCards(now)).slice(0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "exambank": var ebC = el.getAttribute("data-c"), ebCourse = COURSES[ebC]; if (!ebCourse || !ebCourse.examBank || !ebCourse.examBank.length) break;
         state.lv.c = ebC; startQuiz(shuffle(ebCourse.examBank.slice()).slice(0, Math.min(20, ebCourse.examBank.length)), "بنك أسئلة آيزو · " + ebCourse.title, null); break;
+      case "final-exam": var feC = el.getAttribute("data-c"), feCourse = COURSES[feC]; if (!feCourse) break;
+        var fePool = shuffle(finalExamPool(feC).slice()); var feTake = Math.min(30, fePool.length); if (!feTake) break;
+        state.lv.c = feC;
+        state.quiz = { qs: shuffle(fePool.slice(0, feTake)), i: 0, ok: 0, ans: null, title: "الامتحان النهائي · " + feCourse.title, unit: null, wrong: [], right: [], pick: [], final: true, examCid: feC };
+        state.lv = { mode: "quiz", c: feC }; render(); break;
+      case "cert-open": state.lv = { mode: "cert", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
+      case "cert-name-save": var cnIn = $("#certNameInput"), cnV = cnIn ? cnIn.value.trim() : ""; state.settings.certName = cnV; saveMeta("settings", 0); render(); break;
+      case "cert-download": downloadCertificate(el.getAttribute("data-c")); break;
       case "flip": if (state.card) { state.card.flip = true; render(); } break;
       case "know": knowCard(el.getAttribute("data-v") === "1"); break;
       case "exp-month": state.expMonth = shiftMonth(curExpMonth(now), Number(el.getAttribute("data-n"))); state.expAdd = false; render(); break;
@@ -2415,7 +2531,7 @@ tr:last-child td { border-block-end: 0; }
     clearInterval(store.poll);
     try { await store.sb.auth.signOut(); } catch (e) { }
     store.uid = null; state.days = {}; state.learn = freshLearn();
-    state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1 };
+    state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
     state.exp = { categories: [], items: [], salary: {} }; state.expMonth = null; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
     state.quiz = null; state.card = null; state.spk = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; panelCache = {};
