@@ -1253,7 +1253,7 @@ tr:last-child td { border-block-end: 0; }
 
   /* ---------------- learning content ---------------- */
   var COURSES = {};
-  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso17025", "micro"];
+  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso22002100", "iso22002", "iso17025", "micro"];
   // ALLOWED_COURSES is what the logged-in account is permitted to see — a derived,
   // per-session subset of COURSE_ORDER (never COURSE_ORDER itself, which must stay
   // the full master list: it's still used to load/index every course's data so admin
@@ -1757,7 +1757,7 @@ tr:last-child td { border-block-end: 0; }
   }
 
   /* learn */
-  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso17025: "flask", micro: "flask" };
+  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso22002100: "pin", iso22002: "trash", iso17025: "flask", micro: "flask" };
   function courseDone(cid) { var c = COURSES[cid]; return c.units.filter(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }).length; }
   function finalExamPool(cid) {
     var c = COURSES[cid]; if (!c) return [];
@@ -2617,14 +2617,6 @@ tr:last-child td { border-block-end: 0; }
     var kpis = '<div class="row wrapr" style="gap:18px">' +
       statTile("نشط النهارده", activeToday) + statTile("نشط الأسبوع ده", activeWeek) +
       statTile("محتاج متابعة", followUp.length) + "</div>";
-    // TEMP diagnostic card — see loadAdminDashboard() for what it's for. Safe to
-    // ignore unless we're hunting the "Details tab shows zero" bug.
-    var dbg = state.adminDebug;
-    var debugCard = dbg ? '<div class="card" style="border:1px dashed var(--line)"><h4 class="muted" style="margin:0 0 8px;font-size:12.5px">تشخيص مؤقت</h4>' +
-      '<div class="muted" style="font-size:12px">صفوف أيام من القاعدة: ' + dbg.dRows + ' · صفوف meta: ' + dbg.mRows + '</div>' +
-      dbg.perAcc.map(function (a) {
-        return '<div class="muted" style="font-size:12px;margin-block-start:4px">' + esc(a.label) + ': أيام مطابقة=' + a.days + '، XP=' + a.xp + '، وحدات=' + a.units + '، uid=' + esc(a.uid) + '</div>';
-      }).join("") + "</div>" : "";
     var alerts = followUp.map(function (f) {
       var since = f.since === null ? "من غير أي نشاط لسه" : "بقاله " + fmtDaysAr(f.since) + " من غير نشاط";
       return '<div class="card alert"><div class="row between" style="align-items:center"><span>' + esc(f.st.acc.label) + " " + since + (f.last ? " · آخر نشاط " + greg(f.last) : "") + '</span><button class="btn sm" data-admopen="' + esc(f.st.acc.uid) + '" data-into="details">شوف</button></div></div>';
@@ -2642,7 +2634,7 @@ tr:last-child td { border-block-end: 0; }
         '<div><h3 style="margin:0;font-size:15px">' + esc(st.acc.label) + '</h3><span class="muted" style="font-size:12px">' + (s ? "سلسلة " + fmtDaysAr(s) : "لا توجد سلسلة حالية") + "</span></div></div>" +
         statusTag + "</div><div class=\"week\" style=\"height:46px;margin-block-start:8px\">" + admWeekBars(st.days, now).replace(/<b class="num"[^<]*<\/b>/g, "") + "</div></button>";
     }).join("");
-    return debugCard + kpis + alerts + '<div class="sec-h">الحسابات</div>' + rows;
+    return kpis + alerts + '<div class="sec-h">الحسابات</div>' + rows;
   }
   function admDetailsHTML(stats, now) {
     var st = stats.filter(function (s) { return s.acc.uid === state.adminDetailUid; })[0];
@@ -2892,16 +2884,6 @@ tr:last-child td { border-block-end: 0; }
       return { acc: acc, days: days, learn: learn };
     });
     if (!state.adminDetailUid && stats.length) state.adminDetailUid = stats[0].acc.uid;
-    // TEMP diagnostic (remove once the "Details tab shows zero" bug is confirmed fixed):
-    // shows raw row counts from the Edge Function alongside what each account
-    // matched to, so a fetch problem is easy to tell apart from a uid mismatch.
-    state.adminDebug = {
-      dRows: dRows.length,
-      mRows: mRows.length,
-      perAcc: stats.map(function (s) {
-        return { uid: s.acc.uid, label: s.acc.label, days: Object.keys(s.days).length, xp: s.learn.xp, units: Object.keys(s.learn.units || {}).length };
-      })
-    };
     renderAdminDashboard(stats);
   }
   async function loadSupa(first) {
