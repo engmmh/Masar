@@ -1498,9 +1498,15 @@
   var MASAR_LOGIN_FN_URL = CFG.url + "/functions/v1/masar-login";
   async function tryFastLogin(code) {
     try {
+      // Supabase Edge Functions check the "Authorization: Bearer <token>" header for
+      // JWT verification by default (a separate check from "apikey") — without it,
+      // the function rejects the call with 401 before its own code ever runs, no
+      // matter what the function does internally. There's no signed-in user yet at
+      // login time, so the anon key itself is sent as the bearer token here, same
+      // as adminFnCall() already does for the signed-in admin calls.
       var res = await fetch(MASAR_LOGIN_FN_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "apikey": CFG.key },
+        headers: { "Content-Type": "application/json", "apikey": CFG.key, "Authorization": "Bearer " + CFG.key },
         body: JSON.stringify({ code: code })
       });
       if (res.status === 404) return { unavailable: true };
