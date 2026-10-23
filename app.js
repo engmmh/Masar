@@ -657,20 +657,34 @@
   // The Supabase SDK is loaded via a <script defer> tag in <head>, so it downloads in
   // parallel with the rest of the page instead of blocking first paint; window.supabase
   // is usually ready by the time initStore() runs. On a flaky connection that script can
-  // occasionally still be missing (or fail outright); retry it once with a fresh request
+  // occasionally still be missing (or fail outright); retry it — once against the same
+  // CDN, then against a second CDN (unpkg) in case jsdelivr specifically is the one
+  // blocked or unreachable on this network, which does happen on some mobile carriers —
   // before giving up on cloud sync for this session (otherwise the app would silently
-  // fall back to an empty local-only account even though the person has a real cloud account).
-  function loadSupabaseScript() {
+  // fall back to an empty local-only account even though the person has a real cloud
+  // account, with no visible PIN screen and no way back in without a reload).
+  var SUPABASE_CDN_URLS = [
+    "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js",
+    "https://unpkg.com/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"
+  ];
+  function tryLoadScript(src, timeoutMs) {
     return new Promise(function (resolve) {
       if (window.supabase) { resolve(true); return; }
       var done = false, finish = function (ok) { if (done) return; done = true; resolve(ok); };
       var s = document.createElement("script");
-      s.src = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js";
+      s.src = src;
       s.onload = function () { finish(!!window.supabase); };
       s.onerror = function () { finish(false); };
       document.head.appendChild(s);
-      setTimeout(function () { finish(!!window.supabase); }, 6000);
+      setTimeout(function () { finish(!!window.supabase); }, timeoutMs);
     });
+  }
+  async function loadSupabaseScript() {
+    for (var i = 0; i < SUPABASE_CDN_URLS.length; i++) {
+      if (window.supabase) return true;
+      if (await tryLoadScript(SUPABASE_CDN_URLS[i], 6000)) return true;
+    }
+    return !!window.supabase;
   }
   async function initStore() {
     if (!window.supabase) await loadSupabaseScript();
@@ -707,7 +721,15 @@
   /* ---------------- views ---------------- */
   function head() { return ""; }
   function bannerHTML() {
-    return state.mode === "local" ? '<div class="banner">الحفظ السحابي غير متاح في هذا العرض. بياناتك تُحفظ على هذا المتصفح فقط.</div>' : "";
+    // Local mode means the Supabase SDK failed to load for this page load (a CDN
+    // hiccup, not an account problem) — there's no lock screen and no PIN entry in
+    // this state, so a real cloud account (admin included) looks like it "does
+    // nothing" when you try to log in. Reloading is the actual fix once the network
+    // settles, so the banner doubles as a one-tap retry instead of leaving the
+    // person stuck in guest mode for the rest of the session.
+    return state.mode === "local"
+      ? '<button type="button" class="banner" data-act="retry-cloud" style="display:block;width:100%;text-align:start;border:0;cursor:pointer;font:inherit">الحفظ السحابي غير متاح الآن (مشكلة اتصال مؤقتة) — بياناتك بتُحفظ على هذا المتصفح بس. اضغط هنا لإعادة المحاولة.</button>'
+      : "";
   }
   function weekBars(now) {
     var out = "";
@@ -1123,6 +1145,12 @@
       case "push-on": enablePush(); break;
       case "push-off": disablePush(); break;
       case "theme": var cur = getTheme(), nx = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]; try { localStorage.setItem("masar:theme", nx); } catch (er) { } applyTheme(nx); break;
+      // Simplest safe retry: a full reload re-runs initStore() from scratch, so if
+      // the network/CDN has recovered since the local-mode fallback kicked in, the
+      // next load goes through the real lock screen and cloud account normally —
+      // far simpler and safer than trying to splice an in-progress local session
+      // into a freshly authenticated cloud one.
+      case "retry-cloud": location.reload(); break;
       case "pv": state.pv = el.getAttribute("data-v"); render(); break;
       case "tab": var tt = el.getAttribute("data-t"); if (tt === "archive") { state.pv = "archive"; tt = "prayer"; } goTab(tt); render(); break;
       case "tp": togglePrayer(el.getAttribute("data-d"), Number(el.getAttribute("data-p"))); break;
