@@ -79,6 +79,12 @@
     return '<span class="num">' + fmtMoney(tot) + "</span> صرفت هذا الشهر" + (sal ? " · " + pct + "%" : "");
   }
   function expView(now) {
+    // Defensive normalize: guards against any state.exp loaded/reset from a source
+    // that left recurring/budgets missing or null, which would otherwise crash
+    // every render() (money.js reads .recurring.length and .budgets[...] below
+    // assuming they're always a real array/object).
+    if (!Array.isArray(state.exp.recurring)) state.exp.recurring = [];
+    if (!state.exp.budgets || typeof state.exp.budgets !== "object") state.exp.budgets = {};
     var mk = curExpMonth(now), isCurMonth = mk === monthKey(now.key), sal = state.exp.salary[mk] || 0, items = expItemsOf(mk), tot = expTotalOf(mk), cats = expByCat(mk);
     var prevCats = expByCat(shiftMonth(mk, -1));
     var prevByName = {}; prevCats.forEach(function (c) { prevByName[c.cat] = c.amount; });

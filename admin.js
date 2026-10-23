@@ -560,7 +560,20 @@
     (m.data || []).forEach(function (r) {
       if (r.name === "settings") { hasSettings = true; if (!dirty["meta:settings"]) Object.assign(state.settings, r.data); }
       if (r.name === "learn" && !dirty["meta:learn"]) state.learn = Object.assign(freshLearn(), r.data);
-      if (r.name === "exp" && !dirty["meta:exp"]) state.exp = Object.assign({ categories: [], items: [], salary: {}, budgets: {}, recurring: [] }, r.data);
+      if (r.name === "exp" && !dirty["meta:exp"]) {
+        var ed = r.data || {};
+        // Merge field-by-field rather than a flat Object.assign: an older save (from
+        // before "budgets"/"recurring" existed, or any stored null) must fall back to
+        // a safe default per-field, otherwise a null/missing value here crashes every
+        // render() downstream in money.js (anything reading .length / .budgets[...]).
+        state.exp = {
+          categories: Array.isArray(ed.categories) ? ed.categories : [],
+          items: Array.isArray(ed.items) ? ed.items : [],
+          salary: (ed.salary && typeof ed.salary === "object") ? ed.salary : {},
+          budgets: (ed.budgets && typeof ed.budgets === "object") ? ed.budgets : {},
+          recurring: Array.isArray(ed.recurring) ? ed.recurring : [],
+        };
+      }
     });
     if (!hasSettings && first) { state.settings.startDate = nowR().key; saveMeta("settings"); }
     ensureNotesSeed();
