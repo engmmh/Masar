@@ -1,14 +1,19 @@
 // مسار — service worker: makes the app installable on the phone's home screen
 // and lets it still open (with the last-known content) when offline.
-// Strategy: network-first for same-origin files (always prefer fresh content,
-// courses/settings/etc. come from Supabase and are never touched here),
+// Strategy: network-first for same-origin files (always prefer fresh content —
+// this covers the course json files under courses/, which are fetched directly
+// from this same-origin folder, not from Supabase; progress/settings/account data
+// is the only thing that comes from Supabase, and that's untouched by this file),
 // falling back to the cache only when the network is unavailable.
-var CACHE_NAME = "masar-v2";
+// jspdf.umd.min.js is intentionally NOT precached here: it's ~420KB and only
+// loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
+// actually downloaded, so precaching it would waste bandwidth on every install
+// for a feature most sessions never use.
+var CACHE_NAME = "masar-v3";
 var PRECACHE = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
-  "./jspdf.umd.min.js",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png"

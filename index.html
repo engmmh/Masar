@@ -15,11 +15,10 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
-<script src="jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Inter:wght@500;600;700&display=swap">
 <style>
 :root {
   --bg: #F2FAF5;
@@ -45,6 +44,21 @@
   --miss-bg: #FDE3E8;
   --display: "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --body: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --latin: "Inter", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --violet: #7C6FE0;
+  --violet-deep: #5B4FC4;
+  /* Semantic names for the same hues used above — one source of truth per section/status,
+     so new UI can say var(--learn) or var(--ok) instead of memorizing which base color
+     each part of the app happens to use. These are aliases, not new colors: changing a
+     base color (e.g. --teal) above still updates every section that refers to it here. */
+  --brand: var(--teal);
+  --prayer: var(--teal);
+  --quran: var(--amber);
+  --learn: var(--blue);
+  --weak: var(--violet);
+  --money: var(--done);
+  --ok: var(--done);
+  --bad: var(--miss);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
@@ -54,6 +68,7 @@
     --amber: #FFC24A; --amber-deep: #C78A1E; --amber-bg: #3A2A0E;
     --done: #4FE08A; --done-deep: #269A5F; --done-bg: #123828;
     --miss: #FF6B82; --miss-deep: #C73851; --miss-bg: #3A1620; --blue: #7EA2FF; --blue-deep: #4A6FD1; --blue-bg: #16233D;
+    --violet: #A79BFF; --violet-deep: #8577E8;
   }
 }
 :root[data-theme="dark"] {
@@ -63,6 +78,7 @@
   --amber: #FFC24A; --amber-deep: #C78A1E; --amber-bg: #3A2A0E;
   --done: #4FE08A; --done-deep: #269A5F; --done-bg: #123828;
   --miss: #FF6B82; --miss-deep: #C73851; --miss-bg: #3A1620; --blue: #7EA2FF; --blue-deep: #4A6FD1; --blue-bg: #16233D;
+  --violet: #A79BFF; --violet-deep: #8577E8;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; }
@@ -76,12 +92,24 @@ body { background: var(--bg); color: var(--text); font-family: var(--body); font
 #pager { flex: 1; min-height: 0; display: flex; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none; }
 #pager::-webkit-scrollbar { display: none; }
 .panel { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; overflow-y: auto; overscroll-behavior-y: contain; padding: 4px 16px 28px; -webkit-overflow-scrolling: touch; }
-h1, h2, h3 { font-family: var(--display); font-weight: 600; margin: 0; line-height: 1.3; text-wrap: balance; }
+/* Each section carries its own --accent so new components inside it (a button, a ring, a
+   badge) can say "var(--accent)" and automatically pick up the right color for wherever
+   they're used, instead of hardcoding which named color belongs to which tab. */
+#p-home { --accent: var(--brand); }
+#p-prayer { --accent: var(--prayer); }
+#p-quran { --accent: var(--quran); }
+#p-learn { --accent: var(--learn); }
+#p-exp { --accent: var(--money); }
+h1 { font-family: var(--display); font-weight: 600; margin: 0; line-height: 1.3; text-wrap: balance; }
+/* h2/h3 (card and section headings) use the body face, not the display face: Reem Kufi's
+   personality is right for the single "مسار" wordmark at the top, but at card-heading size
+   and frequency it reads as decorative noise — Plex Sans keeps those headings legible and calm. */
+h2, h3 { font-family: var(--body); font-weight: 600; margin: 0; line-height: 1.3; text-wrap: balance; }
 p { margin: 0; }
 button { font: inherit; color: inherit; cursor: pointer; transition: transform .12s ease, box-shadow .12s ease, background-color .15s ease; }
 button svg { width: 20px; height: 20px; flex: none; }
-.en { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 500; overflow-wrap: anywhere; }
-.num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.en { direction: ltr; unicode-bidi: isolate; display: inline-block; font-weight: 500; overflow-wrap: anywhere; font-family: var(--latin); }
+.num { font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; display: inline-block; font-family: var(--latin); }
 .muted { color: var(--muted); }
 button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { button, .bar > i, .pnode { transition: none !important; } }
@@ -122,6 +150,21 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .next .nm { font-family: var(--display); font-size: 30px; font-weight: 700; line-height: 1.15; }
 .next .cd { font-size: 20px; font-weight: 700; }
 .next .sub { font-size: 14px; opacity: .85; }
+/* plan card ("خطة اليوم") */
+.plan-lines { display: flex; flex-direction: column; gap: 9px; }
+.plan-line { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.plan-line .pl-ic { flex: none; width: 20px; height: 20px; opacity: .9; }
+.plan-line .pl-ic svg { width: 100%; height: 100%; }
+.plan-line.done { opacity: .75; }
+.card.plan .plan-miss { margin-block-start: 14px; padding-block-start: 12px; border-block-start: 1px solid color-mix(in srgb, var(--teal-ink) 25%, transparent); font-size: 14px; }
+.card.plan .plan-miss .btn.sm { background: var(--surface); color: var(--text); box-shadow: none; }
+.plan-resume { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; width: 100%; margin-block-start: 14px; background: var(--surface); color: var(--text); border-radius: 14px; padding: 10px 14px; box-shadow: none; text-align: start; }
+.plan-resume .pr-l { font-weight: 700; font-size: 15px; }
+.plan-resume .pr-s { font-size: 13px; opacity: .8; }
+.plan-done { margin-block-start: 14px; text-align: center; font-weight: 700; font-size: 15px; }
+.card.plan.celebrate .ringbox { animation: plan-pop .6s cubic-bezier(.22,1.3,.4,1); }
+@keyframes plan-pop { 0% { transform: scale(.85); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .card.plan.celebrate .ringbox { animation: none; } }
 /* alerts */
 .alert { background: var(--miss-bg); border: 1px solid var(--miss); }
 .alert h2 { color: var(--miss); font-size: 18px; }
@@ -155,6 +198,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 3px s
 .bar { height: 11px; border-radius: 99px; background: var(--surface2); overflow: hidden; }
 .bar > i { display: block; height: 100%; background: linear-gradient(90deg, var(--teal-deep), var(--teal)); border-radius: 99px; transition: width .5s cubic-bezier(.22,.9,.3,1); }
 .bar.amber > i { background: linear-gradient(90deg, var(--amber-deep), var(--amber)); }
+.bar.miss > i { background: linear-gradient(90deg, var(--miss-deep), var(--miss)); }
 
 /* tabs */
 .tabs { flex: none; background: var(--surface); border-top: 1px solid var(--line); padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px)); }
@@ -212,6 +256,15 @@ tr:last-child td { border-block-end: 0; }
 .unit .no { flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--surface2); display: grid; place-items: center; font-family: var(--display); font-weight: 700; }
 .unit .no svg { width: 20px; height: 20px; }
 .unit.done .no { background: linear-gradient(145deg, var(--done), var(--done-deep)); color: #fff; }
+.unit.skel-row { pointer-events: none; }
+.skel-pill { background: var(--surface2); border-radius: 6px; overflow: hidden; position: relative; }
+.skel-pill::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--text) 8%, transparent), transparent);
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes skel-shimmer { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .skel-pill::after { animation: none; } }
 .pts { display: grid; gap: 8px; margin-block: 8px 14px; padding: 0; list-style: none; }
 .pts li { background: var(--surface); border: 1px solid var(--line); border-inline-start: 3px solid var(--teal); border-radius: 10px; padding: 10px 14px; line-height: 1.55; }
 .pt-line { margin-block-end: 7px; line-height: 1.6; overflow-wrap: anywhere; }
@@ -387,6 +440,9 @@ tr:last-child td { border-block-end: 0; }
 .exprow-r .del { background: none; border: 0; color: var(--muted); min-height: 32px; min-width: 32px; display: grid; place-items: center; border-radius: 8px; }
 .exprow-r .del:active { background: var(--miss-bg); color: var(--miss); }
 .exprow-r .del svg { width: 17px; height: 17px; }
+.exprow { touch-action: pan-y; }
+.exprow-actions { gap: 8px; }
+.exprow-actions .btn.sm { min-height: 32px; padding: 0 12px; font-size: 13px; }
 .notecard .del { background: none; border: 0; color: var(--muted); min-height: 32px; min-width: 32px; display: grid; place-items: center; border-radius: 8px; flex: none; }
 .notecard .del:active { background: var(--miss-bg); color: var(--miss); }
 .notecard .del svg { width: 17px; height: 17px; }
@@ -427,6 +483,7 @@ tr:last-child td { border-block-end: 0; }
 :root[data-theme="light"] { color-scheme: light; }
 #toast { position: fixed; inset-inline: 16px; bottom: calc(88px + env(safe-area-inset-bottom, 0px)); margin-inline: auto; max-width: 420px; background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 20; box-shadow: 0 8px 24px -6px rgba(0,0,0,.35); }
 #toast.on { opacity: 1; }
+#toast button { pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
 </style>
 
@@ -461,6 +518,7 @@ tr:last-child td { border-block-end: 0; }
     <div><h1><svg width="24" height="24" viewBox="0 0 100 100" aria-hidden="true" style="color:var(--teal);vertical-align:-4px;margin-inline-end:4px"><path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="currentColor" transform="translate(0,2)"/></svg>مسار</h1><div class="dates" id="dates"></div></div>
     <div class="row" style="gap:6px">
       <button class="chip" id="theme" data-act="theme" aria-label="تغيير المظهر">نهاري</button>
+      <button class="chip" data-act="settings-open" aria-label="الإعدادات" style="padding:6px;width:34px;height:34px;display:grid;place-items:center"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button class="chip" id="lockbtn" data-act="lock" hidden>قفل</button>
     </div>
   </header>
@@ -624,7 +682,10 @@ tr:last-child td { border-block-end: 0; }
       pin: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M8 3h8l1 6 3 3v2H4v-2l3-3z"/></svg>',
       shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 3.5v5c0 5-3.4 8.9-8 11.5-4.6-2.6-8-6.5-8-11.5v-5z"/><path d="M9 12l2 2 4-4"/></svg>',
       food: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 2v7a2 2 0 0 0 4 0V2"/><path d="M9 9v13"/><path d="M17 2c-1.7 0-3 2-3 5s1.3 5 3 5v8"/></svg>',
-      flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6"/><path d="M10 2v6l-5.5 10A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.8-2.9L14 8V2"/><path d="M7.5 15h9"/></svg>'
+      flask: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6"/><path d="M10 2v6l-5.5 10A2 2 0 0 0 6.3 21h11.4a2 2 0 0 0 1.8-2.9L14 8V2"/><path d="M7.5 15h9"/></svg>',
+      refresh: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>',
+      gear: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+      check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>'
     };
     return s[name] || "";
   }
@@ -1044,16 +1105,20 @@ tr:last-child td { border-block-end: 0; }
     if (v < 8) seedNotesCourse("micro", NOTES_SEED_MICRO);
     state.learn.notesSeeded = NOTES_SEED_VERSION; saveMeta("learn", 0);
   }
-  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0, exam: {} }; }
+  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0, exam: {}, resume: null }; }
   var state = {
     loaded: false, mode: "local",
     settings: { startDate: today0, unit: "page", amount: 5, startPage: 1, certName: "" },
     days: {},
     learn: freshLearn(),
-    exp: { categories: [], items: [], salary: {} },
+    exp: { categories: [], items: [], salary: {}, budgets: {}, recurring: [] },
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
+    expKind: "expense", expEditId: null, expBudgetEditCat: null, expRecurAdd: false, expSwipeId: null,
     tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, quiz: null, card: null, spk: null,
-    az: null, azProgress: {}
+    az: null, azProgress: {}, settingsOpen: false,
+    // Default to every section allowed until an account's real permissions are known
+    // (applyPermissions() narrows this on login) — matches TOGGLEABLE_SECTIONS below.
+    allowedSections: ["prayer", "quran", "learn", "exp"]
   };
   var ready = { days: false, settings: false, learn: false, exp: false };
 
@@ -1142,11 +1207,12 @@ tr:last-child td { border-block-end: 0; }
   function checkLoaded() {
     if (!state.loaded && ready.days && ready.settings && ready.learn && ready.exp) { state.loaded = true; ensureNotesSeed(); render(); }
   }
-  // The Supabase SDK is loaded via a blocking <script> tag before this code runs, so
-  // window.supabase is normally ready immediately. On a flaky connection that script
-  // can occasionally fail to load; retry it once with a fresh request before giving up
-  // on cloud sync for this session (otherwise the app would silently fall back to an
-  // empty local-only account even though the person has a real cloud account).
+  // The Supabase SDK is loaded via a <script defer> tag in <head>, so it downloads in
+  // parallel with the rest of the page instead of blocking first paint; window.supabase
+  // is usually ready by the time initStore() runs. On a flaky connection that script can
+  // occasionally still be missing (or fail outright); retry it once with a fresh request
+  // before giving up on cloud sync for this session (otherwise the app would silently
+  // fall back to an empty local-only account even though the person has a real cloud account).
   function loadSupabaseScript() {
     return new Promise(function (resolve) {
       if (window.supabase) { resolve(true); return; }
@@ -1262,16 +1328,23 @@ tr:last-child td { border-block-end: 0; }
   // once an account's own courses/sections columns are known.
   var ALLOWED_COURSES = COURSE_ORDER.slice();
   var QINDEX = {}, UNIT_BY_KEY = {};
+  // One course's json 404ing or timing out must not take every other course down
+  // with it — allSettled + per-course catch means a single bad fetch just leaves
+  // that one course missing from COURSES (buildIndexes/learnView already guard for
+  // that), instead of Promise.all rejecting and leaving COURSES empty entirely.
   function loadCourses() {
-    return Promise.all(COURSE_ORDER.map(function (cid) {
+    return Promise.allSettled(COURSE_ORDER.map(function (cid) {
       return fetch("courses/" + cid + ".json").then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status + " loading course " + cid);
         return r.json();
-      }).then(function (data) { COURSES[cid] = data; });
+      }).then(function (data) { COURSES[cid] = data; }).catch(function (err) {
+        console.error("Masar: failed to load course " + cid, err);
+      });
     }));
   }
   function buildIndexes() {
     COURSE_ORDER.forEach(function (cid) {
+      if (!COURSES[cid]) return;
       COURSES[cid].units.forEach(function (u) {
         UNIT_BY_KEY[cid + ":" + u.id] = u;
         u.qs.forEach(function (q, i) { q.id = cid + "-" + u.id + "-q" + i; q.u = u.id; q.c = cid; QINDEX[q.id] = q; });
@@ -1403,7 +1476,20 @@ tr:last-child td { border-block-end: 0; }
   var toastT;
   function toast(msg) {
     var el = $("#toast"); el.textContent = msg; el.classList.add("on");
-    clearTimeout(toastT); toastT = setTimeout(function () { el.classList.remove("on"); }, 2600);
+    clearTimeout(toastT); clearTimeout(undoT); undoPending = null;
+    toastT = setTimeout(function () { el.classList.remove("on"); }, 2600);
+  }
+  // A toast with a 5-second window to reverse the action it's reporting (used by the
+  // expense delete flow) — restoreFn is called once, either by tapping "تراجع" or never,
+  // and the toast reverts to plain toast() behavior the next time either is used.
+  var undoT, undoPending = null;
+  function undoToast(msg, restoreFn) {
+    undoPending = restoreFn;
+    var el = $("#toast");
+    el.innerHTML = esc(msg) + ' <button type="button" data-act="exp-undo" style="margin-inline-start:10px;text-decoration:underline;background:none;border:0;color:inherit;font-weight:700;cursor:pointer;min-height:0">تراجع</button>';
+    el.classList.add("on");
+    clearTimeout(toastT); clearTimeout(undoT);
+    undoT = setTimeout(function () { el.classList.remove("on"); undoPending = null; }, 5000);
   }
 
   /* ---------------- expenses (الحاسبة) ---------------- */
@@ -1414,8 +1500,17 @@ tr:last-child td { border-block-end: 0; }
     var p = mk.split("-").map(Number), d = new Date(Date.UTC(p[0], p[1] - 1 + n, 1));
     return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1);
   }
+  // "سلفة" (advance/loan) items are money that's expected back, not spending — they're
+  // kept in the same items[] array (so they still show up in the day's list and can be
+  // edited/deleted like anything else) but excluded from every spending total below.
   function expItemsOf(mk) {
+    return state.exp.items.filter(function (it) { return it.date.slice(0, 7) === mk && it.kind !== "advance"; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+  function expAllItemsOf(mk) {
     return state.exp.items.filter(function (it) { return it.date.slice(0, 7) === mk; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+  }
+  function expActiveAdvances() {
+    return state.exp.items.filter(function (it) { return it.kind === "advance" && !it.repaid; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
   }
   function expTotalOf(mk) { return expItemsOf(mk).reduce(function (s, it) { return s + it.amount; }, 0); }
   function expByCat(mk) {
@@ -1423,8 +1518,37 @@ tr:last-child td { border-block-end: 0; }
     expItemsOf(mk).forEach(function (it) { m[it.cat] = (m[it.cat] || 0) + it.amount; });
     return Object.keys(m).map(function (c) { return { cat: c, amount: m[c] }; }).sort(function (a, b) { return b.amount - a.amount; });
   }
+  // Up to 5 most-recently-used categories, most recent first — shown as quick-pick
+  // chips above the full category list so logging a routine expense is one tap away
+  // instead of a scroll through every category that's ever been used.
+  function expRecentCats(n) {
+    var seen = {}, out = [];
+    state.exp.items.slice().sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; }).forEach(function (it) {
+      if (!seen[it.cat]) { seen[it.cat] = 1; out.push(it.cat); }
+    });
+    return out.slice(0, n || 5);
+  }
+  // Budget-cap color: green under 80% of the cap, amber from 80% up to the cap, and the
+  // "bad"/miss red once a category has actually gone over its cap — the same 80/100
+  // thresholds a person would expect from any budgeting app.
+  function budgetBarColor(amount, cap) {
+    if (!cap) return "";
+    var pct = amount / cap;
+    if (pct >= 1) return "miss";
+    if (pct >= 0.8) return "amber";
+    return "";
+  }
+  function expRecurringDueToday(mk, now) {
+    if (mk !== monthKey(now.key) || !state.exp.recurring.length) return [];
+    var addedIds = {};
+    state.exp.items.forEach(function (it) { if (it.date.slice(0, 7) === mk && it.recurId) addedIds[it.recurId] = 1; });
+    return state.exp.recurring.filter(function (r) { return !addedIds[r.id]; });
+  }
   function fmtMoney(n) { return (Math.round(n * 100) / 100).toLocaleString("en-US"); }
-  var CAT_COLORS = ["var(--teal)", "var(--amber)", "var(--blue)"];
+  // A fixed 8-color palette (not just the 3 base accent hues) so categories stay visually
+  // distinct from each other even once someone has 6-8 of them — hashed deterministically
+  // by category name, so the same category always lands on the same color.
+  var CAT_COLORS = ["#0DA66B", "#F59E0B", "#3B6FED", "#E0607E", "#7C6FE0", "#17A2A2", "#C2703D", "#5B8A3C"];
   function catColor(name) {
     var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
     return CAT_COLORS[h % CAT_COLORS.length];
@@ -1448,33 +1572,77 @@ tr:last-child td { border-block-end: 0; }
     return '<span class="num">' + fmtMoney(tot) + "</span> صرفت هذا الشهر" + (sal ? " · " + pct + "%" : "");
   }
   function expView(now) {
-    var mk = curExpMonth(now), sal = state.exp.salary[mk] || 0, items = expItemsOf(mk), tot = expTotalOf(mk), cats = expByCat(mk);
+    var mk = curExpMonth(now), isCurMonth = mk === monthKey(now.key), sal = state.exp.salary[mk] || 0, items = expItemsOf(mk), tot = expTotalOf(mk), cats = expByCat(mk);
+    var prevCats = expByCat(shiftMonth(mk, -1));
+    var prevByName = {}; prevCats.forEach(function (c) { prevByName[c.cat] = c.amount; });
     var pct = sal ? Math.min(999, Math.round(tot / sal * 100)) : 0;
-    var barCls = pct > 100 ? "amber" : "";
+    var barCls = pct > 100 ? "miss" : (pct >= 80 ? "amber" : "");
+    // "المصروف اليومي المتاح": what's left of the salary divided by the days still left
+    // in the month — only means anything for the month we're actually living in now.
+    var dailyAvail = "";
+    if (sal && isCurMonth) {
+      var daysInMonth = new Date(Date.UTC(Number(mk.slice(0, 4)), Number(mk.slice(5, 7)), 0)).getUTCDate();
+      var dayNum = Number(now.key.slice(8)), daysLeft = Math.max(1, daysInMonth - dayNum + 1);
+      var avail = Math.max(0, sal - tot) / daysLeft;
+      dailyAvail = '<p class="muted" style="font-size:13px;margin-block-start:4px">المتاح يوميًا لحد آخر الشهر: <b class="num">' + fmtMoney(avail) + "</b></p>";
+    }
     var salBlock = state.expSalEdit
       ? '<div class="row" style="gap:8px;margin-block-start:8px"><input type="number" id="expSalInput" inputmode="decimal" min="0" placeholder="الراتب" value="' + (sal || "") + '" style="flex:1"><button class="btn sm" data-act="exp-sal-save">حفظ</button></div>'
       : '<div class="row between" style="margin-block-start:4px"><span class="muted">الراتب هذا الشهر: <b class="num">' + (sal ? fmtMoney(sal) : "لم يُسجَّل") + '</b></span><button class="btn sm alt" data-act="exp-sal-edit">' + (sal ? "تعديل" : "تسجيل") + "</button></div>";
 
+    var recentCats = expRecentCats(5);
+    var recentChips = recentCats.length ? '<div class="row wrapr" style="gap:6px;margin-block-end:8px">' + recentCats.map(function (c) {
+      return '<button class="catchip" data-act="exp-cat-pick" data-c="' + esc(c) + '" aria-pressed="' + (state.expCat === c) + '">⚡ ' + esc(c) + "</button>";
+    }).join("") + "</div>" : "";
     var catChips = state.exp.categories.map(function (c) {
       return '<button class="catchip" data-act="exp-cat-pick" data-c="' + esc(c) + '" aria-pressed="' + (state.expCat === c) + '">' + esc(c) + "</button>";
     }).join("") + '<button class="catchip" data-act="exp-cat-new-toggle">+ بند جديد</button>';
 
+    var editingItem = state.expEditId ? state.exp.items.filter(function (x) { return x.id === state.expEditId; })[0] : null;
     var addForm = !state.expAdd ? "" :
-      '<div class="card" style="margin-block-start:10px"><h3>مصروف جديد</h3>' +
+      '<div class="card" style="margin-block-start:10px"><h3>' + (editingItem ? "تعديل المصروف" : "مصروف جديد") + '</h3>' +
+      '<div class="seg2 two" style="margin-block-end:10px"><button type="button" data-act="exp-kind" data-k="expense" aria-pressed="' + (state.expKind !== "advance") + '">مصروف</button><button type="button" data-act="exp-kind" data-k="advance" aria-pressed="' + (state.expKind === "advance") + '">سلفة</button></div>' +
+      recentChips +
       '<div class="catrow">' + catChips + "</div>" +
       (state.expNewCat ? '<div class="row" style="gap:8px;margin-block-end:8px"><input type="text" id="expNewCatInput" placeholder="اسم البند" style="flex:1"><button class="btn sm" data-act="exp-cat-new-save">إضافة</button></div>' : "") +
-      '<label class="field">المبلغ<input type="number" id="expAmt" inputmode="decimal" min="0" placeholder="0"></label>' +
-      '<label class="field">التاريخ<input type="date" id="expDate" value="' + now.key + '" max="' + now.key + '"></label>' +
-      '<label class="field">ملاحظة (اختياري)<input type="text" id="expNote" placeholder="..."></label>' +
-      '<div class="row" style="gap:8px;margin-block-start:10px"><button class="btn sm" data-act="exp-save">حفظ المصروف</button><button class="btn sm alt" data-act="exp-add-toggle">إلغاء</button></div></div>';
+      '<label class="field">المبلغ<input type="number" id="expAmt" inputmode="decimal" min="0" placeholder="0" value="' + (editingItem ? editingItem.amount : "") + '"></label>' +
+      '<label class="field">التاريخ<input type="date" id="expDate" value="' + (editingItem ? editingItem.date : now.key) + '" max="' + now.key + '"></label>' +
+      '<label class="field">ملاحظة (اختياري)<input type="text" id="expNote" placeholder="..." value="' + (editingItem && editingItem.note ? esc(editingItem.note) : "") + '"></label>' +
+      '<div class="row" style="gap:8px;margin-block-start:10px"><button class="btn sm" data-act="exp-save">' + (editingItem ? "حفظ التعديل" : "حفظ المصروف") + '</button><button class="btn sm alt" data-act="exp-add-toggle">إلغاء</button></div></div>';
+
+    var recurDue = expRecurringDueToday(mk, now);
+    var recurBanner = recurDue.length ? '<div class="card" style="margin-block-start:12px;border-inline-start:3px solid var(--accent, var(--money))"><div class="row between"><div><h3 style="margin:0">المصاريف الثابتة لِـ' + monthLabel(mk) + '</h3><p class="muted" style="font-size:13px;margin-block-start:4px">' + recurDue.length + ' بند بإجمالي <b class="num">' + fmtMoney(recurDue.reduce(function (s, r) { return s + r.amount; }, 0)) + '</b></p></div><button class="btn sm" data-act="exp-recur-apply">إضافة الكل</button></div></div>' : "";
+
+    var advances = expActiveAdvances();
+    var advHTML = !advances.length ? "" : '<div class="sec-h">السُّلف النشطة</div><div class="card">' + advances.map(function (it) {
+      return '<div class="exprow"><div class="exprow-l"><i class="catdot" style="background:var(--weak)"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '<br><small class="muted">' + expDateLabel(it.date, now) + '</small></div><div class="exprow-r"><span class="num">' + fmtMoney(it.amount) + '</span><button class="btn sm alt" data-act="exp-repay" data-id="' + it.id + '">اتردّت</button></div></div>';
+    }).join("") + "</div>";
 
     var catsHTML = !cats.length ? '<p class="muted" style="font-size:14px;margin-block-start:10px">لسه مفيش مصاريف مسجّلة الشهر ده.</p>' :
       '<div class="card">' + cats.map(function (c) {
-        var cp = sal ? Math.min(100, Math.round(c.amount / sal * 100)) : (tot ? Math.round(c.amount / tot * 100) : 0);
-        var clr = catColor(c.cat);
-        return '<div class="catrow2"><div class="top"><span class="catname"><i class="catdot" style="background:' + clr + '"></i>' + esc(c.cat) + '</span><span class="num">' + fmtMoney(c.amount) + (sal ? " · " + cp + "%" : "") + '</span></div>' +
-          '<div class="bar"><i style="width:' + cp + "%;background:" + clr + '"></i></div></div>';
+        var cap = state.exp.budgets[c.cat] || 0;
+        var cp = cap ? Math.min(100, Math.round(c.amount / cap * 100)) : (sal ? Math.min(100, Math.round(c.amount / sal * 100)) : (tot ? Math.round(c.amount / tot * 100) : 0));
+        var clr = catColor(c.cat), warnCls = budgetBarColor(c.amount, cap);
+        var prev = prevByName[c.cat] || 0, delta = prev ? Math.round((c.amount - prev) / prev * 100) : (c.amount ? 100 : 0);
+        var deltaHTML = prev || c.amount ? '<span class="muted" style="font-size:12px">' + (delta > 0 ? "▲" : delta < 0 ? "▼" : "·") + " " + Math.abs(delta) + "% عن " + monthLabel(shiftMonth(mk, -1)) + "</span>" : "";
+        var capHTML = state.expBudgetEditCat === c.cat
+          ? '<div class="row" style="gap:6px;margin-block-start:6px"><input type="number" id="expBudgetInput" inputmode="decimal" min="0" placeholder="الحد الشهري" value="' + (cap || "") + '" style="flex:1;min-height:34px"><button class="btn sm" data-act="exp-budget-save" data-c="' + esc(c.cat) + '">حفظ</button></div>'
+          : '<button class="linkbtn" style="font-size:12px" data-act="exp-budget-edit" data-c="' + esc(c.cat) + '">' + (cap ? "الحد: " + fmtMoney(cap) : "+ حدّد حد شهري") + "</button>";
+        return '<div class="catrow2"><div class="top"><span class="catname"><i class="catdot" style="background:' + clr + '"></i>' + esc(c.cat) + '</span><span class="num">' + fmtMoney(c.amount) + (sal && !cap ? " · " + cp + "%" : "") + '</span></div>' +
+          '<div class="bar ' + warnCls + '"><i style="width:' + cp + "%;background:" + (warnCls ? "" : clr) + '"></i></div>' +
+          '<div class="row between" style="margin-block-start:4px">' + deltaHTML + capHTML + "</div></div>";
       }).join("") + "</div>";
+
+    var recurList = !state.exp.recurring.length ? "" : '<div class="card">' + state.exp.recurring.map(function (r) {
+      return '<div class="row between" style="padding-block:4px"><span>' + esc(r.cat) + (r.note ? " · " + esc(r.note) : "") + '</span><span class="row" style="gap:8px"><b class="num">' + fmtMoney(r.amount) + '</b><button class="del" data-act="exp-recur-del" data-id="' + r.id + '" aria-label="حذف">' + ico("trash") + "</button></span></div>";
+    }).join("") + "</div>";
+    var recurAddForm = !state.expRecurAdd ? "" :
+      '<div class="card" style="margin-block-start:8px"><div class="catrow">' + catChips + "</div>" +
+      '<label class="field">المبلغ الشهري<input type="number" id="expRecurAmt" inputmode="decimal" min="0" placeholder="0"></label>' +
+      '<label class="field">ملاحظة (اختياري)<input type="text" id="expRecurNote" placeholder="..."></label>' +
+      '<div class="row" style="gap:8px;margin-block-start:10px"><button class="btn sm" data-act="exp-recur-save">حفظ</button><button class="btn sm alt" data-act="exp-recur-toggle">إلغاء</button></div></div>';
+    var recurSection = '<div class="sec-h">المصاريف الثابتة الشهرية</div>' + recurList +
+      (state.expRecurAdd ? "" : '<div class="row" style="margin-block:8px"><button class="btn sm alt" data-act="exp-recur-toggle">+ بند ثابت جديد</button></div>') + recurAddForm;
 
     var groups = [], gi = {};
     items.forEach(function (it) {
@@ -1484,8 +1652,12 @@ tr:last-child td { border-block-end: 0; }
     var itemsHTML = !items.length ? "" :
       '<div class="sec-h">كل المصاريف</div><div class="card">' + groups.map(function (g) {
         return '<div class="expgroup"><div class="datelbl">' + expDateLabel(g.date, now) + '</div>' + g.items.map(function (it) {
-          var clr = catColor(it.cat);
-          return '<div class="exprow"><div class="exprow-l"><i class="catdot" style="background:' + clr + '"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '</div><div class="exprow-r"><span class="num">' + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-del" data-id="' + it.id + '" aria-label="حذف">' + ico("trash") + "</button></div></div>";
+          var clr = catColor(it.cat), revealed = state.expSwipeId === it.id;
+          return '<div class="exprow' + (revealed ? " revealed" : "") + '" data-swipeid="' + it.id + '"><div class="exprow-l"><i class="catdot" style="background:' + clr + '"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '</div>' +
+            (revealed
+              ? '<div class="exprow-r exprow-actions"><button class="btn sm alt" data-act="exp-edit" data-id="' + it.id + '">تعديل</button><button class="btn sm" style="background:var(--bad)" data-act="exp-del" data-id="' + it.id + '">حذف</button></div>'
+              : '<div class="exprow-r"><span class="num">' + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-swipe" data-id="' + it.id + '" aria-label="خيارات">' + ico("trash") + "</button></div>") +
+            "</div>";
         }).join("") + "</div>";
       }).join("") + "</div>";
 
@@ -1496,19 +1668,17 @@ tr:last-child td { border-block-end: 0; }
       '<div class="card"><div class="dual"><div class="stat"><b class="num">' + fmtMoney(tot) + '</b><span>إجمالي المصروف</span></div>' +
       '<div class="stat"><b class="num">' + (sal ? fmtMoney(Math.max(0, sal - tot)) : "—") + '</b><span>المتبقي من الراتب</span></div></div>' +
       (sal ? '<div class="bar ' + barCls + '" style="margin-block-start:10px"><i style="width:' + Math.min(100, pct) + '%"></i></div><p class="muted" style="font-size:13px;margin-block-start:6px">صرفت ' + pct + '% من راتبك هذا الشهر</p>' : "") +
-      salBlock + "</div>" +
+      dailyAvail + salBlock + "</div>" +
+      recurBanner +
       (state.expAdd ? "" : '<div class="row" style="margin-block:12px"><button class="btn" data-act="exp-add-toggle">+ إضافة مصروف</button></div>') +
-      addForm +
-      '<div class="sec-h">المصروف حسب البند</div>' + catsHTML + itemsHTML;
+      addForm + advHTML +
+      '<div class="sec-h">المصروف حسب البند</div>' + catsHTML + itemsHTML + recurSection;
   }
 
   /* ---------------- views ---------------- */
   function head() { return ""; }
   function bannerHTML() {
     return state.mode === "local" ? '<div class="banner">الحفظ السحابي غير متاح في هذا العرض. بياناتك تُحفظ على هذا المتصفح فقط.</div>' : "";
-  }
-  function tile(t, ic, name, sub, badge) {
-    return '<button class="tile t-' + t + '" data-act="tab" data-t="' + t + '">' + (badge ? '<span class="badge num">' + badge + "</span>" : "") + '<span class="ic">' + ico(ic) + "</span><b>" + name + "</b><small>" + sub + "</small></button>";
   }
   function weekBars(now) {
     var out = "";
@@ -1637,32 +1807,107 @@ tr:last-child td { border-block-end: 0; }
     else { txt = "مساء النور 🌙"; }
     return '<div class="greet">' + txt + '</div>';
   }
-  function homeView(now) {
-    if (state.hv === "weekly") return weeklyReportHTML(now);
-    var sts = PRAYERS.map(function (p, k) { return status(now.key, k, now); }), doneN = sts.filter(isDone).length;
-    var t = target(), n = pagesOn(now.key), L = level(), due = dueCards(now).length;
+  // Generic single-arc percentage ring (unlike ringSVG() above, which is specifically
+  // the 5-segment prayer ring) — used by the "خطة اليوم" plan card for its overall %.
+  function pctRingSVG(pct) {
+    var r = 58, C = 2 * Math.PI * r, p = Math.max(0, Math.min(100, pct || 0)), dash = C * p / 100;
+    return '<svg viewBox="0 0 140 140" class="ring" aria-hidden="true">' +
+      '<circle cx="70" cy="70" r="' + r + '" fill="none" stroke="color-mix(in srgb, var(--teal-ink) 22%, transparent)" stroke-width="12"/>' +
+      '<circle cx="70" cy="70" r="' + r + '" fill="none" stroke="var(--teal-ink)" stroke-width="12" stroke-linecap="round" stroke-dasharray="' + dash.toFixed(2) + " " + (C - dash).toFixed(2) + '" transform="rotate(-90 70 70)"/></svg>';
+  }
+  // Up to 4 lines — one each for prayer/quran, two for learn (review + lesson) — each
+  // skipped when its section isn't allowed for the signed-in account (state.allowedSections,
+  // kept in sync by applyPermissions()). This is what the plan ring's % is an average of.
+  function planLines(now) {
+    var allow = state.allowedSections || ["prayer", "quran", "learn", "exp"], lines = [];
+    if (allow.indexOf("prayer") >= 0) {
+      var doneN = PRAYERS.map(function (p, i) { return status(now.key, i, now); }).filter(isDone).length;
+      lines.push({ key: "prayer", ic: "moon", text: doneN + "/5 صلوات", frac: doneN / 5 });
+    }
+    if (allow.indexOf("quran") >= 0) {
+      var t = target(), n = pagesOn(now.key);
+      lines.push({ key: "quran", ic: "book", text: n + "/" + t + " صفحة", frac: t ? Math.min(1, n / t) : 1 });
+    }
+    if (allow.indexOf("learn") >= 0) {
+      var due = dueCards(now).length;
+      lines.push({ key: "review", ic: "refresh", text: due ? due + " كلمة محتاجة مراجعة" : "خلصت مراجعتك النهاردة", frac: due ? 0 : 1 });
+      var studied = (state.learn.study && state.learn.study[now.key]) > 0;
+      lines.push({ key: "lesson", ic: "cap", text: studied ? "ذاكرت درس النهاردة" : "لسه ما ذاكرتش درس النهاردة", frac: studied ? 1 : 0 });
+    }
+    return lines;
+  }
+  // "كمّل من مكانك": one resume target at a time, in a fixed priority order — the lesson
+  // actually left mid-way through matters more than a cold "go review vocab" nudge, which
+  // in turn beats a bare "go to the tab" suggestion for prayer/quran (those already have
+  // their own obvious entry points, so they're the fallback, not the first idea).
+  function planResume(now) {
+    var allow = state.allowedSections || ["prayer", "quran", "learn", "exp"];
+    var r = state.learn.resume;
+    if (allow.indexOf("learn") >= 0 && r && r.c && r.u && COURSES[r.c]) {
+      var ru = unitOf(r.c, r.u);
+      var rp = state.learn.units[r.c + ":" + r.u];
+      if (ru && !(rp && rp.done)) return { label: "كمّل من مكانك", sub: COURSES[r.c].title + " · " + ru.title, act: "resume-lesson", c: r.c, u: r.u };
+    }
+    if (allow.indexOf("learn") >= 0 && dueCards(now).length) {
+      return { label: "كمّل من مكانك", sub: "مراجعة " + dueCards(now).length + " كلمة مستحقة", act: "resume-review" };
+    }
+    if (allow.indexOf("prayer") >= 0) {
+      var actionable = PRAYERS.some(function (p, i) { var s = status(now.key, i, now); return s === "current" || s === "missed"; });
+      if (actionable) return { label: "كمّل من مكانك", sub: "سجّل صلاتك", act: "resume-prayer" };
+    }
+    if (allow.indexOf("quran") >= 0) {
+      var t2 = target(), n2 = pagesOn(now.key);
+      if (n2 < t2) return { label: "كمّل من مكانك", sub: "كمّل وِردك (" + (t2 - n2) + " صفحة باقية)", act: "resume-quran" };
+    }
+    return null;
+  }
+  var planCelebratedKey = null; // in-memory only — re-plays once per fresh page load at most, not on every render()
+  function planCardHTML(now) {
+    var lines = planLines(now);
+    var pct = lines.length ? Math.round(lines.reduce(function (a, l) { return a + l.frac; }, 0) / lines.length * 100) : 0;
     var miss = state.loaded ? missedList(now).length : 0;
-    var alert = miss ? '<div class="card alert"><div class="row between"><div><h2 style="margin:0">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + '</h2><p style="font-size:14px">سجّل القضاء من قسم الصلاة.</p></div><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div></div>' : "";
-    return greetingHTML(now) + bannerHTML() + streakBannerHTML(now) + heroHTML(now) + alert + pushCardHTML() + dailyCardHTML(now) +
-      '<div class="dual"><div class="stat"><b class="num">' + n + " / " + t + '</b><span>ورد اليوم (صفحة)</span><div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div></div>' +
-      '<div class="stat"><b class="num">المستوى ' + L.lv + '</b><span><span class="num">' + L.xp + '</span> نقطة</span><div class="bar amber"><i style="width:' + L.pct + '%"></i></div></div></div>' +
-      '<div class="sec-h">الأقسام</div><div class="tiles">' +
-      tile("prayer", "moon", "الصلاة", '<span class="num">' + doneN + "/5</span> اليوم", miss) +
-      tile("quran", "book", "القرآن", '<span class="num">' + n + " / " + t + "</span> صفحة", 0) +
-      tile("learn", "cap", "الكورسات", '<span class="num">' + due + "</span> كلمة للمراجعة", 0) +
-      tile("exp", "calc", "الحاسبة", expHomeSub(now), 0) + "</div>" +
-      dailyReviewCardHTML(due) +
+    var missLine = miss ? '<div class="plan-line plan-miss"><span class="pl-ic">' + ico("shield") + '</span><span class="grow">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + ' — سجّل القضاء</span><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div>' : "";
+    var linesHTML = lines.map(function (l) {
+      return '<div class="plan-line' + (l.frac >= 1 ? " done" : "") + '"><span class="pl-ic">' + (l.frac >= 1 ? ico("check") : ico(l.ic)) + '</span><span class="grow">' + esc(l.text) + "</span></div>";
+    }).join("");
+    var resume = planResume(now), celebrate = lines.length > 0 && pct >= 100 && !resume;
+    // The pop animation plays only the first time this session that the plan reaches
+    // 100% — celebrate stays true (so the message keeps showing) on every re-render
+    // after that, but the "just now" class is only applied once, so the animation
+    // doesn't replay on every unrelated render() call while the ring stays full.
+    var justNow = celebrate && planCelebratedKey !== now.key;
+    if (celebrate) planCelebratedKey = now.key;
+    var bottom;
+    if (resume) {
+      bottom = '<button class="btn plan-resume" data-act="' + resume.act + '"' + (resume.c ? ' data-c="' + resume.c + '" data-u="' + resume.u + '"' : "") + '><span class="pr-l">' + esc(resume.label) + '</span><span class="pr-s">' + esc(resume.sub) + "</span></button>";
+    } else if (celebrate) {
+      bottom = '<div class="plan-done">🎉 خلّصت خطة اليوم النهاردة، ما شاء الله!</div>';
+    } else {
+      bottom = "";
+    }
+    return '<div class="card plan' + (justNow ? " celebrate" : "") + '"><div class="hero"><div class="ringbox">' + pctRingSVG(pct) +
+      '<div class="ringtxt"><b class="num">' + pct + '%</b><span>خطة اليوم</span></div></div>' +
+      '<div class="grow plan-lines">' + (linesHTML || '<p style="opacity:.85;font-size:14px">مفيش أقسام متاحة للمتابعة دلوقتي</p>') + "</div></div>" +
+      missLine + bottom + "</div>";
+  }
+  function homeView(now) {
+    if (state.settingsOpen) return settingsHTML(now);
+    if (state.hv === "weekly") return weeklyReportHTML(now);
+    return greetingHTML(now) + bannerHTML() + planCardHTML(now) + dailyCardHTML(now) +
       '<div class="card" style="margin-block-start:12px"><div class="row between"><h3 style="margin:0">الصلوات آخر 7 أيام</h3><button class="linkbtn" data-act="weekly-open">تقرير الأسبوع ←</button></div><div class="week">' + weekBars(now) + "</div></div>";
   }
-  function dailyReviewCardHTML(due) {
-    if (!due) return "";
-    var n = Math.min(10, due);
-    return '<div class="card" style="margin-block-start:12px"><div class="row between"><div><h3 style="margin:0">مراجعة يومية موحّدة</h3><p class="muted" style="font-size:14px;margin-block-start:4px">' + n + ' كلمات من كل كورساتك مع بعض</p></div><button class="btn" data-act="daily-review">ابدأ</button></div></div>';
+  function settingsHTML(now) {
+    return '<button class="linkbtn" data-act="settings-close">← رجوع</button><div class="sec-h">الإعدادات</div>' + pushCardHTML() +
+      '<div class="card"><h3 style="margin:0 0 6px">المظهر</h3><p class="muted" style="font-size:13px;margin-block-end:10px">النهاري / الليلي / حسب الجهاز</p><button class="btn sm alt" data-act="theme">' + esc(THEME_LBL[getTheme()]) + "</button></div>";
   }
   function prayerView(now) {
     if (state.az) return azkarListHTML(state.az);
     var pv = state.pv;
-    return '<div class="seg2 two" style="margin-block:6px 12px"><button data-act="pv" data-v="today" aria-pressed="' + (pv === "today") + '">اليوم</button><button data-act="pv" data-v="archive" aria-pressed="' + (pv === "archive") + '">الأرشيف والفائت</button></div>' +
+    // The streak banner and the prayer-times ring used to also sit on the home screen —
+    // they now live only here, as this section's own header, since the home "خطة اليوم"
+    // card already summarizes today's prayer count in one line.
+    var top = pv === "today" ? streakBannerHTML(now) + heroHTML(now) : "";
+    return top + '<div class="seg2 two" style="margin-block:6px 12px"><button data-act="pv" data-v="today" aria-pressed="' + (pv === "today") + '">اليوم</button><button data-act="pv" data-v="archive" aria-pressed="' + (pv === "archive") + '">الأرشيف والفائت</button></div>' +
       (pv === "archive" ? archiveView(now) : alertHTML(now) + azkarEntryCardHTML() + prayersHTML(now));
   }
   function azkarEntryCardHTML() {
@@ -1772,11 +2017,22 @@ tr:last-child td { border-block-end: 0; }
     return p[2] + " " + AR_MONTHS[p[1] - 1] + " " + p[0];
   }
   function unitOf(cid, id) { return COURSES[cid].units.filter(function (x) { return x.id === id; })[0]; }
+  // Shown instead of a bare "جارٍ تحميل الكورسات…" line while loadCourses() is still
+  // in flight: four placeholder rows shaped like the real course list (icon circle,
+  // title line, progress bar), so the screen looks like it's about to fill in rather
+  // than looking stuck or broken for the second it takes the course json to arrive.
+  function coursesSkeletonHTML() {
+    var row = '<div class="unit skel-row"><span class="no skel-pill" style="width:38px;height:38px;border-radius:50%"></span>' +
+      '<span class="grow"><span class="skel-pill" style="display:block;width:60%;height:15px;margin-block-end:8px"></span>' +
+      '<span class="skel-pill" style="display:block;width:85%;height:11px"></span>' +
+      '<div class="bar" style="height:6px;margin-block-start:6px"><i class="skel-pill" style="width:35%"></i></div></span></div>';
+    return '<div class="sec-h" aria-hidden="true">اختر الكورس</div><div class="units" aria-label="جارٍ تحميل الكورسات">' + row + row + row + row + "</div>";
+  }
   function learnView(now) {
     var v = state.lv;
     var top = head(now);
-    if (!COURSES[COURSE_ORDER[0]]) {
-      return top + '<div class="card" style="text-align:center;padding:30px 16px"><p class="muted">جارٍ تحميل الكورسات…</p></div>';
+    if (!Object.keys(COURSES).length) {
+      return top + coursesSkeletonHTML();
     }
     if (v.mode === "quiz") return top + quizHTML();
     if (v.mode === "cards") return top + cardsHTML();
@@ -2110,13 +2366,32 @@ tr:last-child td { border-block-end: 0; }
     var canvas = document.getElementById("certCanvas"); if (!canvas) return;
     try { drawCertOnCanvas(canvas, cid); } catch (e) { }
   }
-  function downloadCertificate(cid) {
+  // jspdf.umd.min.js is ~420KB — almost nobody downloads a certificate in a given
+  // session, so it's not loaded until the moment it's actually needed, instead of
+  // blocking every page load. Loaded once; later calls reuse window.jspdf.
+  function loadJspdfScript() {
+    return new Promise(function (resolve) {
+      if (window.jspdf && window.jspdf.jsPDF) { resolve(true); return; }
+      var done = false, finish = function (ok) { if (done) return; done = true; resolve(ok); };
+      var s = document.createElement("script");
+      s.src = "jspdf.umd.min.js";
+      s.onload = function () { finish(!!(window.jspdf && window.jspdf.jsPDF)); };
+      s.onerror = function () { finish(false); };
+      document.head.appendChild(s);
+      setTimeout(function () { finish(!!(window.jspdf && window.jspdf.jsPDF)); }, 8000);
+    });
+  }
+  async function downloadCertificate(cid) {
     var c = COURSES[cid]; if (!c) return;
     try {
+      if (!window.jspdf || !window.jspdf.jsPDF) {
+        toast("جارٍ تحميل مكتبة إنشاء PDF…");
+        var ok = await loadJspdfScript();
+        if (!ok) { toast("تعذر تحميل مكتبة إنشاء PDF"); return; }
+      }
       var canvas = document.createElement("canvas"); canvas.width = 1200; canvas.height = 850;
       drawCertOnCanvas(canvas, cid);
       var img = canvas.toDataURL("image/png");
-      if (!window.jspdf || !window.jspdf.jsPDF) { toast("تعذر تحميل مكتبة إنشاء PDF"); return; }
       var pageW = 842, pageH = 595; // A4 landscape, in points — a normal printable page size
       var doc = new window.jspdf.jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
       doc.addImage(img, "PNG", 0, 0, pageW, pageH, undefined, "FAST");
@@ -2161,6 +2436,10 @@ tr:last-child td { border-block-end: 0; }
       ? COURSE_ORDER.filter(function (c) { return acc.courses.indexOf(c) >= 0; })
       : COURSE_ORDER.slice();
     var allowedSections = (Array.isArray(acc && acc.sections) && acc.sections.length) ? acc.sections : null;
+    // Kept on state (not just applied to the DOM below) so view code — the "خطة اليوم"
+    // plan card above all — can ask "is this section allowed for the signed-in account"
+    // without re-deriving it from the DOM.
+    state.allowedSections = allowedSections ? allowedSections.slice() : TOGGLEABLE_SECTIONS.slice();
     TOGGLEABLE_SECTIONS.forEach(function (s) {
       var hide = !!(allowedSections && allowedSections.indexOf(s) < 0);
       var btn = document.querySelector('.tabs button[data-t="' + s + '"]');
@@ -2223,6 +2502,27 @@ tr:last-child td { border-block-end: 0; }
   document.addEventListener("input", function (e) {
     if (e.target && e.target.id === "bankq") { state.bankQ = e.target.value; render(); }
   });
+  // Swipe-to-reveal on expense rows: a real horizontal swipe (not just a tap) reveals the
+  // تعديل/حذف buttons for that row, same end state as tapping the row's own trash icon
+  // (exp-swipe, in the click handler below) — so the feature works whether someone swipes
+  // the way a list usually works on a phone, or just taps, without needing drag-following
+  // CSS transforms. touch-action:pan-y on .exprow (see CSS) keeps vertical scroll free.
+  (function () {
+    var startX = 0, startY = 0, swipeRow = null, tracking = false;
+    document.addEventListener("touchstart", function (e) {
+      var row = e.target.closest(".exprow"); if (!row || !row.getAttribute("data-swipeid")) { tracking = false; return; }
+      var t = e.touches[0]; startX = t.clientX; startY = t.clientY; swipeRow = row; tracking = true;
+    }, { passive: true });
+    document.addEventListener("touchend", function (e) {
+      if (!tracking || !swipeRow) return; tracking = false;
+      var t = e.changedTouches[0], dx = t.clientX - startX, dy = t.clientY - startY;
+      if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+        var id = swipeRow.getAttribute("data-swipeid");
+        state.expSwipeId = state.expSwipeId === id ? null : id; render();
+      }
+      swipeRow = null;
+    }, { passive: true });
+  })();
   document.addEventListener("click", function (e) {
     var el = e.target.closest("[data-act]"); if (!el || el.disabled) return;
     var act = el.getAttribute("data-act"), now = nowR();
@@ -2242,6 +2542,14 @@ tr:last-child td { border-block-end: 0; }
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
       case "weekly-open": state.hv = "weekly"; $("#p-home").scrollTop = 0; render(); break;
       case "weekly-close": state.hv = "dashboard"; render(); break;
+      case "settings-open": state.settingsOpen = true; goTab("home"); $("#p-home").scrollTop = 0; render(); break;
+      case "settings-close": state.settingsOpen = false; render(); break;
+      case "resume-lesson":
+        var rsC = el.getAttribute("data-c"), rsU = el.getAttribute("data-u"), rsUnit = unitOf(rsC, rsU); if (!rsUnit) break;
+        state.lv = { mode: rsUnit.kind === "dialogue" ? "dialogue" : "lesson", c: rsC, u: rsU, step: 0 }; goTab("learn"); render(); break;
+      case "resume-review": state.card = { q: shuffle(dueCards(now)).slice(0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
+      case "resume-prayer": goTab("prayer"); render(); break;
+      case "resume-quran": goTab("quran"); render(); break;
       case "azkar-open": state.az = el.getAttribute("data-k"); $("#p-prayer").scrollTop = 0; render(); break;
       case "azkar-close": state.az = null; render(); break;
       case "azkar-tap": var azK = el.getAttribute("data-k"), azI = Number(el.getAttribute("data-i"));
@@ -2251,9 +2559,12 @@ tr:last-child td { border-block-end: 0; }
       case "course-open": state.lv = { mode: "home", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
       case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
       case "unit-open": var uoC = el.getAttribute("data-c"), uoU = el.getAttribute("data-u"), uoUnit = unitOf(uoC, uoU);
-        state.lv = { mode: uoUnit.kind === "dialogue" ? "dialogue" : "lesson", c: uoC, u: uoU, step: 0 }; $("#p-learn").scrollTop = 0; render(); break;
-      case "unit-flat": state.lv = { mode: "unit", c: el.getAttribute("data-c"), u: el.getAttribute("data-u") }; $("#p-learn").scrollTop = 0; render(); break;
-      case "reading-open": state.lv = { mode: "reading", c: el.getAttribute("data-c"), u: el.getAttribute("data-u"), tr: false }; $("#p-learn").scrollTop = 0; render(); break;
+        state.lv = { mode: uoUnit.kind === "dialogue" ? "dialogue" : "lesson", c: uoC, u: uoU, step: 0 }; $("#p-learn").scrollTop = 0;
+        state.learn.resume = { c: uoC, u: uoU }; saveMeta("learn", 400); render(); break;
+      case "unit-flat": var ufC = el.getAttribute("data-c"), ufU = el.getAttribute("data-u"); state.lv = { mode: "unit", c: ufC, u: ufU }; $("#p-learn").scrollTop = 0;
+        state.learn.resume = { c: ufC, u: ufU }; saveMeta("learn", 400); render(); break;
+      case "reading-open": var roC = el.getAttribute("data-c"), roU = el.getAttribute("data-u"); state.lv = { mode: "reading", c: roC, u: roU, tr: false }; $("#p-learn").scrollTop = 0;
+        state.learn.resume = { c: roC, u: roU }; saveMeta("learn", 400); render(); break;
       case "reading-tr": state.lv.tr = !state.lv.tr; render(); break;
       case "lstep": var lsC = el.getAttribute("data-c"), lsU = el.getAttribute("data-u"), lsD = Number(el.getAttribute("data-d"));
         state.lv = { mode: "lesson", c: lsC, u: lsU, step: (state.lv.step || 0) + lsD }; $("#p-learn").scrollTop = 0; render(); break;
@@ -2284,7 +2595,8 @@ tr:last-child td { border-block-end: 0; }
       case "exp-month": state.expMonth = shiftMonth(curExpMonth(now), Number(el.getAttribute("data-n"))); state.expAdd = false; render(); break;
       case "exp-sal-edit": state.expSalEdit = true; render(); break;
       case "exp-sal-save": var esIn = $("#expSalInput"), esV = esIn ? Math.max(0, parseFloat(esIn.value) || 0) : 0; state.exp.salary[curExpMonth(now)] = esV; state.expSalEdit = false; saveMeta("exp", 300); render(); break;
-      case "exp-add-toggle": state.expAdd = !state.expAdd; state.expNewCat = false; render(); break;
+      case "exp-add-toggle": state.expAdd = !state.expAdd; state.expNewCat = false; state.expEditId = null; state.expCat = ""; state.expKind = "expense"; render(); break;
+      case "exp-kind": state.expKind = el.getAttribute("data-k") === "advance" ? "advance" : "expense"; render(); break;
       case "exp-cat-pick": state.expCat = el.getAttribute("data-c"); state.expNewCat = false; render(); break;
       case "exp-cat-new-toggle": state.expNewCat = true; render(); break;
       case "exp-cat-new-save":
@@ -2292,16 +2604,53 @@ tr:last-child td { border-block-end: 0; }
         if (ncV && state.exp.categories.indexOf(ncV) === -1) state.exp.categories.push(ncV);
         if (ncV) { state.expCat = ncV; saveMeta("exp", 300); }
         state.expNewCat = false; render(); break;
+      case "exp-edit":
+        var editIt = state.exp.items.filter(function (x) { return x.id === el.getAttribute("data-id"); })[0]; if (!editIt) break;
+        state.expEditId = editIt.id; state.expCat = editIt.cat; state.expKind = editIt.kind === "advance" ? "advance" : "expense";
+        state.expAdd = true; state.expSwipeId = null; render(); break;
       case "exp-save":
         var eaIn = $("#expAmt"), edIn = $("#expDate"), enIn = $("#expNote");
         var eAmt = eaIn ? parseFloat(eaIn.value) : NaN, eDate = edIn && edIn.value ? edIn.value : now.key, eNote = enIn ? enIn.value.trim() : "";
         if (!state.expCat) { toast("اختار بند المصروف الأول"); break; }
         if (!eAmt || eAmt <= 0) { toast("اكتب مبلغ صحيح"); break; }
-        state.exp.items.push({ id: "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: eDate, cat: state.expCat, amount: eAmt, note: eNote });
-        state.expAdd = false; state.expCat = ""; saveMeta("exp", 200);
+        if (state.expEditId) {
+          var editTarget = state.exp.items.filter(function (x) { return x.id === state.expEditId; })[0];
+          if (editTarget) { editTarget.cat = state.expCat; editTarget.amount = eAmt; editTarget.date = eDate; editTarget.note = eNote; editTarget.kind = state.expKind === "advance" ? "advance" : undefined; }
+          state.expEditId = null;
+        } else {
+          state.exp.items.push({ id: "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: eDate, cat: state.expCat, amount: eAmt, note: eNote, kind: state.expKind === "advance" ? "advance" : undefined });
+        }
+        state.expAdd = false; state.expCat = ""; state.expKind = "expense"; saveMeta("exp", 200);
         if (eDate.slice(0, 7) !== curExpMonth(now)) state.expMonth = eDate.slice(0, 7);
-        render(); toast("تم تسجيل المصروف"); break;
-      case "exp-del": state.exp.items = state.exp.items.filter(function (x) { return x.id !== el.getAttribute("data-id"); }); saveMeta("exp", 200); render(); break;
+        render(); toast(state.expEditId ? "تم الحفظ" : "تم تسجيل المصروف"); break;
+      case "exp-swipe": state.expSwipeId = state.expSwipeId === el.getAttribute("data-id") ? null : el.getAttribute("data-id"); render(); break;
+      case "exp-del":
+        var delId = el.getAttribute("data-id"), delIdx = state.exp.items.findIndex(function (x) { return x.id === delId; });
+        if (delIdx < 0) break;
+        var delItem = state.exp.items[delIdx];
+        state.exp.items.splice(delIdx, 1); state.expSwipeId = null; saveMeta("exp", 0); render();
+        undoToast("تم حذف المصروف", function () { state.exp.items.splice(Math.min(delIdx, state.exp.items.length), 0, delItem); saveMeta("exp", 0); render(); });
+        break;
+      case "exp-repay": var repIt = state.exp.items.filter(function (x) { return x.id === el.getAttribute("data-id"); })[0]; if (repIt) { repIt.repaid = true; repIt.repaidDate = now.key; saveMeta("exp", 0); } render(); toast("تم تسجيل الرد"); break;
+      case "exp-budget-edit": state.expBudgetEditCat = el.getAttribute("data-c"); render(); break;
+      case "exp-budget-save":
+        var bc = el.getAttribute("data-c"), bIn = $("#expBudgetInput"), bV = bIn ? Math.max(0, parseFloat(bIn.value) || 0) : 0;
+        if (bV) state.exp.budgets[bc] = bV; else delete state.exp.budgets[bc];
+        state.expBudgetEditCat = null; saveMeta("exp", 200); render(); break;
+      case "exp-recur-toggle": state.expRecurAdd = !state.expRecurAdd; state.expCat = ""; render(); break;
+      case "exp-recur-save":
+        var raIn = $("#expRecurAmt"), rnIn = $("#expRecurNote");
+        var raV = raIn ? parseFloat(raIn.value) : NaN, rnV = rnIn ? rnIn.value.trim() : "";
+        if (!state.expCat) { toast("اختار بند المصروف الأول"); break; }
+        if (!raV || raV <= 0) { toast("اكتب مبلغ صحيح"); break; }
+        state.exp.recurring.push({ id: "r" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), cat: state.expCat, amount: raV, note: rnV });
+        state.expRecurAdd = false; state.expCat = ""; saveMeta("exp", 200); render(); toast("تم إضافة المصروف الثابت"); break;
+      case "exp-recur-del": state.exp.recurring = state.exp.recurring.filter(function (x) { return x.id !== el.getAttribute("data-id"); }); saveMeta("exp", 200); render(); break;
+      case "exp-recur-apply":
+        var dueNow = expRecurringDueToday(curExpMonth(now), now), addedDate = now.key;
+        dueNow.forEach(function (r) { state.exp.items.push({ id: "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + r.id.slice(-3), date: addedDate, cat: r.cat, amount: r.amount, note: r.note, recurId: r.id }); });
+        saveMeta("exp", 0); render(); toast("تم إضافة " + dueNow.length + " بند ثابت"); break;
+      case "exp-undo": if (undoPending) { var fn = undoPending; undoPending = null; clearTimeout(undoT); $("#toast").classList.remove("on"); fn(); } break;
       case "daily-start": startDailyChallenge(now); break;
       case "speak-start": startSpeakChallenge(el.getAttribute("data-c")); break;
       case "speak-listen": spkListen(); break;
@@ -2398,7 +2747,7 @@ tr:last-child td { border-block-end: 0; }
         lastErrMsg = em;
       }
       if (banned) {
-        $("#lockmsg").textContent = "الموقع بيتعمله تحديث دلوقتي، حاول تاني بعد شوية.";
+        $("#lockmsg").textContent = "تم إيقاف هذا الحساب، تواصل مع المسؤول.";
         btn.disabled = false; return;
       }
       if (!matched) {
@@ -2902,7 +3251,7 @@ tr:last-child td { border-block-end: 0; }
     (m.data || []).forEach(function (r) {
       if (r.name === "settings") { hasSettings = true; if (!dirty["meta:settings"]) Object.assign(state.settings, r.data); }
       if (r.name === "learn" && !dirty["meta:learn"]) state.learn = Object.assign(freshLearn(), r.data);
-      if (r.name === "exp" && !dirty["meta:exp"]) state.exp = Object.assign({ categories: [], items: [], salary: {} }, r.data);
+      if (r.name === "exp" && !dirty["meta:exp"]) state.exp = Object.assign({ categories: [], items: [], salary: {}, budgets: {}, recurring: [] }, r.data);
     });
     if (!hasSettings && first) { state.settings.startDate = nowR().key; saveMeta("settings"); }
     ensureNotesSeed();
