@@ -148,6 +148,7 @@
     var s = {
       moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
       book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 21a2 2 0 0 1 2-2h13v2H6"/></svg>',
+      mushaf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/><path d="M12 2v3.2l1.3-1 1.3 1V2"/></svg>',
       cap: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/></svg>',
       cert: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M9 13.5 7 22l5-3 5 3-2-8.5"/></svg>',
       lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>',
@@ -550,7 +551,7 @@
     exp: { categories: [], items: [], salary: {}, budgets: {}, recurring: [] },
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
     expKind: "expense", expEditId: null, expBudgetEditCat: null, expRecurAdd: false, expSwipeId: null,
-    tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, quiz: null, card: null, spk: null,
+    tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, qv: { mode: "wird" }, quiz: null, card: null, spk: null,
     wd: null, weakTab: "all",
     az: null, azProgress: {}, azOpen: {}, settingsOpen: false,
     // Default to every section allowed until an account's real permissions are known
@@ -1108,6 +1109,26 @@
       case "more": state.archiveN += 30; render(); break;
       case "pg": addPages(Number(el.getAttribute("data-n"))); break;
       case "pgdone": setPages(Math.max(pagesOn(now.key), target())); toast("تقبّل الله ورد اليوم"); break;
+      case "qv": state.qv = { mode: el.getAttribute("data-m") }; $("#p-quran").scrollTop = 0; render(); break;
+      case "mushaf-open": state.qv.surah = Number(el.getAttribute("data-s")); $("#p-quran").scrollTop = 0; render(); break;
+      case "mushaf-close": state.qv.surah = null; render(); break;
+      case "lawh-tap": lawhCycle(el.getAttribute("data-p")); break;
+      case "lawh-rev": lawhReview(el.getAttribute("data-p"), el.getAttribute("data-g") === "1"); break;
+      case "lawh-juz": var ljJ = el.getAttribute("data-j"); if (!state.qv.openJuz) state.qv.openJuz = {}; state.qv.openJuz[ljJ] = !state.qv.openJuz[ljJ]; render(); break;
+      case "lawh-hide": state.qv = { mode: "hide", hidePage: Number(el.getAttribute("data-p")), revealed: {}, openJuz: state.qv.openJuz }; $("#p-quran").scrollTop = 0; render(); break;
+      case "hide-reveal": state.qv.revealed[el.getAttribute("data-i")] = true; render(); break;
+      case "hide-close": stopSmartListen(); state.qv = { mode: "lawh", openJuz: state.qv.openJuz }; render(); break;
+      case "listen-start": startSmartListen(); break;
+      case "listen-stop": stopSmartListen(); render(); break;
+      case "hide-finish":
+        stopSmartListen();
+        var hfL = lawhData(), hfKey = nowR().key, hfP = state.qv.hidePage, hfTotal = pageAyahs(hfP).length, hfRevealed = Object.keys(state.qv.revealed || {}).length;
+        if (!hfL.log[hfKey]) hfL.log[hfKey] = { memorized: [], reviewed: [] };
+        if (!hfL.log[hfKey].selfChecks) hfL.log[hfKey].selfChecks = [];
+        hfL.log[hfKey].selfChecks.push({ p: hfP, revealed: hfRevealed, total: hfTotal });
+        saveMeta("learn", 0);
+        toast(hfRevealed === 0 ? "ما شاء الله، تسميع كامل بدون مساعدة" : "تمام، احتجت تكشف " + hfRevealed + " من " + hfTotal);
+        state.qv = { mode: "lawh", openJuz: state.qv.openJuz }; render(); break;
       case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
       case "weekly-open": state.hv = "weekly"; $("#p-home").scrollTop = 0; render(); break;

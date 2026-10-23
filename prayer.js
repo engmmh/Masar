@@ -1,39 +1,56 @@
 "use strict";
   /* ---------------- azkar (morning / evening remembrance) ---------------- */
+  // المصدر: كتاب "حصن المسلم من أذكار الكتاب والسنة" للشيخ سعيد بن علي بن وهف
+  // القحطاني — بيانات نصية موثّقة (rn0x/Alsarmad — Adhkar-json)، وليست مكتوبة يدويًا.
+  var AZKAR_SOURCE = 'حصن المسلم من أذكار الكتاب والسنة — سعيد بن علي بن وهف القحطاني';
   var AZKAR = {
     morning: [
-      { t: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ", n: 1, note: "آية الكرسي" },
-      { t: "قُلْ هُوَ اللَّهُ أَحَدٌ، اللَّهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", n: 3, note: "سورة الإخلاص" },
-      { t: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، مِن شَرِّ مَا خَلَقَ، وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ، وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ، وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", n: 3, note: "سورة الفلق" },
-      { t: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ، مَلِكِ النَّاسِ، إِلَٰهِ النَّاسِ، مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ، الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ، مِنَ الْجِنَّةِ وَالنَّاسِ", n: 3, note: "سورة الناس" },
-      { t: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذَا الْيَوْمِ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ", n: 1 },
-      { t: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ النُّشُورُ", n: 1 },
-      { t: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", n: 1, note: "سيد الاستغفار — من قالها موقنًا بها حين يصبح فمات من يومه دخل الجنة" },
-      { t: "اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ", n: 4 },
-      { t: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلَٰهَ إِلَّا أَنْتَ", n: 3 },
-      { t: "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ", n: 7 },
-      { t: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", n: 3 },
-      { t: "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا", n: 3 },
-      { t: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", n: 3 },
-      { t: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", n: 100, note: "من قالها مئة مرة حُطّت خطاياه وإن كانت مثل زبد البحر" },
-      { t: "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ", n: 10 }
+      { t: "أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ ﴿اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَوَاتِ وَالْأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾.", n: 1, note: "آية الكرسي" },
+      { t: "بسم الله الرحمن الرحيم ﴿قُلْ هُوَ اللَّهُ أَحَدٌ* اللَّهُ الصَّمَدُ* لَمْ يَلِدْ وَلَمْ يُولَدْ* وَلَمْ يَكُن لَّهُ كُفُواً أَحَدٌ﴾.  بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ* مِن شَرِّ مَا خَلَقَ* وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ* وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ* وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ﴾.  بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ النَّاسِ* مَلِكِ النَّاسِ* إِلَهِ النَّاسِ* مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ* الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ* مِنَ الْجِنَّةِ وَ النَّاسِ﴾", n: 3, note: "سورة الإخلاص والمعوذتان" },
+      { t: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذَا الْيَوْمِ وَخَيرَ مَا بَعْدَهُ ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي  هَذَا الْيَوْمِ وَشَرِّ مَا بَعْدَهُ، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ", n: 1 },
+      { t: "اللَّهُمَّ بِكَ أَصْبَحْنَا، وَبِكَ أَمْسَيْنَا ، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ وَإِلَيْكَ النُّشُورُ", n: 1 },
+      { t: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنوبَ إِلاَّ أَنْتَ", n: 1, note: "سيد الاستغفار" },
+      { t: "اللَّهُمَّ إِنِّي أَصْبَحْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلاَئِكَتِكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلاَّ أَنْتَ وَحْدَكَ لاَ شَرِيكَ لَكَ، وَأَنَّ مُحَمَّداً عَبْدُكَ وَرَسُولُكَ", n: 4 },
+      { t: "اللَّهُمَّ مَا أَصْبَحَ بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ", n: 1 },
+      { t: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لاَ إِلَهَ إِلاَّ أَنْتَ. اللَّهُمَّ  إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ، وَالفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ القَبْرِ، لاَ إِلَهَ إِلاَّ أَنْتَ", n: 3 },
+      { t: "حَسْبِيَ اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيهِ تَوَكَّلتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ", n: 1 },
+      { t: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ: فِي دِينِي وَدُنْيَايَ وَأَهْلِي، وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَينِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي", n: 1 },
+      { t: "اللَّهُمَّ عَالِمَ الغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطانِ وَشَرَكِهِ، وَأَنْ أَقْتَرِفَ عَلَى  نَفْسِي سُوءاً، أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ", n: 1 },
+      { t: "بِسْمِ اللَّهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلاَ فِي السّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", n: 3 },
+      { t: "رَضِيتُ بِاللَّهِ رَبَّاً، وَبِالْإِسْلاَمِ دِيناً، وَبِمُحَمَّدٍ صلى الله عليه وسلم نَبِيّاً", n: 3 },
+      { t: "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغيثُ أَصْلِحْ لِي شَأْنِيَ كُلَّهُ وَلاَ تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ", n: 1 },
+      { t: "أَصْبَحْنَا وَأَصْبَحَ الْمُلْكُ لِلَّهِ رَبِّ الْعَالَمِينَ، اللَّهُـمَّ إِنِّي أَسْأَلُكَ خَيْرَ هَذَا الْيَوْمِ:فَتْحَهُ، وَنَصْرَهُ، وَنورَهُ، وَبَرَكَتَهُ، وَهُدَاهُ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِيهِ وَشَرِّ مَا بَعْدَهُ", n: 1 },
+      { t: "أَصْبَحْنا عَلَى فِطْرَةِ الْإِسْلاَمِ، وَعَلَى كَلِمَةِ الْإِخْلاَصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ صلى الله عليه وسلم، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفاً مُسْلِماً وَمَا كَانَ مِنَ الْمُشرِكِينَ", n: 1 },
+      { t: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", n: 100 },
+      { t: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", n: 10 },
+      { t: "لاَ إِلَهَ إِلاَّ اللَّهُ، وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", n: 100 },
+      { t: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ: عَدَدَ خَلْقِهِ، وَرِضَا نَفْسِهِ، وَزِنَةَ عَرْشِهِ، وَمِدَادَ كَلِمَاتِهِ", n: 3 },
+      { t: "اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْماً نَافِعاً، وَرِزْقاً طَيِّباً، وَعَمَلاً مُتَقَبَّلاً", n: 1 },
+      { t: "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ", n: 100 },
+      { t: "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبَيِّنَا مُحَمَّدٍ", n: 10 }
     ],
     evening: [
-      { t: "اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِندَهُ إِلَّا بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلَا يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ وَلَا يَئُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ", n: 1, note: "آية الكرسي" },
-      { t: "قُلْ هُوَ اللَّهُ أَحَدٌ، اللَّهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُن لَّهُ كُفُوًا أَحَدٌ", n: 3, note: "سورة الإخلاص" },
-      { t: "قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، مِن شَرِّ مَا خَلَقَ، وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ، وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ، وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ", n: 3, note: "سورة الفلق" },
-      { t: "قُلْ أَعُوذُ بِرَبِّ النَّاسِ، مَلِكِ النَّاسِ، إِلَٰهِ النَّاسِ، مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ، الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ، مِنَ الْجِنَّةِ وَالنَّاسِ", n: 3, note: "سورة الناس" },
-      { t: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ. رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَٰذِهِ اللَّيْلَةِ، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَٰذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا", n: 1 },
-      { t: "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ، وَإِلَيْكَ الْمَصِيرُ", n: 1 },
-      { t: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَٰهَ إِلَّا أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَىٰ عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوبَ إِلَّا أَنْتَ", n: 1, note: "سيد الاستغفار — من قالها موقنًا بها حين يمسي فمات من ليلته دخل الجنة" },
-      { t: "اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلَائِكَتَكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَٰهَ إِلَّا أَنْتَ وَحْدَكَ لَا شَرِيكَ لَكَ، وَأَنَّ مُحَمَّدًا عَبْدُكَ وَرَسُولُكَ", n: 4 },
-      { t: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لَا إِلَٰهَ إِلَّا أَنْتَ. اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلَٰهَ إِلَّا أَنْتَ", n: 3 },
-      { t: "حَسْبِيَ اللَّهُ لَا إِلَٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ", n: 7 },
-      { t: "بِسْمِ اللَّهِ الَّذِي لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", n: 3 },
-      { t: "رَضِيتُ بِاللَّهِ رَبًّا، وَبِالْإِسْلَامِ دِينًا، وَبِمُحَمَّدٍ ﷺ نَبِيًّا", n: 3 },
-      { t: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", n: 3 },
-      { t: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", n: 100, note: "من قالها مئة مرة حُطّت خطاياه وإن كانت مثل زبد البحر" },
-      { t: "لَا إِلَٰهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَىٰ كُلِّ شَيْءٍ قَدِيرٌ", n: 10 }
+      { t: "أَعُوذُ بِاللَّهِ مِنَ الشَّيطَانِ الرَّجِيمِ ﴿اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ الْحَيُّ الْقَيُّومُ لاَ تَأْخُذُهُ سِنَةٌ وَلاَ نَوْمٌ لَّهُ مَا فِي السَّمَوَاتِ وَمَا فِي الأَرْضِ مَن ذَا الَّذِي يَشْفَعُ عِنْدَهُ إِلاَّ بِإِذْنِهِ يَعْلَمُ مَا بَيْنَ أَيْدِيهِمْ وَمَا خَلْفَهُمْ وَلاَ يُحِيطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلاَّ بِمَا شَاء وَسِعَ كُرْسِيُّهُ السَّمَوَاتِ وَالْأَرْضَ وَلاَ يَؤُودُهُ حِفْظُهُمَا وَهُوَ الْعَلِيُّ الْعَظِيمُ﴾.", n: 1, note: "آية الكرسي" },
+      { t: "بسم الله الرحمن الرحيم ﴿قُلْ هُوَ اللَّهُ أَحَدٌ* اللَّهُ الصَّمَدُ* لَمْ يَلِدْ وَلَمْ يُولَدْ* وَلَمْ يَكُن لَّهُ كُفُواً أَحَدٌ﴾.  بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ* مِن شَرِّ مَا خَلَقَ* وَمِن شَرِّ غَاسِقٍ إِذَا وَقَبَ* وَمِن شَرِّ النَّفَّاثَاتِ فِي الْعُقَدِ* وَمِن شَرِّ حَاسِدٍ إِذَا حَسَدَ﴾.  بسم الله الرحمن الرحيم ﴿قُلْ أَعُوذُ بِرَبِّ النَّاسِ* مَلِكِ النَّاسِ* إِلَهِ النَّاسِ* مِن شَرِّ الْوَسْوَاسِ الْخَنَّاسِ* الَّذِي يُوَسْوِسُ فِي صُدُورِ النَّاسِ* مِنَ الْجِنَّةِ وَ النَّاسِ﴾", n: 3, note: "سورة الإخلاص والمعوذتان" },
+      { t: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ، وَالْحَمْدُ لِلَّهِ، لاَ إِلَهَ إلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ، رَبِّ أَسْأَلُكَ خَيْرَ مَا فِي هَذِهِ اللَّيْلَةِ وَخَيْرَ مَا بَعْدَهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِي هَذِهِ اللَّيْلَةِ وَشَرِّ مَا بَعْدَهَا، رَبِّ أَعُوذُ بِكَ مِنَ الْكَسَلِ وَسُوءِ الْكِبَرِ، رَبِّ أَعُوذُ بِكَ مِنْ عَذَابٍ فِي النَّارِ وَعَذَابٍ فِي الْقَبْرِ", n: 1 },
+      { t: "اللَّهُمَّ بِكَ أَمْسَيْنَا، وَبِكَ أَصْبَحْنَا، وَبِكَ نَحْيَا، وَبِكَ نَمُوتُ وَإِلَيْكَ الْمَصِيرُ", n: 1 },
+      { t: "اللَّهُمَّ أَنْتَ رَبِّي لَا إِلَهَ إِلاَّ أَنْتَ، خَلَقْتَنِي وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِي فَاغْفِرْ لِي فَإِنَّهُ لاَ يَغْفِرُ الذُّنوبَ إِلاَّ أَنْتَ", n: 1, note: "سيد الاستغفار" },
+      { t: "اللَّهُمَّ إِنِّي أَمْسَيْتُ أُشْهِدُكَ، وَأُشْهِدُ حَمَلَةَ عَرْشِكَ، وَمَلاَئِكَتِكَ، وَجَمِيعَ خَلْقِكَ، أَنَّكَ أَنْتَ اللَّهُ لَا إِلَهَ إِلاَّ أَنْتَ وَحْدَكَ لاَ شَرِيكَ لَكَ، وَأَنَّ مُحَمَّداً عَبْدُكَ وَرَسُولُكَ", n: 4 },
+      { t: "اللَّهُمَّ مَا أَمْسَى بِي مِنْ نِعْمَةٍ أَوْ بِأَحَدٍ مِنْ خَلْقِكَ فَمِنْكَ وَحْدَكَ لاَ شَرِيكَ لَكَ، فَلَكَ الْحَمْدُ وَلَكَ الشُّكْرُ", n: 1 },
+      { t: "اللَّهُمَّ عَافِنِي فِي بَدَنِي، اللَّهُمَّ عَافِنِي فِي سَمْعِي، اللَّهُمَّ عَافِنِي فِي بَصَرِي، لاَ إِلَهَ إِلاَّ أَنْتَ. اللَّهُمَّ  إِنِّي أَعُوذُ بِكَ مِنَ الْكُفْرِ، وَالفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ القَبْرِ، لاَ إِلَهَ إِلاَّ أَنْتَ", n: 3 },
+      { t: "حَسْبِيَ اللَّهُ لاَ إِلَهَ إِلاَّ هُوَ عَلَيهِ تَوَكَّلتُ وَهُوَ رَبُّ الْعَرْشِ الْعَظِيمِ", n: 1 },
+      { t: "اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ فِي الدُّنْيَا وَالآخِرَةِ، اللَّهُمَّ إِنِّي أَسْأَلُكَ الْعَفْوَ وَالْعَافِيَةَ: فِي دِينِي وَدُنْيَايَ وَأَهْلِي، وَمَالِي، اللَّهُمَّ اسْتُرْ عَوْرَاتِي، وَآمِنْ رَوْعَاتِي، اللَّهُمَّ احْفَظْنِي مِنْ بَينِ يَدَيَّ، وَمِنْ خَلْفِي، وَعَنْ يَمِينِي، وَعَنْ شِمَالِي، وَمِنْ فَوْقِي، وَأَعُوذُ بِعَظَمَتِكَ أَنْ أُغْتَالَ مِنْ تَحْتِي", n: 1 },
+      { t: "اللَّهُمَّ عَالِمَ الغَيْبِ وَالشَّهَادَةِ فَاطِرَ السَّمَوَاتِ وَالْأَرْضِ، رَبَّ كُلِّ شَيْءٍ وَمَلِيكَهُ، أَشْهَدُ أَنْ لاَ إِلَهَ إِلاَّ أَنْتَ، أَعُوذُ بِكَ مِنْ شَرِّ نَفْسِي، وَمِنْ شَرِّ الشَّيْطانِ وَشَرَكِهِ، وَأَنْ أَقْتَرِفَ عَلَى  نَفْسِي سُوءاً، أَوْ أَجُرَّهُ إِلَى مُسْلِمٍ", n: 1 },
+      { t: "بِسْمِ اللَّهِ الَّذِي لاَ يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلاَ فِي السّمَاءِ وَهُوَ السَّمِيعُ الْعَلِيمُ", n: 3 },
+      { t: "رَضِيتُ بِاللَّهِ رَبَّاً، وَبِالْإِسْلاَمِ دِيناً، وَبِمُحَمَّدٍ صلى الله عليه وسلم نَبِيّاً", n: 3 },
+      { t: "يَا حَيُّ يَا قَيُّومُ بِرَحْمَتِكَ أَسْتَغيثُ أَصْلِحْ لِي شَأْنِيَ كُلَّهُ وَلاَ تَكِلْنِي إِلَى نَفْسِي طَرْفَةَ عَيْنٍ", n: 1 },
+      { t: "أَمْسَيْنَا وَأَمْسَى الْمُلْكُ لِلَّهِ رَبِّ الْعَالَمِينَ، اللَّهُـمَّ إِنِّي أَسْأَلُكَ خَيْرَ هَذِهِ اللَّيْلَةِ: فَتْحَهَا، وَنَصْرَهَا، وَنورَهَا، وَبَرَكَتَهَا، وَهُدَاهَا، وَأَعُوذُ بِكَ مِنْ شَرِّ مَا فِيهَا وَشَرِّ مَا بَعْدَهَا", n: 1 },
+      { t: "أَمْسَيْنَا عَلَى فِطْرَةِ الْإِسْلاَمِ، وَعَلَى كَلِمَةِ الْإِخْلاَصِ، وَعَلَى دِينِ نَبِيِّنَا مُحَمَّدٍ صلى الله عليه وسلم، وَعَلَى مِلَّةِ أَبِينَا إِبْرَاهِيمَ، حَنِيفاً مُسْلِماً وَمَا كَانَ مِنَ الْمُشرِكِينَ", n: 1 },
+      { t: "سُبْحَانَ اللَّهِ وَبِحَمْدِهِ", n: 100 },
+      { t: "لاَ إِلَهَ إِلاَّ اللَّهُ وَحْدَهُ لاَ شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ", n: 10 },
+      { t: "أَسْتَغْفِرُ اللَّهَ وَأَتُوبُ إِلَيْهِ", n: 100 },
+      { t: "أَعُوذُ بِكَلِمَاتِ اللَّهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ", n: 3 },
+      { t: "اللَّهُمَّ صَلِّ وَسَلِّمْ عَلَى نَبَيِّنَا مُحَمَّدٍ", n: 10 }
     ]
   };
 
@@ -208,10 +225,57 @@
 
 
   /* ---------------- quran logic ---------------- */
+  // Verified Quran text + structure (Hafs): quran/quran.json. See QURAN.source
+  // for the exact citation shown in the Mushaf view — never type Quran text by hand.
+  var QURAN = null;
+  function loadQuran() {
+    return fetch("quran/quran.json").then(function (r) {
+      if (!r.ok) throw new Error("HTTP " + r.status + " loading quran.json");
+      return r.json();
+    }).then(function (d) { QURAN = d; }).catch(function (err) {
+      console.error("Masar: failed to load Quran data", err);
+    });
+  }
+  function arNum(n) { return String(n).replace(/[0-9]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩"[d]; }); }
+  // Display-only: strips the optional Hafs waqf/pause-sign annotations (U+06D6–U+06ED —
+  // recitation-guidance marks, not letters or vowels) before rendering. Tested across
+  // several fonts: these specific marks break cursive joining (render as disconnected
+  // letters or missing-glyph boxes) depending on which Google Fonts subset chunk has
+  // loaded, which is not reliably predictable. Dropping them changes no letter, vowel
+  // or meaning — only an optional stop-sign hint — and the stored quran/quran.json
+  // (the actual verified source) is never touched; only what's drawn on screen is.
+  function quranDisplayText(s) { return String(s).replace(/[ۖ-ۭ]/g, ""); }
   function target() { var u = UNITS[state.settings.unit] || UNITS.page; return Math.max(1, Math.round(state.settings.amount * u.f)); }
   function pagesOn(key) { var d = state.days[key]; return d && d.q ? d.q : 0; }
   function totalPages() { var t = 0; for (var k in state.days) t += (state.days[k].q || 0); return t; }
   function juzOf(p) { return Math.min(30, p <= 21 ? 1 : Math.floor((p - 2) / 20) + 1); }
+
+  /* ---------------- لوح الحفظ (lawh) — SRS memorization board ---------------- */
+  // Reuses the exact spaced-repetition interval table and stage semantics already
+  // proven for vocabulary review (SRS_STAGE_DAYS / SRS_MAX_STAGE / cardStage in
+  // learn.js), applied to Quran pages instead of vocab cards. Persisted under
+  // state.learn.lawh so it rides the existing "learn" meta sync bucket — no change
+  // to the storage/sync plumbing in app.js was needed.
+  function lawhData() { if (!state.learn.lawh) state.learn.lawh = { pages: {}, log: {} }; return state.learn.lawh; }
+  function lawhCycle(p) {
+    var L = lawhData(), key = nowR().key, cur = L.pages[p] || { status: 0 };
+    if (cur.status === 0) { cur.status = 1; }
+    else if (cur.status === 1) {
+      cur.status = 2; cur.stage = 1; cur.due = addDays(key, SRS_STAGE_DAYS[1]); cur.learnedAt = key;
+      if (!L.log[key]) L.log[key] = { memorized: [], reviewed: [] };
+      L.log[key].memorized.push(Number(p));
+    } else { cur = { status: 0 }; }
+    L.pages[p] = cur; saveMeta("learn", 500); render();
+  }
+  function lawhReview(p, good) {
+    var L = lawhData(), key = nowR().key, cur = L.pages[p]; if (!cur || cur.status !== 2) return;
+    cur.stage = cardStage(cur);
+    if (good) { cur.stage = Math.min(SRS_MAX_STAGE, cur.stage + 1); cur.due = addDays(key, SRS_STAGE_DAYS[cur.stage]); }
+    else { cur.stage = 0; cur.due = addDays(key, 1); }
+    if (!L.log[key]) L.log[key] = { memorized: [], reviewed: [] };
+    L.log[key].reviewed.push(Number(p));
+    saveMeta("learn", 500); render();
+  }
   function addPages(n) {
     var key = nowR().key, d = state.days[key] || (state.days[key] = {});
     d.q = Math.max(0, (d.q || 0) + n);
@@ -308,7 +372,42 @@
       '<label class="field">التاريخ<input type="date" id="startdate" value="' + esc(start) + '" max="' + now.key + '"></label></div>';
   }
 
+  // Slices the verified surah/ayah text into the exact ayah range of one printed
+  // Mushaf page, using QURAN.pageStart (the same structural boundaries used for
+  // the khatma tracker) — never hand-typed, always derived from the source data.
+  function pageAyahs(p) {
+    if (!QURAN) return [];
+    var start = QURAN.pageStart[p - 1], end = p < 604 ? QURAN.pageStart[p] : null, out = [];
+    for (var s = start[0]; s <= (end ? end[0] : 114); s++) {
+      var surah = QURAN.surahs[s - 1];
+      var from = (s === start[0]) ? start[1] : 1;
+      var to = (end && s === end[0]) ? end[1] - 1 : surah.ayahCount;
+      for (var a = from; a <= to; a++) out.push({ surah: s, surahName: surah.name, ayah: a, text: surah.verses[a - 1].text });
+      if (end && s === end[0]) break;
+    }
+    return out;
+  }
+
+  /* ---------------- quran tab sub-navigation ---------------- */
+  // Mirrors the state.lv sub-view pattern used throughout the Learn tab: a small
+  // mode object drives which sub-screen renders inside the same tab panel.
+  function quranSubNavHTML() {
+    var m = (state.qv && state.qv.mode) || "wird";
+    return '<div class="seg2" style="margin-block-end:14px">' +
+      '<button data-act="qv" data-m="wird" aria-pressed="' + (m === "wird") + '">وردي</button>' +
+      '<button data-act="qv" data-m="mushaf" aria-pressed="' + (m === "mushaf") + '">المصحف</button>' +
+      '<button data-act="qv" data-m="lawh" aria-pressed="' + (m === "lawh") + '">اللوح</button></div>';
+  }
   function quranView(now) {
+    if (!state.qv) state.qv = { mode: "wird" };
+    var m = state.qv.mode;
+    if (m === "mushaf") return quranSubNavHTML() + mushafView(now);
+    if (m === "lawh") return quranSubNavHTML() + lawhView(now);
+    if (m === "hide") return hideView(now);
+    return quranSubNavHTML() + wirdView(now);
+  }
+
+  function wirdView(now) {
     var S = state.settings, u = UNITS[S.unit] || UNITS.page, t = target(), n = pagesOn(now.key);
     var tot = totalPages(), absolute = (S.startPage - 1) + tot, cur = (absolute % 604) + 1, khat = Math.floor(absolute / 604);
     var remain = 604 - (cur - 1), eta = Math.ceil(remain / t), wk = "", i, max = t;
@@ -339,4 +438,163 @@
       '<div class="card"><h2>إعداد الورد</h2><div class="seg2">' + opts + "</div>" +
       '<div class="field">الكمية اليومية (' + u.n + ")<div class=\"stepper\"><button class=\"btn sm alt\" data-act=\"amt\" data-n=\"-1\">−</button><b class=\"num\">" + S.amount + "</b><button class=\"btn sm alt\" data-act=\"amt\" data-n=\"1\">+</button><span class=\"muted\">= " + t + " صفحة</span></div></div>" +
       '<label class="field">بدأت من صفحة<input type="number" id="startpage" min="1" max="604" value="' + S.startPage + '" inputmode="numeric"></label></div>';
+  }
+
+  /* ---------------- mushaf (Quran reader) ---------------- */
+  function mushafView(now) {
+    if (!QURAN) {
+      return head(now) + '<div class="card"><h3 style="margin:0 0 6px">المصحف الشريف</h3>' +
+        '<p class="muted" style="font-size:14px">جاري تحميل نص القرآن…</p></div>';
+    }
+    var sNum = state.qv.surah;
+    if (!sNum) {
+      var rows = QURAN.surahs.map(function (s, i) {
+        var num = i + 1;
+        return '<button class="surah-row" data-act="mushaf-open" data-s="' + num + '">' +
+          '<span class="surah-num">' + arNum(num) + '</span>' +
+          '<span class="surah-name">' + esc(s.name) + '</span>' +
+          '<span class="muted" style="font-size:12px">' + arNum(s.ayahCount) + ' آية</span></button>';
+      }).join("");
+      return head(now) +
+        '<div class="card"><h3 style="margin:0 0 4px">المصحف الشريف</h3>' +
+        '<p class="muted" style="font-size:12px">' + esc(QURAN.source) + "</p></div>" +
+        '<div class="card surah-list" style="padding:6px">' + rows + "</div>";
+    }
+    var surah = QURAN.surahs[sNum - 1];
+    var ayahs = surah.verses.map(function (v) {
+      return '<span class="ayah">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">﴿' + arNum(v.id) + "﴾</span></span>";
+    }).join(" ");
+    return '<button class="linkbtn" data-act="mushaf-close">← كل السور</button>' +
+      '<div class="card"><div class="row between"><h2 style="margin:0">' + esc(surah.name) + '</h2><span class="chip">' + arNum(surah.ayahCount) + ' آية</span></div>' +
+      '<p class="ayah-block" style="margin-block-start:10px">' + ayahs + "</p>" +
+      '<p class="muted" style="font-size:11px;margin-block-start:14px">' + esc(QURAN.source) + "</p></div>";
+  }
+
+  /* ---------------- لوح الحفظ (lawh) view ---------------- */
+  function lawhView(now) {
+    var L = lawhData(), key = now.key;
+    var memorized = 0, memorizing = 0, dueToday = [];
+    var byJuz = []; for (var j = 0; j <= 30; j++) byJuz[j] = [];
+    for (var p = 1; p <= 604; p++) {
+      byJuz[juzOf(p)].push(p);
+      var c = L.pages[p];
+      if (!c) continue;
+      if (c.status === 2) { memorized++; if (c.due <= key) dueToday.push({ p: p, due: c.due }); }
+      else if (c.status === 1) memorizing++;
+    }
+    dueToday.sort(function (a, b) { return a.due < b.due ? -1 : (a.due > b.due ? 1 : 0); });
+    var pct = Math.round(memorized / 604 * 100);
+    var dueHTML = dueToday.length
+      ? dueToday.map(function (d) {
+        return '<div class="azcard" style="padding:12px 16px"><div class="row between"><b>صفحة ' + arNum(d.p) + '</b><span class="muted" style="font-size:12px">الجزء ' + arNum(juzOf(d.p)) + '</span></div>' +
+          '<div class="row wrapr" style="margin-block-start:8px"><button class="btn sm alt" data-act="lawh-hide" data-p="' + d.p + '">تسميع (إخفاء النص)</button>' +
+          '<button class="btn sm" data-act="lawh-rev" data-p="' + d.p + '" data-g="1">تمت المراجعة</button>' +
+          '<button class="btn sm alt" data-act="lawh-rev" data-p="' + d.p + '" data-g="0">نسيتها</button></div></div>';
+      }).join("")
+      : '<p class="muted" style="font-size:14px">لا توجد مراجعات مستحقة اليوم، الحمد لله.</p>';
+    if (!state.qv.openJuz) state.qv.openJuz = {};
+    var groups = "";
+    for (j = 1; j <= 30; j++) {
+      var gMemorized = 0;
+      byJuz[j].forEach(function (pp) { var cc = L.pages[pp]; if (cc && cc.status === 2) gMemorized++; });
+      var open = !!state.qv.openJuz[j];
+      var body = "";
+      if (open) {
+        var cells = "";
+        byJuz[j].forEach(function (pp) {
+          var cc = L.pages[pp], st = cc ? cc.status : 0;
+          cells += '<button class="lawh-cell st' + st + '" data-act="lawh-tap" data-p="' + pp + '">' + arNum(pp) + "</button>";
+        });
+        body = '<div class="lawh-grid" style="margin-block-start:10px">' + cells + "</div>";
+      }
+      groups += '<div class="card lawh-juz"><button class="row between" data-act="lawh-juz" data-j="' + j + '" style="width:100%;background:none;border:0;padding:0;font-weight:700">' +
+        '<span>الجزء ' + arNum(j) + '</span><span class="muted" style="font-size:12px">(' + gMemorized + " محفوظة) " + (open ? "▲" : "▼") + "</span></button>" + body + "</div>";
+    }
+    return head(now) +
+      '<div class="card"><h3 style="margin:0 0 10px">اللوح — متابعة الحفظ</h3>' +
+      '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
+      '<p class="muted" style="font-size:13px;margin-block-start:10px">' + arNum(memorized) + ' من ٦٠٤ صفحة محفوظة · ' + arNum(memorizing) + " قيد الحفظ</p></div>" +
+      '<div class="card"><div class="row between"><h3 style="margin:0">مراجعات اليوم</h3><span class="chip">' + arNum(dueToday.length) + "</span></div>" +
+      '<div style="margin-block-start:10px">' + dueHTML + "</div></div>" +
+      '<p class="muted" style="font-size:13px;margin-block-end:8px">اضغط على الصفحة لتبديل حالتها: غير محفوظة ← قيد الحفظ ← محفوظة. راجع الصفحات المستحقة كل يوم.</p>' +
+      groups;
+  }
+
+  /* ---------------- استماع ذكي (Beta) — word-matching mistake detector ---------------- */
+  // Compares what the browser's speech recognizer heard against the verified ayah
+  // text, word by word, after stripping tashkeel/punctuation. This is NOT tajweed
+  // judgment and Arabic speech recognition accuracy varies a lot by device/accent —
+  // the UI must say so plainly (see the Beta note rendered in hideView below).
+  var smartRec = null;
+  function smartListenSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  function normalizeAr(s) {
+    return String(s)
+      .replace(/[ً-ٟؐ-ؚۖ-ٰۭـ]/g, "")
+      .replace(/[^ء-ي\s]/g, "")
+      .replace(/\s+/g, " ").trim();
+  }
+  function wordMatchRatio(target, heard) {
+    var tW = normalizeAr(target).split(" ").filter(Boolean), hW = normalizeAr(heard).split(" ").filter(Boolean);
+    if (!tW.length) return 0;
+    var hi = 0, matched = 0;
+    for (var i = 0; i < tW.length; i++) {
+      var found = -1;
+      for (var j = hi; j < hW.length; j++) { if (hW[j] === tW[i]) { found = j; break; } }
+      if (found >= 0) { matched++; hi = found + 1; }
+    }
+    return matched / tW.length;
+  }
+  function onSmartHeard(transcript) {
+    var ayahs = pageAyahs(state.qv.hidePage), idx = state.qv.listenIdx || 0;
+    if (idx >= ayahs.length) return;
+    if (wordMatchRatio(ayahs[idx].text, transcript) >= 0.6) {
+      state.qv.revealed[idx] = true; state.qv.listenIdx = idx + 1; render();
+    }
+  }
+  function startSmartListen() {
+    if (!smartListenSupported()) { toast("الاستماع الذكي غير متاح في هذا المتصفح"); return; }
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    try {
+      smartRec = new SR();
+      smartRec.lang = "ar-SA"; smartRec.continuous = true; smartRec.interimResults = true;
+      smartRec.onresult = function (e) {
+        var transcript = ""; for (var i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript + " ";
+        onSmartHeard(transcript);
+      };
+      smartRec.onerror = function (e) { toast("تعذر الاستماع: " + (e && e.error || "")); stopSmartListen(); };
+      smartRec.onend = function () { if (state.qv.listening) { try { smartRec.start(); } catch (e2) { } } };
+      smartRec.start();
+      state.qv.listening = true; state.qv.listenIdx = state.qv.listenIdx || 0; render();
+    } catch (e) { toast("تعذر بدء الاستماع"); }
+  }
+  function stopSmartListen() {
+    state.qv.listening = false;
+    if (smartRec) { try { smartRec.onend = null; smartRec.stop(); } catch (e) { } smartRec = null; }
+  }
+
+  /* ---------------- تسميع — hide-text self-check ---------------- */
+  // Text per ayah comes from pageAyahs(), sliced from the same verified source as
+  // the Mushaf reader — nothing here is retyped. Each ayah starts hidden; the
+  // person recites from memory and taps only the ones they needed to check, so
+  // the reveal count is an honest signal of how solid that page really is.
+  function hideView(now) {
+    var p = state.qv.hidePage, ayahs = pageAyahs(p);
+    if (!state.qv.revealed) state.qv.revealed = {};
+    var rows = ayahs.map(function (v, i) {
+      if (state.qv.revealed[i]) {
+        return '<div class="hide-row"><span class="ayah">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">﴿' + arNum(v.ayah) + "﴾</span></span></div>";
+      }
+      return '<button class="hide-row hidden" data-act="hide-reveal" data-i="' + i + '">— اضغط لإظهار الآية ' + arNum(v.ayah) + " من " + esc(v.surahName) + " —</button>";
+    }).join("");
+    var revealedCount = Object.keys(state.qv.revealed).length;
+    var listenRow = state.qv.listening
+      ? '<button class="btn sm alt" data-act="listen-stop">إيقاف الاستماع</button><span class="chip on">يستمع الآن…</span>'
+      : '<button class="btn sm" data-act="listen-start">تشغيل الاستماع الذكي (تجريبي)</button>';
+    return head(now) + '<button class="linkbtn" data-act="hide-close">← رجوع للوح</button>' +
+      '<div class="card"><div class="row between"><h2 style="margin:0">تسميع صفحة ' + arNum(p) + '</h2><span class="chip">' + arNum(revealedCount) + "/" + arNum(ayahs.length) + ' مكشوفة</span></div>' +
+      '<p class="muted" style="font-size:13px;margin-block-start:6px">اقرأ غيبًا، واضغط فقط عند الحاجة للتأكد من آية.</p>' +
+      '<div class="row wrapr" style="margin-block-start:10px">' + listenRow + "</div>" +
+      '<p class="muted" style="font-size:11px;margin-block-start:8px">ميزة تجريبية (Beta): تطابق فقط الكلمات المسموعة بالكلمات المكتوبة، ولا تحكم على التجويد أو الضبط، ودقة التعرف على الصوت العربي محدودة وتختلف حسب الجهاز — استخدمها كمساعد لا كحَكَم نهائي.</p></div>' +
+      '<div class="card" style="display:flex;flex-direction:column;gap:8px">' + rows + "</div>" +
+      '<button class="btn" style="width:100%;margin-block-start:10px" data-act="hide-finish">انتهيت من التسميع</button>';
   }

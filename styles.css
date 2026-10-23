@@ -21,6 +21,13 @@
   --miss-deep: #C22B43;
   --miss-bg: #FDE3E8;
   --display: "Reem Kufi", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  /* Quranic Uthmani text uses Unicode combining marks (madda, small high signs,
+     sajda/stop marks, U+06D6–U+06ED, etc.). Scheherazade New — initially tried
+     here — breaks cursive joining on several of those marks in Chromium (tested
+     and confirmed: ريب/فيه/هدى render as disconnected letters). Reem Kufi, which
+     the app already loads for --display, was tested against the exact same text
+     and renders every mark correctly joined, so ayah text reuses --display
+     instead of pulling in a second, buggier Arabic font. */
   --body: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
   --latin: "Inter", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
   --violet: #7C6FE0;
@@ -464,6 +471,21 @@ tr:last-child td { border-block-end: 0; }
 .azcard.collapsed { padding: 12px 16px; }
 .azcard.collapsed .az-text { font-size: 15px; line-height: 1.5; opacity: .72; padding-inline-end: 44px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .azcard.collapsed .az-count { width: 26px; height: 26px; min-width: 26px; font-size: 13px; inset-block-start: 50%; transform: translateY(-50%); }
+
+/* ---------------- مصحف (mushaf reader) + لوح (lawh board) ---------------- */
+.surah-list { display: flex; flex-direction: column; gap: 2px; }
+.surah-row { display: flex; align-items: center; gap: 12px; width: 100%; text-align: start; background: none; border: 0; border-radius: 12px; padding: 10px 10px; }
+.surah-row:active { background: var(--surface2); }
+.surah-num { display: grid; place-items: center; min-width: 30px; height: 30px; border-radius: 50%; background: var(--surface2); color: var(--amber-deep); font-size: 13px; flex: none; }
+.surah-name { font-family: var(--display); font-size: 17px; flex: 1; }
+.ayah-block { font-family: var(--display); font-size: 24px; font-weight: 700; line-height: 2.3; text-align: start; }
+.ayah-n { font-family: var(--body); font-size: 14px; color: var(--amber-deep); }
+.lawh-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.lawh-cell { min-height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface2); font-size: 13px; }
+.lawh-cell.st1 { background: var(--amber-bg); color: var(--amber-deep); border-color: var(--amber); font-weight: 700; }
+.lawh-cell.st2 { background: var(--done-bg); color: var(--done-deep); border-color: var(--done); font-weight: 700; }
+.hide-row { font-family: var(--display); font-size: 22px; font-weight: 700; line-height: 2.1; text-align: start; }
+.hide-row.hidden { width: 100%; text-align: center; background: var(--surface2); border: 1px dashed var(--line); border-radius: 12px; padding: 12px; font-family: var(--body); font-size: 13px; color: var(--muted); }
 .badgerow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-block-end: 14px; }
 .badge { display: grid; gap: 4px; justify-items: center; background: none; border: 0; padding: 4px; text-align: center; }
 .badge .ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface2); color: var(--muted); }
