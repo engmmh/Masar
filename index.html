@@ -2680,7 +2680,7 @@ tr:last-child td { border-block-end: 0; }
     }).join("") + '<button class="chipbtn' + (onlyNew ? " on" : "") + '" data-act="bank-new" data-c="' + cid + '">لسه ما حفظتهاش</button></div>';
     var rows = list.length ? list.map(function (v) {
       return '<div class="bankrow' + (known[v.id] ? " known" : "") + '">' +
-        '<div class="bw"><span class="en">' + esc(v.en) + "</span>" + spkBtn(v.ex || v.en) + "</div>" +
+        '<div class="bw">' + (v.emoji ? '<span style="font-size:18px;margin-inline-end:4px">' + v.emoji + "</span>" : "") + '<span class="en">' + esc(v.en) + "</span>" + spkBtn(v.ex || v.en) + "</div>" +
         '<div class="ar">' + esc(v.ar) + "</div>" +
         (v.ex ? '<div class="bex">' + fmtEn(v.ex) + "</div>" : "") +
         (v.exAr ? '<div class="bex" style="direction:rtl;text-align:start">' + esc(v.exAr) + "</div>" : "") +
@@ -3297,13 +3297,14 @@ tr:last-child td { border-block-end: 0; }
   function cardExBody(w, ex, c) {
     var a = c.ans;
     if (ex === "flip") {
-      var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + (w.exAr ? '<div class="muted" style="direction:rtl">' + esc(w.exAr) + "</div>" : "") + spkBtn(w.ex || w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
+      var emoji = w.emoji ? '<div style="font-size:40px;line-height:1.2">' + w.emoji + "</div>" : "";
+      var face = c.flip ? emoji + '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + (w.exAr ? '<div class="muted" style="direction:rtl">' + esc(w.exAr) + "</div>" : "") + spkBtn(w.ex || w.en) : emoji + '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
       return '<div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>";
     }
     if (ex === "choose") {
       var optsAr = mcqFrom(vocabPool(w.c).map(function (v) { return v.ar; }), w.ar, 4) || mcqFrom(vocabPool(null).map(function (v) { return v.ar; }), w.ar, 4);
       if (!optsAr) return cardExBody(w, "flip", c);
-      return '<div class="lstep-card"><div class="qtext-row"><p class="qtext" style="margin:0">ايه معنى: <span class="en">' + esc(w.en) + "</span></p>" + spkBtn(w.en) + "</div>" + cardOptsHTML(optsAr, w.ar, a) + "</div>";
+      return '<div class="lstep-card">' + (w.emoji ? '<div style="font-size:32px">' + w.emoji + "</div>" : "") + '<div class="qtext-row"><p class="qtext" style="margin:0">ايه معنى: <span class="en">' + esc(w.en) + "</span></p>" + spkBtn(w.en) + "</div>" + cardOptsHTML(optsAr, w.ar, a) + "</div>";
     }
     if (ex === "listen") {
       var optsEn = mcqFrom(vocabPool(w.c).map(function (v) { return v.en; }), w.en, 4) || mcqFrom(vocabPool(null).map(function (v) { return v.en; }), w.en, 4);
