@@ -750,10 +750,25 @@
     // diagnosable (is the mic hearing the words at all? the right ones? garbled?)
     // instead of looking like total silence when nothing reveals.
     state.qv.lastHeard = transcript;
-    if (idx < ayahs.length) state.qv.lastRatio = wordMatchRatio(ayahs[idx].text, transcript);
     if (idx >= ayahs.length) { render(); return; }
-    if (state.qv.lastRatio >= 0.6) {
-      state.qv.revealed[idx] = true; state.qv.listenIdx = idx + 1;
+    // Check a small window ahead of the ayah we're waiting on, not just that one
+    // ayah in isolation. Without this, a single ayah the recognizer ever missed
+    // (dropped the result, or just never matched it) permanently desyncs the
+    // whole session: everything recited correctly afterward keeps getting
+    // compared against that same stale, already-passed target and always scores
+    // near 0% — which is exactly what a stuck session looks like. Matching the
+    // best candidate in the next few ayahs instead lets a missed one be caught
+    // up on automatically, and reveals the ones skipped over along with it since
+    // they were presumably recited too, just not individually confirmed.
+    var WINDOW = 3, best = idx, bestRatio = 0;
+    for (var k = idx; k < Math.min(ayahs.length, idx + WINDOW); k++) {
+      var r = wordMatchRatio(ayahs[k].text, transcript);
+      if (r > bestRatio) { bestRatio = r; best = k; }
+    }
+    state.qv.lastRatio = bestRatio;
+    if (bestRatio >= 0.6) {
+      for (var m = idx; m <= best; m++) state.qv.revealed[m] = true;
+      state.qv.listenIdx = best + 1;
     }
     render();
   }
