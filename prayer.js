@@ -714,6 +714,21 @@
   function normalizeAr(s) {
     return String(s)
       .replace(/[ً-ٟؐ-ؚۖ-ٰۭـ]/g, "")
+      // ٱ (Alef Wasla) is how the Quran text spells a plain connecting alef
+      // at the start of words like اللّه (Allah) -- it falls outside the letter
+      // range kept just below, so without this fold it was being silently
+      // DELETED from the target ayah text while recognized speech comes back
+      // with an ordinary alef. That one missing letter broke the word match
+      // on almost every ayah (Alef Wasla is extremely common in Quranic
+      // spelling), which is why reciting correctly never registered.
+      .replace(/ٱ/g, "ا")
+      // Hamza-bearing alef forms (آ/أ/إ) and teh marbuta (ة) are also
+      // spelled one way in careful Quranic orthography and often another way (or
+      // dropped) in a speech-recognized transcript -- folding them the same way
+      // on both sides keeps the comparison about the WORDS, not the exact hamza
+      // seat, which this beta aid was never meant to judge (see the UI disclaimer).
+      .replace(/[آأإ]/g, "ا")
+      .replace(/ة/g, "ه")
       .replace(/[^ء-ي\s]/g, "")
       .replace(/\s+/g, " ").trim();
   }
