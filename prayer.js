@@ -713,6 +713,14 @@
   function smartListenSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
   function normalizeAr(s) {
     return String(s)
+      // Dagger alif (ٰ, U+0670) is how Quranic orthography often spells a long
+      // "ا" sound inside a word (e.g. the alif in كَٰفِرُونَ, يَـٰٰأَيُّها) without
+      // writing an actual alef letter -- it falls inside the diacritic range stripped
+      // just below, so without this fold it was being silently DELETED from the
+      // target text while recognized speech comes back with a real alef letter in
+      // that spot, breaking the word match (target الكفرون vs heard الكافرون).
+      // Fold it to a plain alef first, before the generic diacritic strip below.
+      .replace(/ٰ/g, "ا")
       .replace(/[ً-ٟؐ-ؚۖ-ٰۭـ]/g, "")
       // ٱ (Alef Wasla) is how the Quran text spells a plain connecting alef
       // at the start of words like اللّه (Allah) -- it falls outside the letter
