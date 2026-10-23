@@ -302,6 +302,33 @@ tr:last-child td { border-block-end: 0; }
 .tree-chain { display: flex; flex-direction: column; align-items: stretch; gap: 2px; margin-block: 4px 2px; }
 .tree-step { background: var(--surface2); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; font-size: 14.5px; text-align: center; }
 .tree-arrow { text-align: center; color: var(--muted); font-size: 13px; line-height: 1.2; }
+.fact-card { display: flex; gap: 10px; align-items: flex-start; background: var(--blue-bg); border: 1px solid var(--blue); border-radius: 10px; padding: 10px 12px; margin-block: 4px 2px; }
+.fact-ic { font-size: 20px; flex: none; line-height: 1.3; }
+.fact-txt { flex: 1; min-width: 0; font-size: 14.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.bug-card { background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-block: 4px 2px; }
+.bug-head { display: flex; gap: 8px; align-items: center; margin-block-end: 6px; }
+.bug-ic { font-size: 22px; }
+.bug-latin { font-size: 12px; color: var(--muted); font-style: italic; }
+.bug-rows { display: grid; gap: 4px; }
+.bug-row { display: flex; gap: 8px; font-size: 13.5px; line-height: 1.5; }
+.bug-row .bug-k { flex: none; min-width: 58px; color: var(--teal-deep); font-weight: 600; font-size: 12.5px; }
+.case-card { background: var(--surface2); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; margin-block: 4px 2px; }
+.case-head { font-weight: 600; margin-block-end: 6px; font-size: 14.5px; }
+.case-body { font-size: 14px; line-height: 1.6; margin-block-end: 6px; }
+.case-q { background: var(--blue-bg); border-radius: 8px; padding: 7px 10px; font-size: 13.5px; }
+.case-a { margin-block-start: 6px; font-size: 13.5px; }
+.case-a summary { cursor: pointer; color: var(--teal-deep); font-weight: 600; }
+.case-a div { margin-block-start: 4px; line-height: 1.55; }
+.clauses-map { display: grid; gap: 4px; margin-block: 4px 2px; }
+.clause-row { display: flex; gap: 8px; align-items: baseline; background: var(--surface2); border-radius: 8px; padding: 6px 10px; font-size: 13.5px; }
+.clause-no { flex: none; font-weight: 700; color: var(--teal-deep); min-width: 34px; }
+.tl-row { display: flex; align-items: flex-start; overflow-x: auto; gap: 0; margin-block: 6px 2px; padding-block-end: 2px; }
+.tl-pt { display: flex; flex-direction: column; align-items: center; min-width: 78px; text-align: center; }
+.tl-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--teal); margin-block-end: 4px; }
+.tl-t { font-size: 11.5px; font-weight: 700; color: var(--teal-deep); }
+.tl-l { font-size: 12px; line-height: 1.4; }
+.tl-sep { flex: 1; min-width: 14px; height: 2px; background: var(--line); margin-block-start: 5px; align-self: flex-start; margin-inline: 2px; }
+.q-visual { margin-block-end: 6px; }
 .opts { display: grid; gap: 8px; margin-block: 12px; }
 .opt { min-height: 48px; border-radius: 13px; border: 2px solid var(--line); background: var(--surface); padding: 0 14px; text-align: start; direction: ltr; font-weight: 600; }
 .opt.ok { background: var(--done-bg); border-color: var(--done); color: var(--done); }
@@ -354,6 +381,8 @@ tr:last-child td { border-block-end: 0; }
 .pnode.cur { border-color: var(--teal); box-shadow: 0 3px 0 var(--teal-deep), 0 0 0 5px color-mix(in srgb, var(--teal) 18%, transparent); }
 .pnode.lock { opacity: .45; box-shadow: none; }
 .pnode.bonus { border-style: dashed; }
+.pnode.milestone { border-color: var(--weak); }
+.pnode.milestone.done { background: linear-gradient(145deg, var(--weak), var(--weak)); border-color: transparent; color: #fff; }
 .plbl { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; max-width: 60%; font-size: 13.5px; font-weight: 600; line-height: 1.35; }
 .plbl small { display: block; font-weight: 400; color: var(--muted); font-size: 12px; margin-block-start: 2px; }
 
@@ -679,13 +708,55 @@ tr:last-child td { border-block-end: 0; }
         return (i > 0 ? '<div class="tree-arrow">↓</div>' : "") + '<div class="tree-step">' + fmtEn(s) + (sEn ? spkBtn(sEn) : "") + "</div>";
       }).join("") + "</div>";
   }
-  // Plain-text label for a lesson point (string or icons/cols/steps object) —
+  // Phase 12 — 5 new visual pts templates (fact card, microbe/bug card, scenario
+  // case, clauses map, timeline), on top of the existing icons/cols/steps ones.
+  function renderFactCard(b) {
+    var fEn = extractEn(b.fact);
+    return '<div class="fact-card"><span class="fact-ic">' + (b.icon || "💡") + '</span><div class="fact-txt">' +
+      fmtEn(b.fact) + (fEn ? spkBtn(fEn) : "") + (b.src ? '<div class="muted" style="margin-block-start:3px;font-size:12.5px">' + esc(b.src) + "</div>" : "") +
+      "</div></div>";
+  }
+  function renderBugCard(b) {
+    var rows = [
+      ["النوع", b.gram], ["المصدر", b.source], ["الأعراض", b.symptoms], ["الوقاية", b.prevent]
+    ].filter(function (r) { return r[1]; });
+    return '<div class="bug-card"><div class="bug-head"><span class="bug-ic">🦠</span><div><b>' + esc(b.bug) + "</b>" +
+      (b.latin ? '<div class="bug-latin">' + esc(b.latin) + "</div>" : "") + "</div></div>" +
+      '<div class="bug-rows">' + rows.map(function (r) {
+        return '<div class="bug-row"><span class="bug-k">' + esc(r[0]) + "</span><span>" + fmtEn(r[1]) + "</span></div>";
+      }).join("") + "</div></div>";
+  }
+  function renderCaseCard(b) {
+    return '<div class="case-card"><div class="case-head">🧩 ' + esc(b.case) + "</div>" +
+      '<div class="case-body">' + fmtEn(b.details) + "</div>" +
+      (b.q ? '<div class="case-q"><b>سؤال:</b> ' + fmtEn(b.q) + "</div>" : "") +
+      (b.a ? '<details class="case-a"><summary>الإجابة</summary><div>' + fmtEn(b.a) + "</div></details>" : "") +
+      "</div>";
+  }
+  function renderClausesMap(b) {
+    return (b.title ? '<div class="pt-line" style="font-weight:600">• ' + fmtEn(b.title) + "</div>" : "") +
+      '<div class="clauses-map">' + b.clauses.map(function (c) {
+        return '<div class="clause-row"><span class="clause-no">' + esc(c.no) + "</span><span>" + fmtEn(c.title) + "</span></div>";
+      }).join("") + "</div>";
+  }
+  function renderTimeline(b) {
+    return (b.title ? '<div class="pt-line" style="font-weight:600">• ' + fmtEn(b.title) + "</div>" : "") +
+      '<div class="tl-row">' + b.timeline.map(function (e, i) {
+        return (i > 0 ? '<span class="tl-sep"></span>' : "") + '<div class="tl-pt"><div class="tl-dot"></div><div class="tl-t">' + esc(e.t) + '</div><div class="tl-l">' + fmtEn(e.label) + "</div></div>";
+      }).join("") + "</div>";
+  }
+  // Plain-text label for a lesson point (string or icons/cols/steps/… object) —
   // used by Phase 9's 🎯-per-point button and by the "اتعلم" screens' plain display.
   function ptPlainText(t) {
     if (!t || typeof t !== "object") return String(t || "").replace(/[{}]/g, "");
     if (t.icons) return (t.title ? t.title + ": " : "") + t.icons.map(function (it) { return (it.en || "") + (it.ar ? " " + it.ar : ""); }).join(" · ");
     if (t.cols) return (t.title ? t.title + ": " : "") + t.cols.map(function (c) { return c.title + " (" + c.items.join(", ") + ")"; }).join(" | ");
     if (t.steps) return (t.title ? t.title + ": " : "") + t.steps.join(" ← ");
+    if (t.fact) return t.fact;
+    if (t.bug) return t.bug + (t.latin ? " (" + t.latin + ")" : "");
+    if (t.case) return t.case + ": " + (t.details || "");
+    if (t.clauses) return (t.title ? t.title + ": " : "") + t.clauses.map(function (c) { return c.no + " " + c.title; }).join(" · ");
+    if (t.timeline) return (t.title ? t.title + ": " : "") + t.timeline.map(function (e) { return e.t + " " + e.label; }).join(" ← ");
     return "";
   }
   function renderPt(t) {
@@ -693,6 +764,11 @@ tr:last-child td { border-block-end: 0; }
       if (t.icons) return renderIconList(t);
       if (t.cols) return renderCompare(t);
       if (t.steps) return renderTreeChain(t);
+      if (t.fact) return renderFactCard(t);
+      if (t.bug) return renderBugCard(t);
+      if (t.case) return renderCaseCard(t);
+      if (t.clauses) return renderClausesMap(t);
+      if (t.timeline) return renderTimeline(t);
     }
     return fmtPt(t);
   }
@@ -1286,7 +1362,9 @@ tr:last-child td { border-block-end: 0; }
     localSave();
   }
   function checkLoaded() {
-    if (!state.loaded && ready.days && ready.settings && ready.learn && ready.exp) { state.loaded = true; ensureNotesSeed(); render(); }
+    if (!state.loaded && ready.days && ready.settings && ready.learn && ready.exp) {
+      state.loaded = true; ensureNotesSeed(); maybeUseStreakFreeze(nowR()); render();
+    }
   }
   // The Supabase SDK is loaded via a <script defer> tag in <head>, so it downloads in
   // parallel with the rest of the page instead of blocking first paint; window.supabase
@@ -1633,7 +1711,7 @@ tr:last-child td { border-block-end: 0; }
     d.done = ok; d.correctTxt = correctTxt;
     if (ok && w) {
       w.step = (w.step || 0) + 1;
-      if (w.step >= 3) delete state.learn.weak[d.id];
+      if (w.step >= 3) { delete state.learn.weak[d.id]; state.learn.weakGraduated = (state.learn.weakGraduated || 0) + 1; checkAchievements(now); }
       else w.stepDue = addDays(now.key, 1);
       saveMeta("learn", 400);
     }
@@ -1663,14 +1741,41 @@ tr:last-child td { border-block-end: 0; }
   }
   function addXp(n, now) {
     state.learn.xp = (state.learn.xp || 0) + n;
-    var k = (now || nowR()).key;
+    now = now || nowR();
+    var k = now.key;
     state.learn.study[k] = (state.learn.study[k] || 0) + n;
+    maybeAwardFreeze(now);
   }
+  // "يومًا مُجمَّد" — a day the streak treats as studied because a freeze covered it.
+  function studiedOrFrozen(k) { return !!state.learn.study[k] || !!(state.learn.freezeDays && state.learn.freezeDays[k]); }
   function studyStreak(now) {
     var k = now.key, n = 0;
-    if (!state.learn.study[k]) k = addDays(k, -1);
-    while (state.learn.study[k] && n < 5000) { n++; k = addDays(k, -1); }
+    if (!studiedOrFrozen(k)) k = addDays(k, -1);
+    while (studiedOrFrozen(k) && n < 5000) { n++; k = addDays(k, -1); }
     return n;
+  }
+  // Phase 11 — سلسلة تعلّم + تجميد 🧊: every 7 days of streak banks one freeze
+  // (max 2); maybeUseStreakFreeze() spends one automatically to bridge a single
+  // missed day so the streak doesn't reset to zero over it.
+  function maybeAwardFreeze(now) {
+    var streak = studyStreak(now), milestone = Math.floor(streak / 7) * 7;
+    if (milestone > 0 && (state.learn.freezeAt || 0) < milestone) {
+      state.learn.freezeAt = milestone;
+      state.learn.freezes = Math.min(2, (state.learn.freezes || 0) + 1);
+      toast("🧊 كسبت تجميدة جديدة لسلسلة التعلّم!");
+    }
+  }
+  function maybeUseStreakFreeze(now) {
+    var y = addDays(now.key, -1), dayBefore = addDays(y, -1);
+    if (studiedOrFrozen(y) || y >= now.key) return;
+    if (!studiedOrFrozen(dayBefore)) return; // nothing to bridge — streak was already broken
+    if ((state.learn.freezes || 0) <= 0) return;
+    if (!state.learn.freezeDays) state.learn.freezeDays = {};
+    state.learn.freezeDays[y] = true;
+    state.learn.freezes--;
+    state.learn.freezesUsed = (state.learn.freezesUsed || 0) + 1;
+    saveMeta("learn", 0);
+    toast("🧊 استخدمنا تجميدة عشان نحافظ على سلسلتك");
   }
   function dueCards(now, cid, lvl) {
     var list = cid ? (COURSES[cid] ? COURSES[cid].vocab : []) : ALLOWED_COURSES.reduce(function (a, c) { return COURSES[c] ? a.concat(COURSES[c].vocab) : a; }, []);
@@ -1694,7 +1799,28 @@ tr:last-child td { border-block-end: 0; }
     { id: "course1", icon: "cert", title: "شهادة إتمام كورس", desc: "أنهيت كل وحدات كورس كامل.",
       check: function (s) { return ALLOWED_COURSES.some(function (cid) { var c = COURSES[cid]; if (!c) return false; var done = c.units.filter(function (u) { var p = s.learn.units[cid + ":" + u.id]; return p && p.done; }).length; return done >= c.units.length; }); } },
     { id: "speaker", icon: "vol", title: "متكلم واثق", desc: "خلصت تحدي نطق كامل بدقة 100%.",
-      check: function (s) { return (s.learn.speakBest || 0) >= 100; } }
+      check: function (s) { return (s.learn.speakBest || 0) >= 100; } },
+    // Phase 11 — 10 شارات جديدة
+    { id: "weakhunter", icon: "shield", title: "🎯 صياد الضعف", desc: "ثبّتت 10 نقاط ضعف بالكامل.",
+      check: function (s) { return (s.learn.weakGraduated || 0) >= 10; } },
+    { id: "month30", icon: "flame", title: "🔥 شهر متواصل", desc: "ذاكرت 30 يوم متتالي من غير ما تفوّت يوم.",
+      check: function (s, now) { return studyStreak(now) >= 30; } },
+    { id: "steadytongue", icon: "vol", title: "🎤 لسان ثابت", desc: "نطقت 20 كلمة صح في تمارين النطق.",
+      check: function (s) { return (s.learn.speakCardOk || 0) >= 20; } },
+    { id: "milestone1", icon: "flame", title: "🏁 عدّاء المراحل", desc: "نجحت في أول اختبار مرحلة.",
+      check: function (s) { return Object.keys(s.learn.milestones || {}).some(function (k) { return s.learn.milestones[k].passed; }); } },
+    { id: "allmilestones", icon: "cert", title: "🎓 كل المراحل", desc: "نجحت في كل اختبارات المراحل في كورس كامل.",
+      check: function (s) { return ALLOWED_COURSES.some(function (cid) { return allMilestonesPassed(cid) && milestoneBoundaries(cid).length; }); } },
+    { id: "sentencewriter", icon: "pin", title: "📝 كاتب الجمل", desc: "كتبت 10 جمل في جملي.",
+      check: function (s) { return (s.learn.mySentences || []).length >= 10; } },
+    { id: "combo3", icon: "flame", title: "⚡ كومبو × 3", desc: "وصلت لكومبو ×3 في اختبار.",
+      check: function (s) { return (s.learn.bestCombo || 0) >= 6; } },
+    { id: "freezeused", icon: "lock", title: "🧊 محافظ", desc: "استخدمت تجميدة لحماية سلسلة التعلّم.",
+      check: function (s) { return (s.learn.freezesUsed || 0) >= 1; } },
+    { id: "weeklychallenge1", icon: "cap", title: "🏆 تحدي الأسبوع", desc: "خلّصت تحدي الأسبوع لأول مرة.",
+      check: function (s) { return !!(s.learn.weeklyChallenge && s.learn.weeklyChallenge.done); } },
+    { id: "perfectquiz", icon: "cert", title: "💯 قاتل الاختبار", desc: "حصلت على 100% في اختبار من 5 أسئلة فأكثر.",
+      check: function (s) { return !!s.learn.perfectQuiz; } }
   ];
   function checkAchievements(now) {
     var got = [];
@@ -1720,6 +1846,27 @@ tr:last-child td { border-block-end: 0; }
   function todaysDaily(now) {
     var d = state.learn.daily;
     return (d && d.key === now.key) ? d : null;
+  }
+  // Phase 11 — تحدي الأسبوع: a bigger (10-question), once-per-week bonus challenge
+  // that becomes available every Saturday and stays open all week until attempted.
+  function satKeyOf(key) { var back = (dowOf(key) - 6 + 7) % 7; return addDays(key, -back); }
+  function weeklyChallengeKey(now) { return satKeyOf(now.key); }
+  function currentWeeklyChallenge(now) {
+    var w = state.learn.weeklyChallenge;
+    return (w && w.key === weeklyChallengeKey(now)) ? w : null;
+  }
+  function startWeeklyChallenge(now) {
+    var w = currentWeeklyChallenge(now);
+    if (!w) {
+      var pool = shuffle(dailyPool()).slice(0, Math.min(10, dailyPool().length));
+      w = { key: weeklyChallengeKey(now), ids: pool, done: false, score: null };
+      state.learn.weeklyChallenge = w; saveMeta("learn", 0);
+    }
+    var qs = w.ids.map(function (id) { return QINDEX[id]; }).filter(Boolean);
+    if (!qs.length) { toast("كمّل شوية وحدات الأول عشان يتجهز لك تحدي الأسبوع"); return; }
+    state.quiz = { qs: shuffle(qs), i: 0, ok: 0, ans: null, title: "🏆 تحدي الأسبوع", unit: null, weekly: true, wrong: [], right: [], pick: [] };
+    state.lv = { mode: "quiz", c: state.lv.c || COURSE_ORDER[0] };
+    goTab("learn"); render();
   }
   function startDailyChallenge(now) {
     var d = todaysDaily(now);
@@ -2024,7 +2171,16 @@ tr:last-child td { border-block-end: 0; }
       '<div class="card" style="margin:14px 0 0;background:var(--surface2);border:0"><div class="week">' + weekBars(now) + "</div></div></div>" +
       '<div class="card"><h3>القرآن</h3><div class="row between"><span class="muted">' + s.pages + " من " + s.weeklyTarget + " صفحة مستهدفة</span><span class=\"chip\">" + Math.round(s.pages / 7 * 10) / 10 + " صفحة/يوم</span></div>" +
       '<div class="bar amber" style="margin-block-start:8px"><i style="width:' + Math.min(100, Math.round(s.pages / s.weeklyTarget * 100)) + '%"></i></div></div>' +
-      '<div class="card"><h3>التعلّم</h3><div class="row between"><span class="muted">نقاط اكتسبتها الأسبوع ده</span><span class="chip num">+' + s.xp + "</span></div></div>";
+      '<div class="card"><h3>التعلّم</h3><div class="row between"><span class="muted">نقاط اكتسبتها الأسبوع ده</span><span class="chip num">+' + s.xp + "</span></div></div>" +
+      weeklyChallengeCardHTML(now);
+  }
+  // Phase 11 — weekly-challenge card shown inside the weekly report.
+  function weeklyChallengeCardHTML(now) {
+    var w = currentWeeklyChallenge(now);
+    if (w && w.done) {
+      return '<div class="card"><h3>🏆 تحدي الأسبوع</h3><p class="muted" style="margin-block-start:6px">خلّصته بنتيجة <span class="num">' + w.score + '%</span>. تحدي جديد يوم السبت الجاي.</p></div>';
+    }
+    return '<div class="card"><h3>🏆 تحدي الأسبوع</h3><p class="muted" style="margin-block-start:6px">10 أسئلة من كل اللي تعلّمته، بمكافأة نقاط إضافية — متاح لحد ما تحاوله.</p><button class="btn alt" data-act="weekly-challenge-start" style="margin-block-start:8px">ابدأ التحدي</button></div>';
   }
   function ringSVG(sts) {
     var r = 58, C = 2 * Math.PI * r, gap = 9, seg = C / 5 - gap, s = '<svg viewBox="0 0 140 140" class="ring" aria-hidden="true">';
@@ -2133,8 +2289,14 @@ tr:last-child td { border-block-end: 0; }
     if (allow.indexOf("learn") >= 0) {
       var due = dueCards(now).length;
       lines.push({ key: "review", ic: "refresh", text: due ? due + " كلمة محتاجة مراجعة" : "خلصت مراجعتك النهاردة", frac: due ? 0 : 1 });
-      var studied = (state.learn.study && state.learn.study[now.key]) > 0;
-      lines.push({ key: "lesson", ic: "cap", text: studied ? "ذاكرت درس النهاردة" : "لسه ما ذاكرتش درس النهاردة", frac: studied ? 1 : 0 });
+      var goalMin = state.settings.personalGoalMin || state.dailyGoalMin || 0;
+      if (goalMin > 0) {
+        var mins = Math.round(((state.learn.minutes || {})[now.key] || 0) * 10) / 10;
+        lines.push({ key: "lesson", ic: "cap", text: mins + "/" + goalMin + " دقيقة مذاكرة", frac: Math.min(1, mins / goalMin) });
+      } else {
+        var studied = (state.learn.study && state.learn.study[now.key]) > 0;
+        lines.push({ key: "lesson", ic: "cap", text: studied ? "ذاكرت درس النهاردة" : "لسه ما ذاكرتش درس النهاردة", frac: studied ? 1 : 0 });
+      }
     }
     return lines;
   }
@@ -2205,6 +2367,10 @@ tr:last-child td { border-block-end: 0; }
       '<div class="row wrapr">' + SPEECH_RATES.map(function (r) {
         return '<button class="chipbtn' + ((state.settings.speechRate || 0.92) === r.v ? " on" : "") + '" data-act="speech-rate" data-v="' + r.v + '">' + r.lbl + "</button>";
       }).join("") + "</div></div>" +
+      '<div class="card"><h3 style="margin:0 0 6px">الهدف اليومي بالدقايق</h3><p class="muted" style="font-size:13px;margin-block-end:10px">قد إيه ناوي تذاكر كل يوم — بيظهر في خطة اليوم بالدقايق بدل علامة تمت/لأ.</p>' +
+      '<div class="row wrapr">' + [5, 10, 15, 20].map(function (m) {
+        return '<button class="chipbtn' + ((state.settings.personalGoalMin || 0) === m ? " on" : "") + '" data-act="goal-min-set" data-v="' + m + '">' + m + " د</button>";
+      }).join("") + '<button class="chipbtn' + (!state.settings.personalGoalMin ? " on" : "") + '" data-act="goal-min-set" data-v="0">بدون</button></div></div>' +
       '<div class="card"><h3 style="margin:0 0 6px">حدود المراجعة اليومية</h3>' +
       '<p class="muted" style="font-size:13px;margin-block-end:10px">' + (state.dailyNewWordLimit > 0 ? "حدّ الكلمات الجديدة اللي ضبطه المسؤول: " + state.dailyNewWordLimit + "/يوم — تقدر تقلّله هنا لكن متزودّه عليه." : "تقدر تتحكم في عدد الكلمات الجديدة والمراجعات اللي تظهر لك كل يوم.") + "</p>" +
       '<div class="row wrapr" style="gap:14px">' +
@@ -2342,6 +2508,48 @@ tr:last-child td { border-block-end: 0; }
     (c.units || []).forEach(function (u) { (u.qs || []).forEach(function (q) { qs.push(q); }); });
     (c.examBank || []).forEach(function (q) { qs.push(q); });
     return qs;
+  }
+  // Phase 11 — اختبار مرحلي 🏁 كل 5 وحدات. milestoneBoundaries(cid) returns the
+  // 1-based unit indexes after which a milestone sits (5, 10, 15, ...), stopping
+  // one short of the very last unit so the milestone never collides with the
+  // final exam's own "all units done" gate.
+  // Phase 12 — a course can override the uniform "every 5" rule with its own
+  // named-phase boundaries (ISO 22000's "النظام · PRPs · HACCP · 22002"), each
+  // boundary labeled with the phase that just finished.
+  var COURSE_PHASE_BOUNDS = {
+    iso22000: { bounds: [5, 6, 11], labels: { 5: "النظام", 6: "PRPs", 11: "HACCP" } }
+  };
+  function milestoneBoundaries(cid) {
+    var c = COURSES[cid]; if (!c || !c.units) return [];
+    var ov = COURSE_PHASE_BOUNDS[cid];
+    if (ov) return ov.bounds.filter(function (n) { return n < c.units.length; });
+    if (c.units.length < 5) return [];
+    var out = [];
+    for (var n = 5; n < c.units.length; n += 5) out.push(n);
+    return out;
+  }
+  function milestonePhaseLabel(cid, n) {
+    var ov = COURSE_PHASE_BOUNDS[cid];
+    return (ov && ov.labels && ov.labels[n]) || null;
+  }
+  function milestonePool(cid, n) {
+    var c = COURSES[cid]; if (!c) return [];
+    var bounds = milestoneBoundaries(cid), idx = bounds.indexOf(n);
+    var from = idx > 0 ? bounds[idx - 1] : Math.max(0, n - 5);
+    var qs = [];
+    c.units.slice(from, n).forEach(function (u) { (u.qs || []).forEach(function (q) { qs.push(q); }); });
+    if (qs.length < 15) c.units.forEach(function (u) { (u.qs || []).forEach(function (q) { if (qs.indexOf(q) === -1) qs.push(q); }); });
+    return qs;
+  }
+  function milestoneRec(cid, n) { return (state.learn.milestones || {})[cid + ":" + n] || null; }
+  function allMilestonesPassed(cid) {
+    return milestoneBoundaries(cid).every(function (n) { var r = milestoneRec(cid, n); return r && r.passed; });
+  }
+  function startMilestoneExam(cid, n) {
+    var pool = shuffle(milestonePool(cid, n).slice()); var take = Math.min(15, pool.length); if (!take) return;
+    state.lv.c = cid;
+    state.quiz = { qs: shuffle(pool.slice(0, take)), i: 0, ok: 0, ans: null, title: "🏁 اختبار المرحلة", unit: null, wrong: [], right: [], pick: [], milestone: { cid: cid, n: n } };
+    state.lv = { mode: "quiz", c: cid }; render();
   }
   function fmtArDate(key) {
     var p = String(key).split("-").map(Number);
@@ -2490,9 +2698,12 @@ tr:last-child td { border-block-end: 0; }
   function finalExamCardHTML(cid, c, done) {
     var total = c.units.length, pool = finalExamPool(cid);
     var rec = (state.learn.exam || {})[cid];
-    var locked = done < total;
+    var ms = milestoneBoundaries(cid), msLeft = ms.filter(function (n) { var r = milestoneRec(cid, n); return !r || !r.passed; }).length;
+    var locked = done < total || msLeft > 0;
     var info = locked
-      ? '<p class="muted" style="font-size:14px;margin-block-start:4px">أكمل كل وحدات الكورس (' + done + "/" + total + ') لفتح الامتحان النهائي</p>'
+      ? (done < total
+        ? '<p class="muted" style="font-size:14px;margin-block-start:4px">أكمل كل وحدات الكورس (' + done + "/" + total + ') لفتح الامتحان النهائي</p>'
+        : '<p class="muted" style="font-size:14px;margin-block-start:4px">نجّح في ' + msLeft + (msLeft === 1 ? " اختبار مرحلة 🏁 لسه" : " اختبارات مرحلة 🏁 لسه") + ' قبل الامتحان النهائي</p>')
       : '<p class="muted" style="font-size:14px;margin-block-start:4px">' + Math.min(30, pool.length) + ' سؤال من كل الكورس · النجاح من 80%' + (rec ? " · أفضل نتيجة <span class=\"num\">" + rec.best + "%</span>" : "") + "</p>";
     var actions = locked ? "" :
       '<div class="row wrapr">' +
@@ -2522,20 +2733,46 @@ tr:last-child td { border-block-end: 0; }
       '<div class="row between" style="margin-block:14px 4px"><h2>' + esc(c.title) + '</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
       pathHTML(cid, c.units, done);
   }
+  // Phase 11 — خريطة الكورس gets a 🏁 milestone node interleaved every 5 units,
+  // on top of the regular unit nodes; a separate rowN counter keeps the l/r zigzag
+  // alternating smoothly across both node kinds instead of resetting per unit.
+  // Phase 11 — "خريطة الكورس... تفتح لوحدها على الوحدة الجاية": after the path
+  // renders, scroll its current node into the middle of the view instead of
+  // leaving the person to scroll down and find it themselves.
+  function scrollToCurPathNode() {
+    setTimeout(function () {
+      var el = document.querySelector(".path-cur");
+      if (el) el.scrollIntoView({ block: "center" });
+    }, 60);
+  }
+  function milestoneRowHTML(cid, n, done, rowN) {
+    var rec = milestoneRec(cid, n), locked = done < n;
+    var isCur = !locked && !(rec && rec.passed);
+    var side = rowN % 2 === 0 ? "l" : "r";
+    var cls = "pnode milestone" + (rec && rec.passed ? " done" : "") + (isCur ? " cur" : "") + (locked ? " lock" : "");
+    var inner = locked ? ico("lock") : (rec && rec.passed ? "✓" : "🏁");
+    var act = locked ? ' data-act="locked-unit" data-need="' + n + '"' : ' data-act="milestone-exam" data-c="' + cid + '" data-n="' + n + '"';
+    var sub = locked ? "يفتح بعد إكمال " + n + " وحدات" : (rec ? "أفضل نتيجة " + rec.best + "%" : "15 سؤال · النجاح 75%");
+    var lbl = milestonePhaseLabel(cid, n);
+    var title = lbl ? "🏁 اختبار نهاية مرحلة «" + lbl + "»" : "🏁 اختبار المرحلة";
+    return '<div class="prow ' + side + '"><button class="' + cls + '"' + act + '>' + inner + '</button><div class="plbl">' + title + '<small>' + esc(sub) + '</small></div></div>';
+  }
   function pathHTML(cid, units, done) {
-    var curPicked = false;
-    var rows = units.map(function (u, idx) {
+    var curPicked = false, rowN = 0, out = [], bounds = milestoneBoundaries(cid);
+    units.forEach(function (u, idx) {
       var p = state.learn.units[cid + ":" + u.id] || {};
       var locked = u.unlockAfter && done < u.unlockAfter;
       var isCur = !locked && !p.done && !curPicked;
       if (isCur) curPicked = true;
-      var side = idx % 2 === 0 ? "l" : "r";
+      var side = rowN % 2 === 0 ? "l" : "r"; rowN++;
       var cls = "pnode" + (p.done ? " done" : "") + (isCur ? " cur" : "") + (locked ? " lock" : "") + (u.kind ? " bonus" : "");
       var inner = locked ? ico("lock") : (p.done ? "✓" : (u.kind === "dialogue" ? ico("chat") : esc(u.icon)));
       var act = locked ? ' data-act="locked-unit" data-need="' + u.unlockAfter + '"' : ' data-act="unit-open" data-c="' + cid + '" data-u="' + u.id + '"';
       var sub = locked ? "يفتح بعد إكمال " + u.unlockAfter + " وحدات" : (p.best != null ? "أفضل نتيجة " + p.best + "%" : (isCur ? "التالي" : "لم تبدأ بعد"));
-      return '<div class="prow ' + side + '"><button class="' + cls + '"' + act + '>' + inner + '</button><div class="plbl">' + esc(u.title) + '<small>' + esc(sub) + '</small></div></div>';
-    }).join("");
+      out.push('<div class="prow ' + side + (isCur ? " path-cur" : "") + '"><button class="' + cls + '"' + act + '>' + inner + '</button><div class="plbl">' + esc(u.title) + '<small>' + esc(sub) + '</small></div></div>');
+      if (bounds.indexOf(idx + 1) !== -1) { out.push(milestoneRowHTML(cid, idx + 1, done, rowN)); rowN++; }
+    });
+    var rows = out.join("");
     return '<div class="path">' + rows + "</div>";
   }
   function lessonSteps(u) { return u.pts; }
@@ -2584,6 +2821,7 @@ tr:last-child td { border-block-end: 0; }
       (q.why ? '<div class="rule"><b>📘 القاعدة:</b> ' + esc(q.why) + "</div>" : "") : "";
     var qRow = '<p class="qtext' + (arQ ? " ar" : "") + '">' + esc(q.q) + "</p>";
     if (!arQ) qRow = '<div class="qtext-row"><p class="qtext" style="margin:0">' + esc(q.q) + "</p>" + spkBtn(q.q.replace(/___/g, "")) + "</div>";
+    qRow = questionStemVisual(q) + qRow;
     return '<div class="lstep-card"><span class="tag">' + (kind === "retry" ? "🔁 نسألك تاني" : "❓ سؤال سريع") + "</span>" + qRow + body + fb + "</div>";
   }
   function lessonProdBody(q, a) {
@@ -2745,6 +2983,21 @@ tr:last-child td { border-block-end: 0; }
     var canSubmit = !a && pick.length === q.words.length;
     return strip + bank + (canSubmit ? '<button class="btn" data-act="ord-submit">تحقق</button>' : "");
   }
+  // Phase 12 — 4 new "drawn" question types: the question stem is one of the
+  // Phase 12 visual pts templates (bug card / case card / clauses map / timeline)
+  // instead of plain text. Reuses the existing mcq/tf/order/match answering
+  // mechanics (q.t unchanged) — only q.visual + q.vdata are new, so no quiz
+  // engine logic needs touching, just the stem each question type renders.
+  function questionStemVisual(q) {
+    if (!q || !q.visual || !q.vdata) return "";
+    var shape;
+    if (q.visual === "bug") shape = Object.assign({ bug: q.vdata.bug }, q.vdata);
+    else if (q.visual === "case") shape = Object.assign({ case: q.vdata.case }, q.vdata);
+    else if (q.visual === "clauses") shape = { clauses: q.vdata.clauses, title: q.vdata.title };
+    else if (q.visual === "timeline") shape = { timeline: q.vdata.timeline, title: q.vdata.title };
+    else return "";
+    return '<div class="q-visual">' + renderPt(shape) + "</div>";
+  }
   function quizHTML() {
     var z = state.quiz; if (!z) return "";
     if (z.i >= z.qs.length) return quizEnd(z);
@@ -2785,13 +3038,37 @@ tr:last-child td { border-block-end: 0; }
     }
     var correctTxt = q.t === "order" ? q.a.join(" ") : (q.t === "tf" ? (q.a ? "صح" : "غلط") : (q.t === "match" ? q.pairs.map(function (pp) { return pp.l + " = " + pp.r; }).join("، ") : (Array.isArray(q.a) ? q.a[0] : q.a)));
     var fb = "";
-    if (a) fb = '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(correctTxt) + "</span>" + spkBtn(correctTxt)) + "</div>" +
+    if (a) fb = '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(correctTxt) + "</span>" + spkBtn(correctTxt)) +
+      (a.ok && z.lastCombo > 1 ? ' <span class="chip" style="color:var(--amber-deep)">⚡ ×' + z.lastCombo + "</span>" : "") + "</div>" +
       (q.why ? '<div class="rule"><b>📘 القاعدة:</b> ' + esc(q.why) + "</div>" : "") +
       '<button class="btn" data-act="qnext">' + (z.i + 1 >= z.qs.length ? "النتيجة" : "التالي") + "</button>";
     var qRow = '<p class="qtext' + (arQ ? " ar" : "") + '" style="margin-block-start:14px">' + esc(q.q) + "</p>";
     if (!arQ) qRow = '<div class="qtext-row" style="margin-block-start:14px">' + '<p class="qtext" style="margin:0">' + esc(q.q) + "</p>" + spkBtn(q.q.replace(/___/g, "")) + "</div>";
+    qRow = questionStemVisual(q) + qRow;
     return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb"><span>' + esc(z.title) + '</span><span class="num">' + (z.i + 1) + " / " + z.qs.length + '</span></div><div class="bar"><i style="width:' + Math.round(z.i / z.qs.length * 100) + '%"></i></div>' +
       qRow + body + fb + "</div>";
+  }
+  // Phase 11 — "مقارنة بأفضل نتيجة سابقة", shared by every quiz-result screen.
+  function prevBestLine(z, pct) {
+    if (z.prevBest == null) return '<p class="muted" style="font-size:13px;margin-block-start:4px">أول مرة تحاول هنا.</p>';
+    var diff = pct - z.prevBest;
+    return '<p class="muted" style="font-size:13px;margin-block-start:4px">أفضل نتيجة سابقة <span class="num">' + z.prevBest + '%</span>' +
+      (diff > 0 ? ' — <span style="color:var(--ok)">تحسّنت ' + diff + "%! 🎉</span>" : (diff < 0 ? " — هذه المرة أقل بـ" + (-diff) + "%" : " — نفس النتيجة")) + "</p>";
+  }
+  // Phase 11 — "مراجعة الأخطاء بسطر شرح (why)، زرار إضافة الغلط لنقاط الضعف".
+  function mistakeReviewHTML(z) {
+    if (!z.wrong.length) return "";
+    var rows = z.wrong.map(function (id) {
+      var q = QINDEX[id]; if (!q) return "";
+      var correctTxt = q.t === "order" ? q.a.join(" ") : (q.t === "tf" ? (q.a ? "صح" : "غلط") : (q.t === "match" ? q.pairs.map(function (pp) { return pp.l + " = " + pp.r; }).join("، ") : (Array.isArray(q.a) ? q.a[0] : q.a)));
+      var inWeak = !!state.learn.weak[id];
+      return '<div class="card" style="margin-block-end:8px;text-align:start">' + questionStemVisual(q) + '<p class="qtext" style="margin:0 0 4px">' + esc(q.q) + '</p>' +
+        '<p class="muted" style="font-size:13.5px;margin:0">الصواب: <b>' + esc(correctTxt) + "</b></p>" +
+        (q.why ? '<div class="rule" style="margin-block-start:6px"><b>📘</b> ' + esc(q.why) + "</div>" : "") +
+        (inWeak ? '<span class="chip" style="margin-block-start:6px;color:var(--weak)">🎯 في نقاط ضعفك</span>' : '<button class="linkbtn" style="margin-block-start:6px" data-act="weak-add" data-id="' + esc(id) + '" data-kind="q" data-cid="' + (q.c || "") + '">🎯 ضيفها لنقاط ضعفي</button>') +
+        "</div>";
+    }).join("");
+    return '<div class="sec-h">مراجعة الأخطاء (' + z.wrong.length + ")</div>" + rows;
   }
   function quizEnd(z) {
     var pct = Math.round(z.ok / z.qs.length * 100);
@@ -2799,16 +3076,24 @@ tr:last-child td { border-block-end: 0; }
     if (z.unit) { var parts = z.unit.split(":"); retryC = parts[0]; retryU = parts[1]; }
     if (z.final) {
       var passed = pct >= 80, cTitle = COURSES[z.examCid] ? COURSES[z.examCid].title : "";
-      return '<div class="card"><h2>' + (passed ? "🎉 نجحت في الامتحان النهائي" : "لم تصل لنسبة النجاح") + '</h2><p style="font-size:22px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p><p class="muted" style="margin-block:6px 12px">' +
+      return '<div class="card"><h2>' + (passed ? "🎉 نجحت في الامتحان النهائي" : "لم تصل لنسبة النجاح") + '</h2><p style="font-size:22px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p>' + prevBestLine(z, pct) + '<p class="muted" style="margin-block:6px 12px">' +
         (passed ? "تهانينا! أنهيت كورس " + esc(cTitle) + " بنجاح. " : "النجاح يتطلب 80% على الأقل. ") + "حصلت على <span class=\"num\">" + z.gain + "</span> نقطة.</p><div class=\"row wrapr\"><button class=\"btn\" data-act=\"lhome\" data-c=\"" + z.examCid + "\">رجوع</button>" +
         (passed ? '<button class="btn alt" data-act="cert-open" data-c="' + z.examCid + '">' + ico("cert") + " الحصول على الشهادة</button>" : '<button class="btn alt" data-act="final-exam" data-c="' + z.examCid + '">أعد الامتحان</button>') +
-        "</div></div>";
+        "</div></div>" + mistakeReviewHTML(z);
     }
-    return '<div class="card"><h2>' + (pct >= 80 ? "ممتاز" : (pct >= 50 ? "جيد" : "كمّل وراجع")) + '</h2><p style="font-size:20px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p><p class="muted" style="margin-block:6px 12px">حصلت على <span class="num">' + z.gain + "</span> نقطة." + (z.wrong.length ? " الأسئلة الخاطئة ستظهر في مراجعة الأخطاء." : "") + '</p><div class="row wrapr"><button class="btn" data-act="lhome">رجوع</button>' +
-      (z.unit ? '<button class="btn alt" data-act="quiz" data-c="' + retryC + '" data-u="' + retryU + '">أعد التدريب</button>' : "") + "</div></div>";
+    if (z.milestone) {
+      var mpassed = pct >= 75;
+      return '<div class="card"><h2>' + (mpassed ? "🏁 نجحت في اختبار المرحلة" : "لم تصل لنسبة النجاح") + '</h2><p style="font-size:22px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p>' + prevBestLine(z, pct) +
+        '<p class="muted" style="margin-block:6px 12px">' + (mpassed ? "النجاح 75% فأكثر. حصلت على " : "النجاح يتطلب 75% على الأقل. حصلت على ") + "<span class=\"num\">" + z.gain + "</span> نقطة.</p>" +
+        '<div class="row wrapr"><button class="btn" data-act="lhome" data-c="' + z.milestone.cid + '">رجوع</button>' +
+        (mpassed ? "" : '<button class="btn alt" data-act="milestone-exam" data-c="' + z.milestone.cid + '" data-n="' + z.milestone.n + '">أعد الاختبار</button>') +
+        "</div></div>" + mistakeReviewHTML(z);
+    }
+    return '<div class="card"><h2>' + (pct >= 80 ? "ممتاز" : (pct >= 50 ? "جيد" : "كمّل وراجع")) + '</h2><p style="font-size:20px" class="num">' + z.ok + " / " + z.qs.length + " (" + pct + '%)</p>' + prevBestLine(z, pct) + '<p class="muted" style="margin-block:6px 12px">حصلت على <span class="num">' + z.gain + "</span> نقطة." + (z.comboBonus ? " (منها " + z.comboBonus + " من الكومبو ⚡)" : "") + '</p><div class="row wrapr"><button class="btn" data-act="lhome">رجوع</button>' +
+      (z.unit ? '<button class="btn alt" data-act="quiz" data-c="' + retryC + '" data-u="' + retryU + '">أعد التدريب</button>' : "") + "</div></div>" + mistakeReviewHTML(z);
   }
   function finishQuiz() {
-    var z = state.quiz, now = nowR(), pct = Math.round(z.ok / z.qs.length * 100), gain = z.ok * 10;
+    var z = state.quiz, now = nowR(), pct = Math.round(z.ok / z.qs.length * 100), gain = z.ok * 10 + (z.comboBonus || 0);
     z.wrong.forEach(function (id) {
       state.learn.mistakes[id] = (state.learn.mistakes[id] || 0) + 1;
       // Phase 8: every wrong quiz answer feeds نقاط ضعفي — a class-session unit
@@ -2820,19 +3105,37 @@ tr:last-child td { border-block-end: 0; }
     z.right.forEach(function (id) { if (state.learn.mistakes[id]) { state.learn.mistakes[id]--; if (state.learn.mistakes[id] <= 0) delete state.learn.mistakes[id]; } });
     if (z.unit) {
       var p = state.learn.units[z.unit] || {};
+      z.prevBest = p.best != null ? p.best : null; // Phase 11: for the "مقارنة بأفضل نتيجة سابقة" line
       p.best = Math.max(p.best || 0, pct); p.tries = (p.tries || 0) + 1;
       if (pct >= 80 && !p.done) { p.done = true; gain += 30; }
       p.date = now.key; // lets the admin dashboard show "last unit worked, when"
       state.learn.units[z.unit] = p;
     }
     if (z.daily && state.learn.daily) { state.learn.daily.done = true; state.learn.daily.score = pct; gain += 15; }
+    // Phase 11 — weekly challenge (كل سبت): a bigger, once-per-week bonus quiz.
+    if (z.weekly && state.learn.weeklyChallenge) {
+      state.learn.weeklyChallenge.done = true; state.learn.weeklyChallenge.score = pct; gain += 25;
+    }
+    // Phase 11 — milestone (🏁) exam every 5 units: pass threshold 75%, and the
+    // final exam stays locked until every milestone for the course is passed.
+    if (z.milestone) {
+      if (!state.learn.milestones) state.learn.milestones = {};
+      var mk = z.milestone.cid + ":" + z.milestone.n;
+      var mr = state.learn.milestones[mk] || { best: 0, passed: false, tries: 0 };
+      z.prevBest = mr.tries ? mr.best : null;
+      mr.best = Math.max(mr.best || 0, pct); mr.tries = (mr.tries || 0) + 1;
+      if (pct >= 75) { if (!mr.passed) gain += 40; mr.passed = true; mr.date = now.key; }
+      state.learn.milestones[mk] = mr;
+    }
     if (z.final && z.examCid) {
       if (!state.learn.exam) state.learn.exam = {};
       var er = state.learn.exam[z.examCid] || { best: 0, passed: false };
+      z.prevBest = er.tries ? er.best : null;
       er.best = Math.max(er.best || 0, pct); er.tries = (er.tries || 0) + 1;
       if (pct >= 80) { if (!er.passed) gain += 50; er.passed = true; er.date = now.key; }
       state.learn.exam[z.examCid] = er;
     }
+    if (pct === 100 && z.qs.length >= 5) state.learn.perfectQuiz = true;
     z.gain = gain; addXp(gain, now); saveMeta("learn", 0);
     checkAchievements(now);
   }
@@ -3045,7 +3348,9 @@ tr:last-child td { border-block-end: 0; }
     recognizeOnce(function (res) {
       c.listening = false;
       if (res.err) { c.ans = { err: true, ok: false, heard: "" }; render(); return; }
-      c.ans = { heard: res.heard, ok: speechScore(res.heard, w.en) >= 0.8 };
+      var ok = speechScore(res.heard, w.en) >= 0.8;
+      c.ans = { heard: res.heard, ok: ok };
+      if (ok) { state.learn.speakCardOk = (state.learn.speakCardOk || 0) + 1; checkAchievements(nowR()); }
       render();
     });
   }
@@ -3282,6 +3587,7 @@ tr:last-child td { border-block-end: 0; }
       case "lock": lockNow(); break;
       case "speak": if (spkHoldFired) { spkHoldFired = false; break; } speak(el.getAttribute("data-txt")); break;
       case "speech-rate": state.settings.speechRate = Number(el.getAttribute("data-v")) || 0.92; saveMeta("settings", 0); render(); break;
+      case "goal-min-set": state.settings.personalGoalMin = Number(el.getAttribute("data-v")) || 0; saveMeta("settings", 0); render(); break;
       case "push-on": enablePush(); break;
       case "push-off": disablePush(); break;
       case "theme": var cur = getTheme(), nx = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]; try { localStorage.setItem("masar:theme", nx); } catch (er) { } applyTheme(nx); break;
@@ -3317,8 +3623,8 @@ tr:last-child td { border-block-end: 0; }
         render(); break;
       case "azkar-reset": var azRk = el.getAttribute("data-k"); state.azProgress[azRk] = AZKAR[azRk].map(function (it) { return it.n; }); if (!state.azOpen) state.azOpen = {}; state.azOpen[azRk] = 0; render(); break;
       case "lcourses": state.lv = { mode: "courses" }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
-      case "course-open": state.lv = { mode: "home", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
-      case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
+      case "course-open": state.lv = { mode: "home", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); scrollToCurPathNode(); break;
+      case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); scrollToCurPathNode(); break;
       case "unit-open": var uoC = el.getAttribute("data-c"), uoU = el.getAttribute("data-u"), uoUnit = unitOf(uoC, uoU);
         state.lv = { mode: uoUnit.kind === "dialogue" ? "dialogue" : "lesson", c: uoC, u: uoU, step: 0 }; $("#p-learn").scrollTop = 0;
         state.learn.resume = { c: uoC, u: uoU }; saveMeta("learn", 400); render(); break;
@@ -3359,6 +3665,8 @@ tr:last-child td { border-block-end: 0; }
       case "daily-review": state.card = { q: buildReviewQueue(now, null, 0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "exambank": var ebC = el.getAttribute("data-c"), ebCourse = COURSES[ebC]; if (!ebCourse || !ebCourse.examBank || !ebCourse.examBank.length) break;
         state.lv.c = ebC; startQuiz(shuffle(ebCourse.examBank.slice()).slice(0, Math.min(20, ebCourse.examBank.length)), "بنك أسئلة آيزو · " + ebCourse.title, null); break;
+      case "milestone-exam": startMilestoneExam(el.getAttribute("data-c"), Number(el.getAttribute("data-n"))); break;
+      case "weekly-challenge-start": startWeeklyChallenge(now); break;
       case "final-exam": var feC = el.getAttribute("data-c"), feCourse = COURSES[feC]; if (!feCourse) break;
         var fePool = shuffle(finalExamPool(feC).slice()); var feTake = Math.min(30, fePool.length); if (!feTake) break;
         state.lv.c = feC;
@@ -3485,24 +3793,41 @@ tr:last-child td { border-block-end: 0; }
     if (t.id === "setReviewLimit") { state.settings.dailyReviewLimit = Math.max(0, parseInt(t.value, 10) || 0); saveMeta("settings", 300); render(); }
   });
 
+  // Phase 11 combo multiplier: consecutive correct answers within one quiz session
+  // build a streak (z.combo); 3-in-a-row = x2 bonus XP on each further correct
+  // answer, 6-in-a-row = x3, reset to 0 on any wrong answer. The bonus is banked
+  // in z.comboBonus and added on top of the normal z.ok*10 in finishQuiz().
+  function comboMult(streak) { return streak >= 6 ? 3 : (streak >= 3 ? 2 : 1); }
+  function quizScore(z, q, ok) {
+    if (ok) {
+      z.ok++; z.right.push(q.id);
+      z.combo = (z.combo || 0) + 1;
+      var mult = comboMult(z.combo);
+      z.lastCombo = mult;
+      if (mult > 1) z.comboBonus = (z.comboBonus || 0) + (mult - 1) * 10;
+      state.learn.bestCombo = Math.max(state.learn.bestCombo || 0, z.combo);
+    } else {
+      z.wrong.push(q.id); z.combo = 0;
+    }
+  }
   function answerMcq(k) {
     var z = state.quiz, q = z.qs[z.i]; if (z.ans) return;
     var sel = q.o[Number(k)], ok = sel === q.a;
-    z.ans = { sel: sel, ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+    z.ans = { sel: sel, ok: ok }; quizScore(z, q, ok);
     render();
   }
   function answerFill() {
     var z = state.quiz, q = z.qs[z.i], inp = $("#ans"); if (z.ans || !inp) return;
     var v = inp.value; if (!norm(v)) return;
     var ok = q.a.map(norm).indexOf(norm(v)) !== -1;
-    z.ans = { sel: v, ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+    z.ans = { sel: v, ok: ok }; quizScore(z, q, ok);
     render();
   }
   function answerOrder() {
     var z = state.quiz, q = z.qs[z.i]; if (z.ans) return;
     var sel = z.pick.map(function (wi) { return q.words[wi]; });
     var ok = norm(sel.join(" ")) === norm(q.a.join(" "));
-    z.ans = { sel: sel.join(" "), ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+    z.ans = { sel: sel.join(" "), ok: ok }; quizScore(z, q, ok);
     render();
   }
   // Phase 10 — new qs types: "صح وغلط + السبب" (tf; q.why already carries the
@@ -3511,7 +3836,7 @@ tr:last-child td { border-block-end: 0; }
   function answerTf(val) {
     var z = state.quiz, q = z.qs[z.i]; if (z.ans) return;
     var ok = val === q.a;
-    z.ans = { sel: val, ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+    z.ans = { sel: val, ok: ok }; quizScore(z, q, ok);
     render();
   }
   function answerMatchL(li) {
@@ -3528,7 +3853,7 @@ tr:last-child td { border-block-end: 0; }
     z.matchSel = null;
     if (Object.keys(z.matchDone).length >= q.pairs.length) {
       var allOk = Object.keys(z.matchDone).every(function (k) { return z.matchDone[k].ok; });
-      z.ans = { sel: "match", ok: allOk }; if (allOk) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
+      z.ans = { sel: "match", ok: allOk }; quizScore(z, q, allOk);
     }
     render();
   }
@@ -4300,13 +4625,33 @@ tr:last-child td { border-block-end: 0; }
   applyTheme(getTheme());
   render();
   setInterval(tick, 1000);
+  // Phase 11 — هدف يومي بالدقايق: a coarse but simple minutes-studied tracker.
+  // While the person is actually on the "learn" tab and the page is visible,
+  // bank half a minute every 30s — good enough to drive a daily-minutes goal
+  // without wiring up a real per-action stopwatch.
+  function learnMinutesTick() {
+    try {
+      if (state.loaded && state.tab === "learn" && document.visibilityState !== "hidden") {
+        var k = nowR().key;
+        if (!state.learn.minutes) state.learn.minutes = {};
+        state.learn.minutes[k] = (state.learn.minutes[k] || 0) + 0.5;
+        saveMeta("learn", 2000);
+      }
+    } catch (e) { }
+  }
+  setInterval(learnMinutesTick, 30000);
   initStore();
 
   // Debug/test hook only — not used by the app itself, and exposes nothing that
   // isn't already visible in localStorage or the DOM. Kept so automated Playwright
   // checks (and the user's own debugging) can drive internal state/functions that
   // live inside this closure, instead of only poking at the rendered HTML.
-  window.__masarDebug = { state: state, startQuiz: startQuiz, speechOK: speechOK, QINDEX: QINDEX, VOCAB_INDEX: VOCAB_INDEX, COURSES: COURSES, cardExType: cardExType, CARD_EX_TYPES: CARD_EX_TYPES };
+  window.__masarDebug = { state: state, startQuiz: startQuiz, speechOK: speechOK, QINDEX: QINDEX, VOCAB_INDEX: VOCAB_INDEX, COURSES: COURSES, cardExType: cardExType, CARD_EX_TYPES: CARD_EX_TYPES,
+    milestoneBoundaries: milestoneBoundaries, allMilestonesPassed: allMilestonesPassed, startMilestoneExam: startMilestoneExam,
+    startWeeklyChallenge: startWeeklyChallenge, weeklyChallengeKey: weeklyChallengeKey, checkAchievements: checkAchievements, ACHIEVEMENTS: ACHIEVEMENTS,
+    studyStreak: studyStreak, maybeUseStreakFreeze: maybeUseStreakFreeze, addXp: addXp, finishQuiz: finishQuiz, nowR: nowR, render: render,
+    renderPt: renderPt, ptPlainText: ptPlainText, questionStemVisual: questionStemVisual,
+    milestonePhaseLabel: milestonePhaseLabel, pathHTML: pathHTML };
 
   // Register the service worker so the app is installable on the phone's
   // home screen (standalone, no browser chrome) and still opens offline.
