@@ -1187,14 +1187,20 @@
         }
         break;
       }
-      case "hide-reveal": state.qv.revealed[el.getAttribute("data-i")] = true; render(); break;
+      case "hide-reveal": {
+        var hrI = el.getAttribute("data-i");
+        state.qv.revealed[hrI] = true;
+        if (!state.qv.mistaken) state.qv.mistaken = {};
+        state.qv.mistaken[hrI] = true; // checked by hand = a mistake, unlike a correct smart-listen auto-reveal
+        render(); break;
+      }
       case "hide-close": stopSmartListen(); state.qv = { mode: "lawh", lawhSurah: state.qv.lawhSurah }; render(); break;
       case "listen-start": startSmartListen(); break;
       case "listen-stop": stopSmartListen(); render(); break;
       case "hide-finish": {
         stopSmartListen();
         var hfL = lawhData(), hfKey = nowR().key, hfUnit = state.qv.hideUnit, hfU = parseUnitId(hfUnit);
-        var hfTotal = hfU ? unitAyahs(hfU).length : 0, hfRevealed = Object.keys(state.qv.revealed || {}).length;
+        var hfTotal = hfU ? unitAyahs(hfU).length : 0, hfRevealed = Object.keys(state.qv.mistaken || {}).length;
         if (!hfL.log[hfKey]) hfL.log[hfKey] = { memorized: [], reviewed: [] };
         if (!hfL.log[hfKey].selfChecks) hfL.log[hfKey].selfChecks = [];
         hfL.log[hfKey].selfChecks.push({ unit: hfUnit, revealed: hfRevealed, total: hfTotal });

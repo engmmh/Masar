@@ -771,21 +771,27 @@
     }
     var ayahs = unitAyahs(u);
     if (!state.qv.revealed) state.qv.revealed = {};
+    // "revealed" only controls whether an ayah's text is showing (by hand, or because
+    // the smart listener just heard it recited correctly). "mistaken" is the strictly
+    // smaller set revealed BY HAND — a correct recitation isn't a mistake, so it must
+    // not inflate the count below (see onSmartHeard, which only ever sets "revealed").
+    if (!state.qv.mistaken) state.qv.mistaken = {};
     var rows = ayahs.map(function (v, i) {
       if (state.qv.revealed[i]) {
         return '<div class="hide-row"><span class="ayah">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">﴿' + arNum(v.ayah) + "﴾</span></span></div>";
       }
       return '<button class="hide-row hidden" data-act="hide-reveal" data-i="' + i + '">— اضغط لإظهار الآية ' + arNum(v.ayah) + " من " + esc(v.surahName) + " —</button>";
     }).join("");
-    // "Mistake" = any ayah that needed a reveal, by hand or via a failed smart-listen
-    // attempt — one count per ayah no matter how many tries it took (see onSmartHeard).
-    var mistakes = Object.keys(state.qv.revealed).length;
+    // "Mistake" = an ayah you had to check by hand because you couldn't recite it —
+    // one count per ayah no matter how many times you re-checked it. An ayah the
+    // smart listener revealed because you said it correctly is not a mistake.
+    var mistakes = Object.keys(state.qv.mistaken).length;
     var listenRow = state.qv.listening
       ? '<button class="btn sm alt" data-act="listen-stop">إيقاف الاستماع</button><span class="chip on">يستمع الآن…</span>'
       : '<button class="btn sm" data-act="listen-start">تشغيل الاستماع الذكي (تجريبي)</button>';
     return head(now) + '<button class="linkbtn" data-act="hide-close">← رجوع للوح</button>' +
       '<div class="card"><div class="row between"><h2 style="margin:0">تسميع ' + esc(unitLabel(u)) + '</h2><span class="chip' + (mistakes ? "" : " on") + '">' + arNum(mistakes) + " غلطة من " + arNum(ayahs.length) + '</span></div>' +
-      '<p class="muted" style="font-size:13px;margin-block-start:6px">اقرأ غيبًا، واضغط فقط عند الحاجة للتأكد من آية — كل آية تكشفها تتحسب غلطة.</p>' +
+      '<p class="muted" style="font-size:13px;margin-block-start:6px">اقرأ غيبًا، واضغط فقط عند الحاجة للتأكد من آية — كل آية تلمسها بإيدك تتحسب غلطة. مع الاستماع الذكي، الآية اللي تقرأها صح بتتكشف لوحدها من غير ما تتحسب غلطة.</p>' +
       '<div class="row wrapr" style="margin-block-start:10px">' + listenRow + "</div>" +
       '<p class="muted" style="font-size:11px;margin-block-start:8px">ميزة تجريبية (Beta): تطابق فقط الكلمات المسموعة بالكلمات المكتوبة، ولا تحكم على التجويد أو الضبط، ودقة التعرف على الصوت العربي محدودة وتختلف حسب الجهاز — استخدمها كمساعد لا كحَكَم نهائي.</p></div>' +
       '<div class="card" style="display:flex;flex-direction:column;gap:8px">' + rows + "</div>" +
