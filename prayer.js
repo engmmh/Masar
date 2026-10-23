@@ -746,10 +746,16 @@
   function onSmartHeard(transcript) {
     var u = parseUnitId(state.qv.hideUnit); if (!u) return;
     var ayahs = unitAyahs(u), idx = state.qv.listenIdx || 0;
-    if (idx >= ayahs.length) return;
-    if (wordMatchRatio(ayahs[idx].text, transcript) >= 0.6) {
-      state.qv.revealed[idx] = true; state.qv.listenIdx = idx + 1; render();
+    // Shown live in hideView regardless of match, so a mismatch is visible and
+    // diagnosable (is the mic hearing the words at all? the right ones? garbled?)
+    // instead of looking like total silence when nothing reveals.
+    state.qv.lastHeard = transcript;
+    if (idx < ayahs.length) state.qv.lastRatio = wordMatchRatio(ayahs[idx].text, transcript);
+    if (idx >= ayahs.length) { render(); return; }
+    if (state.qv.lastRatio >= 0.6) {
+      state.qv.revealed[idx] = true; state.qv.listenIdx = idx + 1;
     }
+    render();
   }
   function startSmartListen() {
     if (!smartListenSupported()) { toast("الاستماع الذكي غير متاح في هذا المتصفح"); return; }
@@ -804,10 +810,17 @@
     var listenRow = state.qv.listening
       ? '<button class="btn sm alt" data-act="listen-stop">إيقاف الاستماع</button><span class="chip on">يستمع الآن…</span>'
       : '<button class="btn sm" data-act="listen-start">تشغيل الاستماع الذكي (تجريبي)</button>';
+    // Shows exactly what the recognizer heard (and the match score against the
+    // current ayah) live, instead of silence when it doesn't reveal — makes it
+    // possible to tell "it isn't hearing me" from "it heard me wrong" from
+    // "it heard me right but something else is off".
+    var heardRow = state.qv.lastHeard
+      ? '<p class="muted" style="font-size:12px;margin-block-start:8px">سمعت: «' + esc(state.qv.lastHeard.trim()) + '» — تطابق ' + arNum(Math.round((state.qv.lastRatio || 0) * 100)) + "%</p>"
+      : "";
     return head(now) + '<button class="linkbtn" data-act="hide-close">← رجوع للوح</button>' +
       '<div class="card"><div class="row between"><h2 style="margin:0">تسميع ' + esc(unitLabel(u)) + '</h2><span class="chip' + (mistakes ? "" : " on") + '">' + arNum(mistakes) + " غلطة من " + arNum(ayahs.length) + '</span></div>' +
       '<p class="muted" style="font-size:13px;margin-block-start:6px">اقرأ غيبًا، واضغط فقط عند الحاجة للتأكد من آية — كل آية تلمسها بإيدك تتحسب غلطة. مع الاستماع الذكي، الآية اللي تقرأها صح بتتكشف لوحدها من غير ما تتحسب غلطة.</p>' +
-      '<div class="row wrapr" style="margin-block-start:10px">' + listenRow + "</div>" +
+      '<div class="row wrapr" style="margin-block-start:10px">' + listenRow + "</div>" + heardRow +
       '<p class="muted" style="font-size:11px;margin-block-start:8px">ميزة تجريبية (Beta): تطابق فقط الكلمات المسموعة بالكلمات المكتوبة، ولا تحكم على التجويد أو الضبط، ودقة التعرف على الصوت العربي محدودة وتختلف حسب الجهاز — استخدمها كمساعد لا كحَكَم نهائي.</p></div>' +
       '<div class="card" style="display:flex;flex-direction:column;gap:8px">' + rows + "</div>" +
       '<button class="btn" style="width:100%;margin-block-start:10px" data-act="hide-finish">انتهيت من التسميع</button>';
