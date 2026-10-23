@@ -9,7 +9,7 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v3";
+var CACHE_NAME = "masar-v4";
 var PRECACHE = [
   "./",
   "./index.html",
@@ -32,6 +32,34 @@ self.addEventListener("activate", function (event) {
     caches.keys().then(function (names) {
       return Promise.all(names.filter(function (n) { return n !== CACHE_NAME; }).map(function (n) { return caches.delete(n); }));
     }).then(function () { return self.clients.claim(); })
+  );
+});
+
+// Shows the actual notification for a push message — enablePush()/disablePush() in
+// index.html only create the subscription; without this listener, a push sent to
+// that subscription (the daily reminder, or the admin's "🔔 ابعت تذكير" button)
+// would arrive but never be displayed on the device.
+self.addEventListener("push", function (event) {
+  var data = {};
+  try { data = event.data ? event.data.json() : {}; } catch (e) { }
+  var title = data.title || "مسار";
+  var body = data.body || "افتح مسار كمّل.";
+  event.waitUntil(self.registration.showNotification(title, {
+    body: body,
+    icon: "icons/icon-192.png",
+    badge: "icons/icon-192.png",
+    dir: "rtl",
+    lang: "ar"
+  }));
+});
+
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+  event.waitUntil(
+    self.clients.matchAll({ type: "window" }).then(function (list) {
+      for (var i = 0; i < list.length; i++) { if ("focus" in list[i]) return list[i].focus(); }
+      if (self.clients.openWindow) return self.clients.openWindow("./");
+    })
   );
 });
 

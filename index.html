@@ -97,7 +97,18 @@ body { background: var(--bg); color: var(--text); font-family: var(--body); font
    they're used, instead of hardcoding which named color belongs to which tab. */
 #p-home { --accent: var(--brand); }
 #p-prayer { --accent: var(--prayer); }
-#p-quran { --accent: var(--quran); }
+/* A quiet parchment feel for the Quran tab — two faint radial washes plus a very fine
+   fiber-like line texture, all derived from --quran so it still works in dark mode
+   (where --quran is a muted gold rather than paper-cream, but the effect still reads
+   as "warm paper" rather than the flat app background every other tab uses). */
+#p-quran {
+  --accent: var(--quran);
+  background:
+    radial-gradient(circle at 15% 8%, color-mix(in srgb, var(--quran) 7%, transparent), transparent 42%),
+    radial-gradient(circle at 85% 92%, color-mix(in srgb, var(--quran) 5%, transparent), transparent 46%),
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--quran) 3%, transparent) 0 1px, transparent 1px 3px),
+    var(--bg);
+}
 #p-learn { --accent: var(--learn); }
 #p-exp { --accent: var(--money); }
 h1 { font-family: var(--display); font-weight: 600; margin: 0; line-height: 1.3; text-wrap: balance; }
@@ -249,6 +260,12 @@ tr:last-child td { border-block-end: 0; }
 .week .col { display: flex; align-items: flex-end; }
 .week .col i { display: block; width: 100%; background: var(--teal); border-radius: 6px 6px 2px 2px; min-height: 3px; }
 .week .col i.full { background: var(--done); }
+/* The single 1→604 khatma bar: a slightly taller track than the daily-wird bar, with a
+   small ring marker riding the filled edge so "where am I" reads as a position, not
+   just a percentage. */
+.bar.khatma { height: 10px; border-radius: 6px; background: var(--surface2); overflow: visible; }
+.bar.khatma i { position: relative; background: var(--quran); border-radius: 6px; }
+.bar.khatma i::after { content: ""; position: absolute; inset-inline-end: -7px; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; border-radius: 50%; background: var(--surface); border: 3px solid var(--quran); box-shadow: 0 1px 4px rgba(0,0,0,.25); }
 
 /* learn */
 .units { display: grid; gap: 8px; }
@@ -312,6 +329,15 @@ tr:last-child td { border-block-end: 0; }
 .chipbtn.on { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); font-weight: 700; }
 .flash { min-height: 170px; display: grid; place-content: center; text-align: center; gap: 6px; cursor: pointer; }
 .flash .w { font-family: var(--display); font-size: 34px; direction: ltr; }
+/* The 4 SRS-v2 grading buttons (نسيتها/صعبة/عرفتها/سهلة جدًا) — a 2x2 grid on phone
+   width, each a quiet tint of its own meaning (forgot=miss, hard=amber, good=teal,
+   easy=blue) so the choice reads at a glance without relying on label length alone. */
+.grade4 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-block-start: 4px; }
+.grade4 .btn { padding: 12px 6px; font-size: 14px; min-height: 48px; }
+.grade4 .grade-forgot { background: var(--miss-bg); color: var(--miss-deep); border-color: transparent; }
+.grade4 .grade-hard { background: var(--amber-bg); color: var(--amber-deep); border-color: transparent; }
+.grade4 .grade-good { background: var(--done-bg); color: var(--done-deep); border-color: transparent; }
+.grade4 .grade-easy { background: var(--blue-bg); color: var(--blue-deep); border-color: transparent; }
 .crumb { font-size: 13.5px; color: var(--muted); font-weight: 600; margin-block-end: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .crumb .num { background: var(--surface2); border-radius: 99px; padding: 2px 10px; font-size: 12.5px; color: var(--text); font-weight: 700; flex: none; }
 .linkbtn { background: none; border: 0; color: var(--teal); padding: 4px 0; font-size: 15px; font-weight: 600; }
@@ -406,12 +432,26 @@ tr:last-child td { border-block-end: 0; }
 .streakbanner .sb-best { flex: none; text-align: center; font-size: 12px; opacity: .85; }
 .streakbanner .sb-best b { display: block; font-family: var(--display); font-size: 20px; }
 .streakbanner.off h3 { margin: 0 0 2px; }
+/* Dual layout: the "كامل" (complete) streak keeps the icon + milestone message, and the
+   stricter "في الوقت" (on-time) streak sits beside it as a quieter companion stat. */
+.streakbanner.dual { gap: 10px; }
+.streakbanner.dual .sb-col { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.streakbanner.dual .sb-main { flex: 1.3; }
+.streakbanner.dual .sb-ot { flex: 1; flex-direction: column; align-items: flex-start; gap: 2px; }
+.streakbanner.dual .sb-ot .sb-num b { font-size: 28px; }
+.streakbanner.dual .sb-ot .sb-sub { font-size: 12px; margin: 0; }
+.streakbanner .sb-div { flex: none; width: 1px; align-self: stretch; background: color-mix(in srgb, currentColor 22%, transparent); }
 .azcard { display: block; width: 100%; text-align: start; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; margin-block-end: 10px; position: relative; }
 .azcard .az-text { font-family: var(--display); font-size: 18px; line-height: 2; padding-inline-end: 56px; }
 .azcard .az-note { font-size: 13px; margin-block-start: 8px; }
 .azcard .az-count { position: absolute; inset-inline-end: 14px; inset-block-start: 14px; min-width: 34px; height: 34px; border-radius: 50%; background: var(--amber-bg); color: var(--amber-deep); font-weight: 700; display: grid; place-items: center; font-size: 15px; }
 .azcard.done { opacity: .55; }
 .azcard.done .az-count { background: var(--done-bg); color: var(--done-deep); }
+/* Collapsed = not the focused dhikr yet: shrink to one line so the open card (full text
+   + note) is clearly where attention goes, while still tappable to jump ahead. */
+.azcard.collapsed { padding: 12px 16px; }
+.azcard.collapsed .az-text { font-size: 15px; line-height: 1.5; opacity: .72; padding-inline-end: 44px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.azcard.collapsed .az-count { width: 26px; height: 26px; min-width: 26px; font-size: 13px; inset-block-start: 50%; transform: translateY(-50%); }
 .badgerow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-block-end: 14px; }
 .badge { display: grid; gap: 4px; justify-items: center; background: none; border: 0; padding: 4px; text-align: center; }
 .badge .ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: var(--surface2); color: var(--muted); }
@@ -1105,7 +1145,10 @@ tr:last-child td { border-block-end: 0; }
     if (v < 8) seedNotesCourse("micro", NOTES_SEED_MICRO);
     state.learn.notesSeeded = NOTES_SEED_VERSION; saveMeta("learn", 0);
   }
-  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0, exam: {}, resume: null }; }
+  // minutes: {dateKey: wholeMinutes} — real elapsed time spent with the "تعلّم" tab
+  // open and the tab/page visible, accumulated by tick() below. Powers the admin
+  // dashboard's weekly-minutes KPI and the per-account "هدف الدقايق" goal (Phase 6).
+  function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0, exam: {}, resume: null, minutes: {}, srsVersion: 1, srsDaily: null }; }
   var state = {
     loaded: false, mode: "local",
     settings: { startDate: today0, unit: "page", amount: 5, startPage: 1, certName: "" },
@@ -1115,10 +1158,11 @@ tr:last-child td { border-block-end: 0; }
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
     expKind: "expense", expEditId: null, expBudgetEditCat: null, expRecurAdd: false, expSwipeId: null,
     tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, quiz: null, card: null, spk: null,
-    az: null, azProgress: {}, settingsOpen: false,
+    az: null, azProgress: {}, azOpen: {}, settingsOpen: false,
     // Default to every section allowed until an account's real permissions are known
     // (applyPermissions() narrows this on login) — matches TOGGLEABLE_SECTIONS below.
-    allowedSections: ["prayer", "quran", "learn", "exp"]
+    allowedSections: ["prayer", "quran", "learn", "exp"],
+    dailyGoalMin: 0, dailyNewWordLimit: 0
   };
   var ready = { days: false, settings: false, learn: false, exp: false };
 
@@ -1147,11 +1191,16 @@ tr:last-child td { border-block-end: 0; }
       // project (migration not run), fall back to the plain select so accounts
       // still load normally — courses/sections just come back undefined, which
       // every permission check below treats as "see everything".
-      var r = await store.sb.from("masar_accounts").select("uid,email,role,label,active,courses,sections");
+      // daily_goal_min/daily_new_word_limit are newer optional columns (per-account
+      // learning goal, set from the admin "الصلاحيات" tab) — same progressive-select
+      // fallback as courses/sections above, so accounts still load before that
+      // migration is run.
+      var r = await store.sb.from("masar_accounts").select("uid,email,role,label,active,courses,sections,daily_goal_min,daily_new_word_limit");
+      if (r.error) r = await store.sb.from("masar_accounts").select("uid,email,role,label,active,courses,sections");
       if (r.error) r = await store.sb.from("masar_accounts").select("uid,email,role,label,active");
       if (!r.error && r.data && r.data.length) {
         ACCOUNTS = r.data.map(function (row) {
-          return { email: row.email, uid: row.uid, role: row.role, label: row.label, active: row.active !== false, courses: row.courses || null, sections: row.sections || null };
+          return { email: row.email, uid: row.uid, role: row.role, label: row.label, active: row.active !== false, courses: row.courses || null, sections: row.sections || null, dailyGoalMin: row.daily_goal_min || 0, dailyNewWordLimit: row.daily_new_word_limit || 0 };
         });
         return;
       }
@@ -1229,6 +1278,7 @@ tr:last-child td { border-block-end: 0; }
     if (!window.supabase) await loadSupabaseScript();
     if (window.supabase && CFG.url && CFG.key) { initSupa(); return; }
     state.mode = "local"; localLoad(); ensureNotesSeed();
+    migrateSrsV2(nowR()); // fire-and-forget; see its own comment
     ready.days = ready.settings = ready.learn = ready.exp = true; checkLoaded(); render();
     var lockEl = document.getElementById("lock"); if (lockEl) lockEl.hidden = true;
   }
@@ -1247,21 +1297,49 @@ tr:last-child td { border-block-end: 0; }
     return "missed";
   }
   function isDone(st) { return st === "done" || st === "late" || st === "qada"; }
-  function dayComplete(key) { var d = state.days[key]; return !!d && PRAYERS.every(function (p) { return d[p.k] && d[p.k].t; }); }
-  function streak(now) {
+  // Real epoch ms of a prayer window's end, for comparing against a recorded qada
+  // timestamp (r.t, itself a real Date.now() epoch ms, not the TZ-shifted "virtual hour"
+  // windowOf() returns). shiftedMidnight is "key"'s midnight in the same +TZ-shifted frame
+  // nowR() uses, so subtracting TZ*3600e3 converts back to a true, comparable epoch.
+  function windowEndMs(key, i) {
+    var p = key.split("-").map(Number);
+    var shiftedMidnight = Date.UTC(p[0], p[1] - 1, p[2]);
+    return shiftedMidnight + windowOf(key, i).end * 3600000 - TZ * 3600000;
+  }
+  // "كامل" (complete) day: every prayer recorded, and any qada recorded within 48h of
+  // that prayer's window ending — a qada logged a week later no longer keeps the streak.
+  function dayComplete(key) {
+    var d = state.days[key]; if (!d) return false;
+    return PRAYERS.every(function (p, i) {
+      var r = d[p.k]; if (!r || !r.t) return false;
+      if (!r.qada) return true;
+      return (r.t - windowEndMs(key, i)) <= 48 * 3600000;
+    });
+  }
+  // "في الوقت" (on time) day: all 5 prayers registered inside their own window — stricter
+  // than dayComplete(), which also accepts same-day-late or 48h-qada recordings.
+  function dayOnTime(key) {
+    var d = state.days[key]; if (!d) return false;
+    return PRAYERS.every(function (p) { var r = d[p.k]; return !!(r && r.t && !r.late && !r.qada); });
+  }
+  function streakBy(now, test) {
     var k = now.key, n = 0;
-    if (!dayComplete(k)) k = addDays(k, -1);
-    while (dayComplete(k) && n < 5000) { n++; k = addDays(k, -1); }
+    if (!test(k)) k = addDays(k, -1);
+    while (test(k) && n < 5000) { n++; k = addDays(k, -1); }
     return n;
   }
-  function bestStreak() {
+  function bestStreakBy(test) {
     var keys = Object.keys(state.days).sort(), best = 0, cur = 0, prev = null;
     keys.forEach(function (k) {
-      if (dayComplete(k)) { cur = (prev && addDays(prev, 1) === k) ? cur + 1 : 1; prev = k; if (cur > best) best = cur; }
+      if (test(k)) { cur = (prev && addDays(prev, 1) === k) ? cur + 1 : 1; prev = k; if (cur > best) best = cur; }
       else { cur = 0; prev = null; }
     });
     return best;
   }
+  function streak(now) { return streakBy(now, dayComplete); }
+  function bestStreak() { return bestStreakBy(dayComplete); }
+  function streakOnTime(now) { return streakBy(now, dayOnTime); }
+  function bestStreakOnTime() { return bestStreakBy(dayOnTime); }
   function fmtDaysAr(n) {
     if (n === 1) return "يوم";
     if (n === 2) return "يومين";
@@ -1273,17 +1351,25 @@ tr:last-child td { border-block-end: 0; }
     { d: 30, label: "شهر كامل" }, { d: 50, label: "50 يوم" }, { d: 100, label: "100 يوم" },
     { d: 200, label: "200 يوم" }, { d: 365, label: "سنة كاملة" }
   ];
+  // Two parallel streaks shown side by side: "كامل" (complete — every prayer eventually
+  // recorded, qada within 48h) drives the main message/milestones since it's the more
+  // forgiving, encouraging number; "في الوقت" (on-time only) sits beside it as the
+  // stricter companion stat, with its own best-ever record shown only if higher.
   function streakBannerHTML(now) {
     var st = streak(now), best = bestStreak();
-    if (!st) {
+    var stOT = streakOnTime(now), bestOT = bestStreakOnTime();
+    if (!st && !stOT) {
       return '<div class="card streakbanner off"><div class="sb-ico">' + ico("flame") + '</div><div class="sb-body"><h3>ابدأ سلسلتك اليوم</h3><p class="muted" style="font-size:14px">خلّص الصلوات الخمس النهاردة عشان تبدأ سلسلة جديدة' + (best ? " · أفضل سلسلة سابقة " + best + " يوم" : "") + "</p></div></div>";
     }
     var hit = STREAK_MILESTONES.filter(function (m) { return m.d === st; })[0];
     var next = STREAK_MILESTONES.filter(function (m) { return m.d > st; })[0];
-    var sub = hit ? "🎉 وصلت لـ" + hit.label + "! استمر كده"
+    var sub = !st ? "بدأت النهاردة" : hit ? "🎉 وصلت لـ" + hit.label + "! استمر كده"
       : (next ? "كمان " + fmtDaysAr(next.d - st) + " لـ" + next.label + " 🔥"
         : "رقم قياسي! استمر على البركة");
-    return '<div class="card streakbanner on"><div class="sb-ico">' + ico("flame") + '</div><div class="sb-body"><div class="sb-num"><b class="num">' + st + '</b><span>' + (st === 1 ? "يوم متواصل" : "أيام متواصلة") + '</span></div><p class="sb-sub">' + esc(sub) + "</p></div>" +
+    return '<div class="card streakbanner on dual"><div class="sb-col sb-main"><div class="sb-ico">' + ico("flame") + '</div><div class="sb-body"><div class="sb-num"><b class="num">' + st + '</b><span>' + (st === 1 ? "يوم كامل" : "أيام كاملة") + '</span></div><p class="sb-sub">' + esc(sub) + "</p></div></div>" +
+      '<div class="sb-div"></div>' +
+      '<div class="sb-col sb-ot"><div class="sb-num"><b class="num">' + stOT + '</b><span>' + (stOT === 1 ? "يوم في الوقت" : "أيام في الوقت") + '</span></div>' +
+      (bestOT > stOT ? '<p class="sb-sub muted">أفضل ' + bestOT + '</p>' : "") + "</div>" +
       (best > st ? '<div class="sb-best">أفضل<b class="num">' + best + "</b></div>" : "") + "</div>";
   }
   function togglePrayer(key, i) {
@@ -1353,7 +1439,107 @@ tr:last-child td { border-block-end: 0; }
       (COURSES[cid].examBank || []).forEach(function (q, i) { q.id = cid + "-bank-" + i; q.c = cid; QINDEX[q.id] = q; });
     });
   }
-  var INTERVALS = [0, 1, 3, 7];
+  // Phase 7 — 8-stage spaced repetition (was a 4-box system, INTERVALS = [0,1,3,7]).
+  // Stages 0-3 use the EXACT same day-counts as the old boxes on purpose: every
+  // existing card's due date and meaning carry over unchanged (see migrateSrsV2) —
+  // stages 4-7 are new ground, reachable only by continuing to review a card that
+  // already reached old mastery (stage 3).
+  var SRS_STAGE_DAYS = [0, 1, 3, 7, 14, 30, 60, 120];
+  var SRS_MAX_STAGE = SRS_STAGE_DAYS.length - 1;
+  function cardStage(c) { return c ? Math.max(0, Math.min(SRS_MAX_STAGE, c.stage != null ? c.stage : (c.box || 0))) : 0; }
+  // Daily caps — an admin-set per-account ceiling (state.dailyNewWordLimit, Phase 6)
+  // is the default; the signed-in account can further override both from "الإعدادات".
+  function srsNewLimit() { return (state.settings.dailyNewWordLimit > 0 ? state.settings.dailyNewWordLimit : (state.dailyNewWordLimit > 0 ? state.dailyNewWordLimit : 10)); }
+  function srsReviewLimit() { return state.settings.dailyReviewLimit > 0 ? state.settings.dailyReviewLimit : 30; }
+  function srsDayCounters(now) {
+    if (!state.learn.srsDaily || state.learn.srsDaily.date !== now.key) state.learn.srsDaily = { date: now.key, newDone: 0, reviewDone: 0 };
+    return state.learn.srsDaily;
+  }
+  // No more than 3 cards in a row from the same course in a mixed/global session —
+  // preserves the priority order the caller already sorted (weak/overdue/new), just
+  // avoids one big course dominating a session a smaller course also has cards in.
+  function interleaveCourses(list) {
+    var buckets = {}, order = [];
+    list.forEach(function (v) {
+      var k = v.c || "_";
+      if (!buckets[k]) { buckets[k] = []; order.push(k); }
+      buckets[k].push(v);
+    });
+    var out = [], lastKey = null, streak = 0, guard = 0, total = list.length;
+    while (out.length < total && guard++ < total * 4 + 4) {
+      var picked = false;
+      for (var i = 0; i < order.length; i++) {
+        var k = order[i];
+        if (!buckets[k].length) continue;
+        var othersHaveCards = order.some(function (ok) { return ok !== k && buckets[ok].length; });
+        if (k === lastKey && streak >= 3 && othersHaveCards) continue;
+        out.push(buckets[k].shift());
+        streak = (k === lastKey) ? streak + 1 : 1;
+        lastKey = k; picked = true;
+        break;
+      }
+      if (!picked) { for (var j = 0; j < order.length; j++) { if (buckets[order[j]].length) { out.push(buckets[order[j]].shift()); break; } } }
+    }
+    return out;
+  }
+  // Builds one review session's queue: weak (previously forgotten & due again) first,
+  // then oldest-overdue, then due-today, then brand-new words — capped by the daily
+  // new/review limits above, with new-word intake paused entirely once the backlog
+  // (everything overdue) is heavier than 60, so catching up always wins over novelty.
+  function buildReviewQueue(now, cid, lvl, max) {
+    var pool = cid ? (COURSES[cid] ? COURSES[cid].vocab : []) : ALLOWED_COURSES.reduce(function (a, c) { return COURSES[c] ? a.concat(COURSES[c].vocab) : a; }, []);
+    if (lvl) pool = pool.filter(function (v) { return (v.lvl || 1) === lvl; });
+    var weak = [], overdue = [], dueToday = [], brandNew = [];
+    pool.forEach(function (v) {
+      var c = state.learn.cards[v.id];
+      if (!c) { brandNew.push(v); return; }
+      if (c.due > now.key) return; // not due yet
+      if ((c.lapses || 0) > 0) { weak.push(v); return; }
+      if (c.due < now.key) overdue.push(v); else dueToday.push(v);
+    });
+    overdue.sort(function (a, b) { var da = state.learn.cards[a.id].due, db = state.learn.cards[b.id].due; return da < db ? -1 : (da > db ? 1 : 0); });
+    var backlog = weak.length + overdue.length + dueToday.length;
+    var counters = srsDayCounters(now);
+    var reviewRoom = Math.max(0, srsReviewLimit() - counters.reviewDone);
+    var newRoom = backlog > 60 ? 0 : Math.max(0, srsNewLimit() - counters.newDone);
+    var reviewPart = weak.concat(overdue).concat(dueToday).slice(0, reviewRoom);
+    var newPart = shuffle(brandNew).slice(0, newRoom);
+    var cap = max || (reviewRoom + newRoom) || 1;
+    return interleaveCourses(reviewPart.concat(newPart).slice(0, cap));
+  }
+  // One-time migration to the 8-stage system — guarded by srsVersion so it only ever
+  // runs once per account. A deterministic (not Math.random) hash-based jitter is
+  // applied ONLY to cards that were already at old box 3: those are exactly the ones
+  // that could keep climbing further now, and since many words mastered in the same
+  // study session would otherwise share the exact same due date, that's also exactly
+  // the population most likely to "pile up" on one day — spreading them 0-6 days
+  // apart (never earlier) is the one real behavior change this migration makes;
+  // every other card's due date is left completely untouched.
+  function srsStableJitter(id, max) {
+    var h = 0;
+    for (var i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+    return h % (max + 1);
+  }
+  async function migrateSrsV2(now) {
+    if ((state.learn.srsVersion || 1) >= 2) return;
+    var cards = state.learn.cards || {};
+    // Backup first, before any field is touched — local always, and to the cloud too
+    // when signed in, so the pre-migration snapshot survives even a lost device.
+    try { localStorage.setItem(LSKEY + ":srs2backup", JSON.stringify({ at: now.ms, cards: cards })); } catch (e) { }
+    if (state.mode === "supa" && store.uid) {
+      try {
+        await store.sb.from("masar_meta").upsert({ user_id: store.uid, name: "learnBackupSrs2", data: { at: now.ms, cards: cards }, updated_at: new Date().toISOString() }, { onConflict: "user_id,name" });
+      } catch (e) { }
+    }
+    Object.keys(cards).forEach(function (id) {
+      var c = cards[id], wasBox3 = (c.box || 0) >= 3 && c.stage == null;
+      if (c.stage == null) c.stage = Math.max(0, Math.min(SRS_MAX_STAGE, c.box || 0));
+      if (c.lapses == null) c.lapses = 0;
+      if (wasBox3 && c.due) c.due = addDays(c.due, srsStableJitter(id, 6));
+    });
+    state.learn.srsVersion = 2;
+    saveMeta("learn", 0);
+  }
 
   function level() {
     var xp = state.learn.xp || 0, lv = Math.floor(Math.sqrt(xp / 40)) + 1, base = 40 * (lv - 1) * (lv - 1), next = 40 * lv * lv;
@@ -1898,7 +2084,13 @@ tr:last-child td { border-block-end: 0; }
   }
   function settingsHTML(now) {
     return '<button class="linkbtn" data-act="settings-close">← رجوع</button><div class="sec-h">الإعدادات</div>' + pushCardHTML() +
-      '<div class="card"><h3 style="margin:0 0 6px">المظهر</h3><p class="muted" style="font-size:13px;margin-block-end:10px">النهاري / الليلي / حسب الجهاز</p><button class="btn sm alt" data-act="theme">' + esc(THEME_LBL[getTheme()]) + "</button></div>";
+      '<div class="card"><h3 style="margin:0 0 6px">المظهر</h3><p class="muted" style="font-size:13px;margin-block-end:10px">النهاري / الليلي / حسب الجهاز</p><button class="btn sm alt" data-act="theme">' + esc(THEME_LBL[getTheme()]) + "</button></div>" +
+      '<div class="card"><h3 style="margin:0 0 6px">حدود المراجعة اليومية</h3>' +
+      '<p class="muted" style="font-size:13px;margin-block-end:10px">' + (state.dailyNewWordLimit > 0 ? "حدّ الكلمات الجديدة اللي ضبطه المسؤول: " + state.dailyNewWordLimit + "/يوم — تقدر تقلّله هنا لكن متزودّه عليه." : "تقدر تتحكم في عدد الكلمات الجديدة والمراجعات اللي تظهر لك كل يوم.") + "</p>" +
+      '<div class="row wrapr" style="gap:14px">' +
+      '<label class="field" style="max-width:150px">كلمات جديدة/يوم<input class="inp" type="number" min="0" id="setNewLimit" value="' + (state.settings.dailyNewWordLimit || "") + '" placeholder="' + srsNewLimit() + '"></label>' +
+      '<label class="field" style="max-width:150px">مراجعات/يوم<input class="inp" type="number" min="0" id="setReviewLimit" value="' + (state.settings.dailyReviewLimit || "") + '" placeholder="30"></label>' +
+      "</div></div>";
   }
   function prayerView(now) {
     if (state.az) return azkarListHTML(state.az);
@@ -1915,18 +2107,30 @@ tr:last-child td { border-block-end: 0; }
       '<button class="btn" data-act="azkar-open" data-k="morning">🌅 أذكار الصباح</button>' +
       '<button class="btn alt" data-act="azkar-open" data-k="evening">🌙 أذكار المساء</button></div></div>';
   }
+  // Only one not-yet-finished dhikr is shown "open" (full text + note) at a time; the
+  // rest sit collapsed to a single line. Finishing the open one auto-advances the focus
+  // to the next not-done item — reading one thing at a time instead of scanning a long
+  // flat list for where you left off.
   function azkarListHTML(key) {
     var list = AZKAR[key];
     var prog = state.azProgress[key];
     if (!prog || prog.length !== list.length) prog = state.azProgress[key] = list.map(function (it) { return it.n; });
+    if (!state.azOpen) state.azOpen = {};
+    var openIdx = state.azOpen[key];
+    if (openIdx == null || prog[openIdx] == null || prog[openIdx] <= 0) {
+      openIdx = prog.findIndex(function (c) { return c > 0; });
+      state.azOpen[key] = openIdx;
+    }
     var doneCount = prog.filter(function (c) { return c <= 0; }).length;
+    var pct = list.length ? Math.round(doneCount / list.length * 100) : 0;
     var items = list.map(function (it, i) {
-      var left = prog[i], done = left <= 0;
-      return '<button class="azcard' + (done ? " done" : "") + '" data-act="azkar-tap" data-k="' + key + '" data-i="' + i + '"' + (done ? " disabled" : "") + '><p class="az-text">' + esc(it.t) + "</p>" +
-        (it.note ? '<p class="az-note muted">' + esc(it.note) + "</p>" : "") +
+      var left = prog[i], done = left <= 0, open = i === openIdx;
+      return '<button class="azcard' + (done ? " done" : (!open ? " collapsed" : "")) + '" data-act="azkar-tap" data-k="' + key + '" data-i="' + i + '"' + (done ? " disabled" : "") + '><p class="az-text">' + esc(it.t) + "</p>" +
+        (it.note && (open || done) ? '<p class="az-note muted">' + esc(it.note) + "</p>" : "") +
         '<span class="az-count">' + (done ? "✓" : left) + "</span></button>";
     }).join("");
     return '<button class="linkbtn" data-act="azkar-close">← رجوع</button><div class="card"><div class="row between"><h2 style="margin:0">' + (key === "morning" ? "أذكار الصباح" : "أذكار المساء") + '</h2><span class="chip">' + doneCount + " / " + list.length + '</span></div>' +
+      '<div class="bar" style="margin-block-start:10px"><i style="width:' + pct + '%"></i></div>' +
       '<p class="muted" style="font-size:13px;margin-block-start:6px">اضغط على الذكر كل ما قلته مرة، للعدّاد يوصل صفر</p></div>' + items +
       '<button class="btn alt" data-act="azkar-reset" data-k="' + key + '" style="width:100%;margin-block-start:4px">إعادة البدء</button>';
   }
@@ -1980,22 +2184,30 @@ tr:last-child td { border-block-end: 0; }
     var S = state.settings, u = UNITS[S.unit] || UNITS.page, t = target(), n = pagesOn(now.key);
     var tot = totalPages(), absolute = (S.startPage - 1) + tot, cur = (absolute % 604) + 1, khat = Math.floor(absolute / 604);
     var remain = 604 - (cur - 1), eta = Math.ceil(remain / t), wk = "", i, max = t;
-    var days = [];
-    for (i = 6; i >= 0; i--) { var k = addDays(now.key, -i); days.push({ k: k, v: pagesOn(k) }); if (pagesOn(k) > max) max = pagesOn(k); }
+    var days = [], weekAllZero = true;
+    for (i = 6; i >= 0; i--) { var k = addDays(now.key, -i); var v = pagesOn(k); days.push({ k: k, v: v }); if (v > max) max = v; if (v > 0) weekAllZero = false; }
     days.forEach(function (d) {
       wk += '<div><span class="col"><i class="' + (d.v >= t ? "full" : "") + '" style="height:' + Math.round(d.v / max * 100) + '%"></i></span><b class="num" style="font-weight:500">' + d.v + "</b><span>" + WD_S[dowOf(d.k)] + "</span></div>";
     });
     var opts = Object.keys(UNITS).map(function (k) { return '<button data-act="unit" data-u="' + k + '" aria-pressed="' + (S.unit === k) + '">' + UNITS[k].n + "</button>"; }).join("");
+    // One continuous 1→604 bar with a marker at the current position, instead of a bare
+    // "وصلت لصفحة" number — "where am I in the whole Quran" reads faster as a single bar
+    // than as a stat tile among four others.
+    var khatmaPct = Math.max(0, Math.min(100, Math.round(((cur - 1) / 604) * 100)));
+    var khatmaHTML = '<div class="card"><h3 style="margin:0 0 10px">الختمة الحالية</h3>' +
+      '<div class="bar khatma"><i style="width:' + khatmaPct + '%"></i></div>' +
+      '<p class="muted" style="font-size:13px;margin-block-start:10px">الجزء ' + juzOf(cur) + ' · باقي ' + eta + ' يوم بالمعدل الحالي</p></div>';
     return head(now) +
       '<div class="card"><div class="row between"><h2>وردي اليوم</h2><span class="chip num">' + n + " / " + t + ' صفحة</span></div>' +
       '<div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div>' +
       '<div class="row wrapr" style="margin-block-start:12px"><button class="btn sm" data-act="pg" data-n="1">+1 صفحة</button><button class="btn sm" data-act="pg" data-n="5">+5</button><button class="btn sm" data-act="pg" data-n="10">+10</button>' +
       '<button class="btn sm alt" data-act="pgdone">أتممت وردي</button><button class="btn sm alt" data-act="pg" data-n="-1">−1</button></div></div>' +
-      '<div class="stats"><div class="stat"><b class="num">' + cur + '</b><span>وصلت لصفحة (الجزء ' + juzOf(cur) + ')</span></div>' +
-      '<div class="stat"><b class="num">' + khat + '</b><span>ختمات مكتملة</span></div>' +
-      '<div class="stat"><b class="num">' + tot + '</b><span>مجموع الصفحات المقروءة</span></div>' +
-      '<div class="stat"><b class="num">' + eta + '</b><span>يوم لإتمام الختمة الحالية</span></div></div>' +
-      '<div class="card"><h3>آخر 7 أيام</h3><div class="week">' + wk + "</div></div>" +
+      khatmaHTML +
+      '<div class="stats"><div class="stat"><b class="num">' + khat + '</b><span>ختمات مكتملة</span></div>' +
+      '<div class="stat"><b class="num">' + tot + '</b><span>مجموع الصفحات المقروءة</span></div></div>' +
+      '<div class="card"><h3>آخر 7 أيام</h3>' + (weekAllZero
+        ? '<p class="muted" style="font-size:14px;margin-block-start:8px">لسه مفيش وِرد مسجّل آخر 7 أيام.</p>'
+        : '<div class="week">' + wk + "</div>") + "</div>" +
       '<div class="card"><h2>إعداد الورد</h2><div class="seg2">' + opts + "</div>" +
       '<div class="field">الكمية اليومية (' + u.n + ")<div class=\"stepper\"><button class=\"btn sm alt\" data-act=\"amt\" data-n=\"-1\">−</button><b class=\"num\">" + S.amount + "</b><button class=\"btn sm alt\" data-act=\"amt\" data-n=\"1\">+</button><span class=\"muted\">= " + t + " صفحة</span></div></div>" +
       '<label class="field">بدأت من صفحة<input type="number" id="startpage" min="1" max="604" value="' + S.startPage + '" inputmode="numeric"></label></div>';
@@ -2101,7 +2313,7 @@ tr:last-child td { border-block-end: 0; }
     var c = COURSES[cid], vocab = c.vocab || [];
     var q = norm(state.bankQ || ""), lvl = state.bankLvl || 0, onlyNew = !!state.bankNew;
     var known = {};
-    vocab.forEach(function (v) { var cc = state.learn.cards[v.id]; known[v.id] = !!(cc && cc.box >= 3); });
+    vocab.forEach(function (v) { var cc = state.learn.cards[v.id]; known[v.id] = !!cc && cardStage(cc) >= 3; });
     var knownCount = vocab.filter(function (v) { return known[v.id]; }).length;
     var list = vocab.filter(function (v) {
       if (lvl && (v.lvl || 1) !== lvl) return false;
@@ -2406,7 +2618,12 @@ tr:last-child td { border-block-end: 0; }
     var courseTag = c.global && w.c && COURSES[w.c] ? '<span class="chip" style="margin-inline-start:6px">' + esc(COURSES[w.c].title) + "</span>" : "";
     var face = c.flip ? '<div class="w" style="direction:rtl;font-size:30px">' + esc(w.ar) + '</div><div class="en muted">' + esc(w.ex) + "</div>" + (w.exAr ? '<div class="muted" style="direction:rtl">' + esc(w.exAr) + "</div>" : "") + spkBtn(w.ex || w.en) : '<div class="w">' + esc(w.en) + "</div>" + spkBtn(w.en) + '<div class="muted">اضغط لإظهار المعنى</div>';
     return '<button class="linkbtn"' + exitAct + '>← إنهاء</button><div class="card"><div class="crumb">كروت المفردات · ' + (c.i + 1) + " من " + c.q.length + " · " + (LVL_LBL[w.lvl || 1]) + courseTag + '</div><div class="card flash" data-act="flip" role="button" tabindex="0">' + face + "</div>" +
-      (c.flip ? '<div class="row"><button class="btn grow" data-act="know" data-v="1">عرفتها</button><button class="btn alt grow" data-act="know" data-v="0">لم أعرفها</button></div>' : "") + "</div>";
+      (c.flip ? '<div class="grade4">' +
+        '<button class="btn grade-forgot" data-act="grade" data-r="forgot">نسيتها</button>' +
+        '<button class="btn grade-hard" data-act="grade" data-r="hard">صعبة</button>' +
+        '<button class="btn grade-good" data-act="grade" data-r="good">عرفتها</button>' +
+        '<button class="btn grade-easy" data-act="grade" data-r="easy">سهلة جدًا</button>' +
+        "</div>" : "") + "</div>";
   }
   function speakHTML() {
     var s = state.spk; if (!s) return "";
@@ -2440,6 +2657,10 @@ tr:last-child td { border-block-end: 0; }
     // plan card above all — can ask "is this section allowed for the signed-in account"
     // without re-deriving it from the DOM.
     state.allowedSections = allowedSections ? allowedSections.slice() : TOGGLEABLE_SECTIONS.slice();
+    // Per-account learning settings the admin can set from "الصلاحيات" — 0 means
+    // "no admin-set limit", so Phase 7's SRS daily cap falls back to its own default.
+    state.dailyGoalMin = (acc && acc.dailyGoalMin) || 0;
+    state.dailyNewWordLimit = (acc && acc.dailyNewWordLimit) || 0;
     TOGGLEABLE_SECTIONS.forEach(function (s) {
       var hide = !!(allowedSections && allowedSections.indexOf(s) < 0);
       var btn = document.querySelector('.tabs button[data-t="' + s + '"]');
@@ -2489,11 +2710,29 @@ tr:last-child td { border-block-end: 0; }
     var now = nowR();
     return now.key + ":" + PRAYERS.map(function (p, i) { return status(now.key, i, now); }).join(",");
   }
+  // Real elapsed-time tracker for the "تعلّم" tab, feeding learn.minutes — only ticks
+  // while that tab is the active one, the page is visible, and an account is actually
+  // signed in/loaded (so a brand-new local session sitting on the lock screen, or a
+  // background tab, never accrues time). Saved every full minute, debounced like any
+  // other meta write.
+  var learnMinuteAccumMs = 0;
   function tick() {
     var el = $("#cd");
     if (el) {
       var now = nowR(), left = (parseFloat(el.getAttribute("data-t")) - now.h) * 3600;
       el.textContent = fmtDur(left);
+    }
+    if (state.loaded && state.tab === "learn" && !document.hidden) {
+      learnMinuteAccumMs += 1000;
+      if (learnMinuteAccumMs >= 60000) {
+        learnMinuteAccumMs -= 60000;
+        var mk = nowR().key;
+        if (!state.learn.minutes) state.learn.minutes = {};
+        state.learn.minutes[mk] = (state.learn.minutes[mk] || 0) + 1;
+        saveMeta("learn", 3000);
+      }
+    } else {
+      learnMinuteAccumMs = 0;
     }
     if (signature() !== lastSig) render();
   }
@@ -2547,14 +2786,22 @@ tr:last-child td { border-block-end: 0; }
       case "resume-lesson":
         var rsC = el.getAttribute("data-c"), rsU = el.getAttribute("data-u"), rsUnit = unitOf(rsC, rsU); if (!rsUnit) break;
         state.lv = { mode: rsUnit.kind === "dialogue" ? "dialogue" : "lesson", c: rsC, u: rsU, step: 0 }; goTab("learn"); render(); break;
-      case "resume-review": state.card = { q: shuffle(dueCards(now)).slice(0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
+      case "resume-review": state.card = { q: buildReviewQueue(now, null, 0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "resume-prayer": goTab("prayer"); render(); break;
       case "resume-quran": goTab("quran"); render(); break;
       case "azkar-open": state.az = el.getAttribute("data-k"); $("#p-prayer").scrollTop = 0; render(); break;
       case "azkar-close": state.az = null; render(); break;
       case "azkar-tap": var azK = el.getAttribute("data-k"), azI = Number(el.getAttribute("data-i"));
-        if (state.azProgress[azK] && state.azProgress[azK][azI] > 0) state.azProgress[azK][azI]--; render(); break;
-      case "azkar-reset": var azRk = el.getAttribute("data-k"); state.azProgress[azRk] = AZKAR[azRk].map(function (it) { return it.n; }); render(); break;
+        if (state.azProgress[azK] && state.azProgress[azK][azI] > 0) {
+          state.azProgress[azK][azI]--;
+          var azFinished = state.azProgress[azK][azI] <= 0;
+          try { navigator.vibrate && navigator.vibrate(azFinished ? [12, 40, 12] : 10); } catch (eVib) { }
+          if (azFinished && state.azOpen && state.azOpen[azK] === azI) {
+            state.azOpen[azK] = state.azProgress[azK].findIndex(function (c) { return c > 0; });
+          }
+        }
+        render(); break;
+      case "azkar-reset": var azRk = el.getAttribute("data-k"); state.azProgress[azRk] = AZKAR[azRk].map(function (it) { return it.n; }); if (!state.azOpen) state.azOpen = {}; state.azOpen[azRk] = 0; render(); break;
       case "lcourses": state.lv = { mode: "courses" }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
       case "course-open": state.lv = { mode: "home", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;
       case "lhome": state.lv = { mode: "home", c: el.getAttribute("data-c") || state.lv.c }; state.quiz = null; state.card = null; state.spk = null; state.ndraft = null; render(); break;
@@ -2578,8 +2825,8 @@ tr:last-child td { border-block-end: 0; }
       case "ord-submit": answerOrder(); break;
       case "qnext": state.quiz.i++; state.quiz.ans = null; state.quiz.pick = []; if (state.quiz.i >= state.quiz.qs.length) finishQuiz(); render(); break;
       case "cardlvl": state.cardLvl = Number(el.getAttribute("data-lvl")) || 0; render(); break;
-      case "cards": var cc = el.getAttribute("data-c"); state.lv.c = cc; state.card = { q: shuffle(dueCards(now, cc, state.cardLvl || 0)).slice(0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards", c: cc }; render(); break;
-      case "daily-review": state.card = { q: shuffle(dueCards(now)).slice(0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
+      case "cards": var cc = el.getAttribute("data-c"); state.lv.c = cc; state.card = { q: buildReviewQueue(now, cc, state.cardLvl || 0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards", c: cc }; render(); break;
+      case "daily-review": state.card = { q: buildReviewQueue(now, null, 0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "exambank": var ebC = el.getAttribute("data-c"), ebCourse = COURSES[ebC]; if (!ebCourse || !ebCourse.examBank || !ebCourse.examBank.length) break;
         state.lv.c = ebC; startQuiz(shuffle(ebCourse.examBank.slice()).slice(0, Math.min(20, ebCourse.examBank.length)), "بنك أسئلة آيزو · " + ebCourse.title, null); break;
       case "final-exam": var feC = el.getAttribute("data-c"), feCourse = COURSES[feC]; if (!feCourse) break;
@@ -2591,7 +2838,7 @@ tr:last-child td { border-block-end: 0; }
       case "cert-name-save": var cnIn = $("#certNameInput"), cnV = cnIn ? cnIn.value.trim() : ""; state.settings.certName = cnV; saveMeta("settings", 0); render(); break;
       case "cert-download": downloadCertificate(el.getAttribute("data-c")); break;
       case "flip": if (state.card) { state.card.flip = true; render(); } break;
-      case "know": knowCard(el.getAttribute("data-v") === "1"); break;
+      case "grade": gradeCard(el.getAttribute("data-r")); break;
       case "exp-month": state.expMonth = shiftMonth(curExpMonth(now), Number(el.getAttribute("data-n"))); state.expAdd = false; render(); break;
       case "exp-sal-edit": state.expSalEdit = true; render(); break;
       case "exp-sal-save": var esIn = $("#expSalInput"), esV = esIn ? Math.max(0, parseFloat(esIn.value) || 0) : 0; state.exp.salary[curExpMonth(now)] = esV; state.expSalEdit = false; saveMeta("exp", 300); render(); break;
@@ -2660,8 +2907,10 @@ tr:last-child td { border-block-end: 0; }
       case "bank-open": state.lv = { mode: "bank", c: el.getAttribute("data-c") }; state.bankQ = ""; state.bankLvl = 0; state.bankNew = false; $("#p-learn").scrollTop = 0; render(); break;
       case "bank-lvl": state.bankLvl = Number(el.getAttribute("data-lvl")) || 0; render(); break;
       case "bank-new": state.bankNew = !state.bankNew; render(); break;
-      case "bank-toggle": var bid = el.getAttribute("data-id"), nowB = nowR(), curB = state.learn.cards[bid] || { box: 0 };
-        if (curB.box >= 3) { curB.box = 0; curB.due = nowB.key; } else { curB.box = 3; curB.due = addDays(nowB.key, INTERVALS[3]); }
+      case "bank-toggle": var bid = el.getAttribute("data-id"), nowB = nowR(), curB = state.learn.cards[bid] || { stage: 0, lapses: 0 };
+        curB.stage = cardStage(curB);
+        if (curB.stage >= 3) { curB.stage = 0; curB.due = nowB.key; } else { curB.stage = 3; curB.due = addDays(nowB.key, SRS_STAGE_DAYS[3]); }
+        curB.box = curB.stage;
         state.learn.cards[bid] = curB; saveMeta("learn", 400); render(); break;
       case "note-row-add": captureDraft(); state.ndraft.rows.push({ label: "", ex: "" }); render(); break;
       case "note-row-del": captureDraft(); var nrI = Number(el.getAttribute("data-i")); if (state.ndraft.rows.length > 1) state.ndraft.rows.splice(nrI, 1); render(); break;
@@ -2688,6 +2937,13 @@ tr:last-child td { border-block-end: 0; }
     var t = e.target;
     if (t.id === "startdate" && t.value) { state.settings.startDate = t.value; saveMeta("settings"); render(); toast("تم تحديث بداية التتبع"); }
     if (t.id === "startpage") { var n = Math.max(1, Math.min(604, parseInt(t.value, 10) || 1)); state.settings.startPage = n; saveMeta("settings", 300); render(); }
+    if (t.id === "setNewLimit") {
+      var nl = Math.max(0, parseInt(t.value, 10) || 0);
+      // Can narrow an admin-set ceiling further, never exceed it.
+      if (state.dailyNewWordLimit > 0 && nl > state.dailyNewWordLimit) nl = state.dailyNewWordLimit;
+      state.settings.dailyNewWordLimit = nl; saveMeta("settings", 300); render();
+    }
+    if (t.id === "setReviewLimit") { state.settings.dailyReviewLimit = Math.max(0, parseInt(t.value, 10) || 0); saveMeta("settings", 300); render(); }
   });
 
   function answerMcq(k) {
@@ -2710,11 +2966,23 @@ tr:last-child td { border-block-end: 0; }
     z.ans = { sel: sel.join(" "), ok: ok }; if (ok) { z.ok++; z.right.push(q.id); } else z.wrong.push(q.id);
     render();
   }
-  function knowCard(yes) {
-    var c = state.card, w = c.q[c.i], now = nowR(), cur = state.learn.cards[w.id] || { box: 0 };
-    if (yes) { cur.box = Math.min(3, cur.box + 1); cur.due = addDays(now.key, INTERVALS[cur.box]); c.known++; addXp(3, now); }
-    else { cur.box = 0; cur.due = now.key; }
+  // 4-button grading (Phase 7's SRS v2), replacing the old knowCard(yes)'s 2-button
+  // (know/don't-know) version. rating is one of "forgot" | "hard" | "good" | "easy".
+  function gradeCard(rating) {
+    var c = state.card, w = c.q[c.i], now = nowR(), cur = state.learn.cards[w.id];
+    var wasNew = !cur;
+    if (!cur) cur = { stage: 0, lapses: 0 };
+    cur.stage = cardStage(cur);
+    var counters = srsDayCounters(now);
+    if (wasNew) counters.newDone++; else counters.reviewDone++;
+    if (rating === "forgot") { cur.stage = 0; cur.due = now.key; cur.lapses = (cur.lapses || 0) + 1; }
+    else if (rating === "hard") { cur.stage = Math.max(0, cur.stage - 1); cur.due = addDays(now.key, SRS_STAGE_DAYS[cur.stage]); }
+    else if (rating === "easy") { cur.stage = Math.min(SRS_MAX_STAGE, cur.stage + 2); cur.due = addDays(now.key, SRS_STAGE_DAYS[cur.stage]); }
+    else { cur.stage = Math.min(SRS_MAX_STAGE, cur.stage + 1); cur.due = addDays(now.key, SRS_STAGE_DAYS[cur.stage]); } // "good"
+    cur.box = cur.stage; // kept in sync — achievements/bank view still just check box/stage >= 3
     state.learn.cards[w.id] = cur;
+    var yes = rating === "good" || rating === "easy";
+    if (yes) { c.known++; addXp(3, now); }
     c.i++; c.flip = false;
     saveMeta("learn", c.i >= c.q.length ? 0 : 1500);
     if (yes) checkAchievements(now);
@@ -2730,35 +2998,86 @@ tr:last-child td { border-block-end: 0; }
   async function initSupa() {
     state.mode = "supa";
     store.sb = window.supabase.createClient(CFG.url, CFG.key, { auth: { persistSession: false, autoRefreshToken: true, detectSessionInUrl: false } });
-    await loadAccountsList();
+    // Not awaited: the lock screen can show immediately, and ACCOUNTS only matters as
+    // the fallback path's ingredient list (see unlock() below) — by the time someone
+    // actually types a code this has almost always already finished in the background.
+    loadAccountsList();
     showLock("");
+  }
+  // One request to a server-side Edge Function that tries the code against every
+  // account itself (with the service-role key) and returns ready session tokens —
+  // replaces the old N-sequential-signInWithPassword-calls loop with a single round
+  // trip, and enforces the shared 5-attempts/15-minute lockout server-side. If the
+  // function isn't deployed yet (404) or a network error happens, unlock() below
+  // falls straight back to the old per-account loop, so login keeps working either
+  // way — this is safe to ship ahead of deploying masar-login.
+  var MASAR_LOGIN_FN_URL = CFG.url + "/functions/v1/masar-login";
+  async function tryFastLogin(code) {
+    try {
+      var res = await fetch(MASAR_LOGIN_FN_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": CFG.key },
+        body: JSON.stringify({ code: code })
+      });
+      if (res.status === 404) return { unavailable: true };
+      var j = await res.json().catch(function () { return {}; });
+      if (!res.ok) {
+        if (j && j.locked) return { locked: true, retryMin: j.retryMin };
+        if (j && j.banned) return { banned: true };
+        return { invalid: true };
+      }
+      return { ok: true, data: j };
+    } catch (e) { return { unavailable: true }; }
   }
   async function unlock(code) {
     var btn = $("#pinbtn"); btn.disabled = true; $("#lockmsg").textContent = "";
     if (!/^\d{4,8}$/.test(code)) { $("#lockmsg").textContent = "الرمز غير صحيح"; btn.disabled = false; return; }
     try {
-      if (!ACCOUNTS.length) await loadAccountsList();
-      var pass = CFG.prefix + code, matched = null, lastErrMsg = "", banned = false;
-      for (var i = 0; i < ACCOUNTS.length; i++) {
-        var r = await store.sb.auth.signInWithPassword({ email: ACCOUNTS[i].email, password: pass });
-        if (!r.error) { matched = { acc: ACCOUNTS[i], uid: r.data.user.id }; break; }
-        var em = r.error.message || "";
-        if (/banned/i.test(em)) { banned = true; break; }
-        lastErrMsg = em;
+      var matched = null;
+      var fast = await tryFastLogin(code);
+      if (fast.locked) {
+        $("#lockmsg").textContent = "محاولات كتير غلط — حاول تاني بعد " + (fast.retryMin || 15) + " دقيقة.";
+        btn.disabled = false; return;
       }
-      if (banned) {
+      if (fast.banned) {
         $("#lockmsg").textContent = "تم إيقاف هذا الحساب، تواصل مع المسؤول.";
         btn.disabled = false; return;
       }
-      if (!matched) {
-        $("#lockmsg").textContent = /invalid login/i.test(lastErrMsg) ? "الرمز غير صحيح" : "تعذّر الدخول: " + lastErrMsg;
+      if (fast.ok) {
+        var setRes = await store.sb.auth.setSession({ access_token: fast.data.access_token, refresh_token: fast.data.refresh_token });
+        if (setRes.error) { $("#lockmsg").textContent = "تعذّر الدخول: " + setRes.error.message; btn.disabled = false; return; }
+        matched = { acc: fast.data.acc, uid: fast.data.acc.uid };
+      } else if (fast.invalid) {
+        $("#lockmsg").textContent = "الرمز غير صحيح";
         btn.disabled = false; return;
+      }
+      // fast.unavailable (masar-login not deployed yet, or a network hiccup) falls
+      // through to the original loop, unchanged from before this phase.
+      if (!matched) {
+        if (!ACCOUNTS.length) await loadAccountsList();
+        var pass = CFG.prefix + code, lastErrMsg = "", banned = false;
+        for (var i = 0; i < ACCOUNTS.length; i++) {
+          var r = await store.sb.auth.signInWithPassword({ email: ACCOUNTS[i].email, password: pass });
+          if (!r.error) { matched = { acc: ACCOUNTS[i], uid: r.data.user.id }; break; }
+          var em = r.error.message || "";
+          if (/banned/i.test(em)) { banned = true; break; }
+          lastErrMsg = em;
+        }
+        if (banned) {
+          $("#lockmsg").textContent = "تم إيقاف هذا الحساب، تواصل مع المسؤول.";
+          btn.disabled = false; return;
+        }
+        if (!matched) {
+          $("#lockmsg").textContent = /invalid login/i.test(lastErrMsg) ? "الرمز غير صحيح" : "تعذّر الدخول: " + lastErrMsg;
+          btn.disabled = false; return;
+        }
       }
       store.uid = matched.uid;
       $("#pin").value = "";
       if (matched.acc.role === "admin") {
         resetPermissions(); // the admin is never restricted — always sees everything
         btn.textContent = "جارٍ التحميل…";
+        if (!ACCOUNTS.length) await loadAccountsList(); // the dashboard itself still needs the full roster
         await loadAdminDashboard();
         $("#lock").hidden = true; btn.textContent = "دخول";
         btn.disabled = false;
@@ -2834,6 +3153,35 @@ tr:last-child td { border-block-end: 0; }
     }
     return out;
   }
+  // Real weekly learning minutes, from learn.minutes (see tick() above) — 0 for any
+  // account that hasn't opened the "تعلّم" tab since this feature shipped, which is
+  // honest: there is no historical minutes data to back-fill.
+  function admWeekMinutes(learn, now) {
+    var mins = (learn && learn.minutes) || {}, total = 0;
+    for (var i = 0; i < 7; i++) total += mins[addDays(now.key, -i)] || 0;
+    return total;
+  }
+  // "الهدف اتحقق Y/7 أيام": a day counts if minutes that day met the account's admin-set
+  // daily goal; accounts with no goal set (dailyGoalMin falsy) fall back to "any study
+  // activity that day at all" so the line still means something before a goal exists.
+  function admGoalDaysHit(acc, learn, now) {
+    var goal = (acc && acc.dailyGoalMin) || 0;
+    var mins = (learn && learn.minutes) || {}, study = (learn && learn.study) || {}, hit = 0;
+    for (var i = 0; i < 7; i++) {
+      var k = addDays(now.key, -i);
+      if (goal > 0 ? (mins[k] || 0) >= goal : (study[k] || 0) > 0) hit++;
+    }
+    return hit;
+  }
+  // Average of each attempted unit's best quiz score — the richest existing "how well
+  // is this account doing" number until Phase 8 adds a dedicated weak-points model.
+  function admAvgQuizScore(learn) {
+    var units = (learn && learn.units) || {}, vals = [];
+    Object.keys(units).forEach(function (k) { if (typeof units[k].best === "number") vals.push(units[k].best); });
+    if (!vals.length) return null;
+    return Math.round(vals.reduce(function (a, b) { return a + b; }, 0) / vals.length);
+  }
+  function admMistakeCount(learn) { return Object.keys((learn && learn.mistakes) || {}).length; }
   var ADM_FILTERS = [{ id: "week", label: "الأسبوع ده", n: 7 }, { id: "month", label: "الشهر ده", n: 30 }, { id: "all", label: "الكل", n: 36500 }];
   function admFilterDef() { return ADM_FILTERS.filter(function (f) { return f.id === (state.adminFilter || "week"); })[0] || ADM_FILTERS[0]; }
   // Period stats for one account: prayer/Quran/XP totals over the filtered window,
@@ -2923,6 +3271,19 @@ tr:last-child td { border-block-end: 0; }
   async function adminSetPermissions(uid, courses, sections) {
     return adminFnCall({ action: "setPermissions", targetUid: uid, courses: courses, sections: sections });
   }
+  // Per-account daily goal (minutes) + daily new-word limit, set from "الصلاحيات".
+  // 0/empty means "no admin-set value" on both — Phase 7's SRS daily cap and
+  // admGoalDaysHit() both already treat 0 as "use the default" rather than "zero".
+  async function adminSetGoals(uid, dailyGoalMin, dailyNewWordLimit) {
+    return adminFnCall({ action: "setAccountGoals", targetUid: uid, dailyGoalMin: dailyGoalMin, dailyNewWordLimit: dailyNewWordLimit });
+  }
+  // One-off push reminder via the account's existing masar_push_subs subscription(s)
+  // (the same ones enablePush()/disablePush() manage) — server-side only, since
+  // sending a real Web Push message needs the project's VAPID private key, which
+  // never belongs in client code.
+  async function adminSendReminder(uid, message) {
+    return adminFnCall({ action: "sendReminder", targetUid: uid, message: message });
+  }
   function adminAddAccountCard() {
     return '<div class="card">' +
       '<h3 style="margin:0 0 10px">إضافة حساب جديد</h3>' +
@@ -2953,8 +3314,9 @@ tr:last-child td { border-block-end: 0; }
       "</div></div>";
   }
   function admOverviewHTML(stats, now) {
-    var activeToday = 0, activeWeek = 0, followUp = [];
+    var activeToday = 0, activeWeek = 0, followUp = [], totalMinutes = 0;
     stats.forEach(function (st) {
+      totalMinutes += admWeekMinutes(st.learn, now);
       if (st.acc.active === false) return;
       if (admDayActivity(st.days, now.key) > 0) activeToday++;
       var weekAny = false;
@@ -2965,10 +3327,13 @@ tr:last-child td { border-block-end: 0; }
     });
     var kpis = '<div class="row wrapr" style="gap:18px">' +
       statTile("نشط النهارده", activeToday) + statTile("نشط الأسبوع ده", activeWeek) +
-      statTile("محتاج متابعة", followUp.length) + "</div>";
+      statTile("دقايق تعلّم الأسبوع", totalMinutes) + statTile("محتاج متابعة", followUp.length) + "</div>";
     var alerts = followUp.map(function (f) {
       var since = f.since === null ? "من غير أي نشاط لسه" : "بقاله " + fmtDaysAr(f.since) + " من غير نشاط";
-      return '<div class="card alert"><div class="row between" style="align-items:center"><span>' + esc(f.st.acc.label) + " " + since + (f.last ? " · آخر نشاط " + greg(f.last) : "") + '</span><button class="btn sm" data-admopen="' + esc(f.st.acc.uid) + '" data-into="details">شوف</button></div></div>';
+      return '<div class="card alert"><div class="row between" style="align-items:center;gap:8px">' +
+        '<span>' + esc(f.st.acc.label) + " " + since + (f.last ? " · آخر نشاط " + greg(f.last) : "") + '</span>' +
+        '<span class="row" style="gap:6px;flex:none"><button class="btn sm alt" type="button" data-admremind="' + esc(f.st.acc.uid) + '">🔔 ابعت تذكير</button><button class="btn sm" data-admopen="' + esc(f.st.acc.uid) + '" data-into="details">شوف</button></span>' +
+        "</div></div>";
     }).join("");
     var rows = stats.map(function (st, i) {
       var disabled = st.acc.active === false;
@@ -2976,12 +3341,16 @@ tr:last-child td { border-block-end: 0; }
       var statusTag = disabled ? '<span class="chip" style="color:var(--muted)">معطّل</span>'
         : (admDayActivity(st.days, now.key) > 0 ? '<span class="chip" style="background:var(--ok-soft,var(--surface2));color:var(--teal)">نشط النهارده</span>'
           : (since === null ? '<span class="chip" style="color:var(--amber-deep)">من غير نشاط</span>' : '<span class="chip" style="color:var(--amber-deep)">غايب ' + fmtDaysAr(since) + "</span>"));
+      // "سؤال من الأخطاء" stands in for Phase 8's not-yet-built "نقطة ضعف مفتوحة" model —
+      // same underlying mistake-bank data, honest label until that dedicated feature exists.
+      var learnLine = "الهدف اتحقق " + admGoalDaysHit(st.acc, st.learn, now) + "/7 أيام · " + admMistakeCount(st.learn) + " سؤال من الأخطاء";
       return '<button class="card" type="button" style="text-align:start;display:block;width:100%" data-admopen="' + esc(st.acc.uid) + '" data-into="details">' +
         '<div class="row between" style="align-items:center;gap:10px">' +
         '<div class="row" style="align-items:center;gap:10px">' +
         '<div style="width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#fff;background:' + color + '">' + esc(initialsOf(st.acc.label)) + "</div>" +
         '<div><h3 style="margin:0;font-size:15px">' + esc(st.acc.label) + '</h3><span class="muted" style="font-size:12px">' + (s ? "سلسلة " + fmtDaysAr(s) : "لا توجد سلسلة حالية") + "</span></div></div>" +
-        statusTag + "</div><div class=\"week\" style=\"height:46px;margin-block-start:8px\">" + admWeekBars(st.days, now).replace(/<b class="num"[^<]*<\/b>/g, "") + "</div></button>";
+        statusTag + "</div><div class=\"week\" style=\"height:46px;margin-block-start:8px\">" + admWeekBars(st.days, now).replace(/<b class="num"[^<]*<\/b>/g, "") + "</div>" +
+        '<p class="muted" style="font-size:12px;margin-block-start:8px">' + esc(learnLine) + "</p></button>";
     }).join("");
     return kpis + alerts + '<div class="sec-h">الحسابات</div>' + rows;
   }
@@ -2994,6 +3363,11 @@ tr:last-child td { border-block-end: 0; }
     }).join("") + "</div>";
     var kpis = '<div class="row wrapr" style="gap:18px">' +
       statTile("صلوات", p.prayDone + "/" + p.prayTotal) + statTile("صفحات قرآن", p.pages) + statTile("XP", "+" + p.xp) + "</div>";
+    var avgQuiz = admAvgQuizScore(st.learn);
+    var learnKpis = '<div class="row wrapr" style="gap:18px">' +
+      statTile("دقايق التعلّم (7 أيام)", admWeekMinutes(st.learn, now)) +
+      statTile("أيام تحقيق الهدف", admGoalDaysHit(st.acc, st.learn, now) + "/7") +
+      statTile("متوسط درجات الاختبارات", avgQuiz == null ? "—" : avgQuiz + "%") + "</div>";
     var courses = p.courses.map(function (c) {
       var pct = c.total ? Math.round(c.done / c.total * 100) : 0;
       var lastTxt = c.lastDate ? "آخر وحدة: " + greg(c.lastDate) : (c.done ? "" : "ماتحركش لسه");
@@ -3004,6 +3378,8 @@ tr:last-child td { border-block-end: 0; }
     }).join("");
     return '<div class="row between" style="align-items:center"><h3 style="margin:0">' + esc(st.acc.label) + '</h3><button class="chip" type="button" data-act="admin-back">رجوع</button></div>' +
       filterSeg + '<div class="card">' + kpis + "</div>" +
+      '<div class="card"><h3 style="margin:0 0 10px">مؤشرات التعلّم</h3>' + learnKpis +
+      '<p class="muted" style="font-size:12px;margin-block-start:10px">نقاط الضعف المفتوحة/المحلولة والخط الزمني للأنشطة بييجوا مع مرحلة "نقاط ضعفي" القادمة — عدد أسئلة بنك الأخطاء الحالي: <b class="num">' + admMistakeCount(st.learn) + "</b></p></div>" +
       '<div class="card"><h3 style="margin:0 0 10px">تقدّم الكورسات</h3>' + courses + "</div>";
   }
   function admPermHTML(stats, now) {
@@ -3028,6 +3404,12 @@ tr:last-child td { border-block-end: 0; }
       "</div>" +
       '<div class="card"><h4 class="muted" style="margin:0 0 4px;font-size:13px">الأقسام</h4>' + sectionToggles + "</div>" +
       '<div class="row wrapr" style="gap:8px"><button class="btn" type="button" data-act="perm-save" data-uid="' + esc(acc.uid) + '">حفظ الصلاحيات</button><span class="muted" id="permmsg" style="font-size:12.5px"></span></div>' +
+      '<div class="card"><h4 class="muted" style="margin:0 0 8px;font-size:13px">هدف التعلّم اليومي</h4>' +
+      '<div class="row wrapr" style="gap:14px">' +
+      '<label class="field" style="max-width:160px">الهدف اليومي (دقيقة)<input class="inp" type="number" min="0" id="goalMin" value="' + (acc.dailyGoalMin || "") + '" placeholder="بدون هدف"></label>' +
+      '<label class="field" style="max-width:160px">حد الكلمات الجديدة/يوم<input class="inp" type="number" min="0" id="goalWords" value="' + (acc.dailyNewWordLimit || "") + '" placeholder="الافتراضي"></label>' +
+      "</div>" +
+      '<div class="row wrapr" style="gap:8px;margin-block-start:10px"><button class="btn sm" type="button" data-act="goals-save" data-uid="' + esc(acc.uid) + '">حفظ الهدف</button><span class="muted" id="goalsmsg" style="font-size:12.5px"></span></div></div>' +
       '<div class="card"><h4 class="muted" style="margin:0 0 8px;font-size:13px">رمز الدخول</h4>' +
       '<form class="row" data-act="admin-pw" data-uid="' + esc(acc.uid) + '" style="gap:8px;align-items:center">' +
       '<input class="inp" type="text" inputmode="numeric" placeholder="رمز جديد (4 أرقام)" style="max-width:150px" required pattern="\\d{4,8}">' +
@@ -3145,6 +3527,15 @@ tr:last-child td { border-block-end: 0; }
     wrap.querySelectorAll("[data-admfilter]").forEach(function (btn) {
       btn.addEventListener("click", function () { state.adminFilter = btn.getAttribute("data-admfilter"); renderAdminDashboard(stats); });
     });
+    wrap.querySelectorAll("[data-admremind]").forEach(function (btn) {
+      btn.addEventListener("click", async function () {
+        var uid = btn.getAttribute("data-admremind"), prevText = btn.textContent;
+        btn.disabled = true; btn.textContent = "جارٍ الإرسال…";
+        var r = await adminSendReminder(uid, "فاتك تذاكر النهاردة في مسار — افتح التطبيق وكمّل.");
+        btn.disabled = false; btn.textContent = prevText;
+        toast(r.error ? "تعذّر الإرسال: " + r.error : "تم إرسال التذكير ✓");
+      });
+    });
     var backBtn = wrap.querySelector('[data-act="admin-back"]');
     if (backBtn) backBtn.addEventListener("click", function () { state.adminTab = "overview"; renderAdminDashboard(stats); });
     wrap.querySelectorAll('[data-act="admin-pw"]').forEach(function (form) {
@@ -3210,6 +3601,21 @@ tr:last-child td { border-block-end: 0; }
         await loadAccountsList();
       });
     }
+    var goalsSave = wrap.querySelector('[data-act="goals-save"]');
+    if (goalsSave) {
+      goalsSave.addEventListener("click", async function () {
+        var uid = goalsSave.getAttribute("data-uid");
+        var goalMin = parseInt(document.getElementById("goalMin").value, 10) || 0;
+        var goalWords = parseInt(document.getElementById("goalWords").value, 10) || 0;
+        var msgEl = document.getElementById("goalsmsg");
+        msgEl.textContent = "جارٍ الحفظ…"; goalsSave.disabled = true;
+        var r = await adminSetGoals(uid, goalMin, goalWords);
+        goalsSave.disabled = false;
+        if (r.error) { msgEl.textContent = "تعذّر الحفظ: " + r.error + (/unknown action|not found|404/i.test(r.error) ? " — محتاج تحدّث الـ Edge Function الأول." : ""); return; }
+        msgEl.textContent = "تم الحفظ ✓";
+        await loadAccountsList();
+      });
+    }
   }
   async function loadAdminDashboard() {
     if (!store.uid) return;
@@ -3255,6 +3661,7 @@ tr:last-child td { border-block-end: 0; }
     });
     if (!hasSettings && first) { state.settings.startDate = nowR().key; saveMeta("settings"); }
     ensureNotesSeed();
+    if (first) migrateSrsV2(nowR()); // fire-and-forget, once per sign-in is plenty — it's itself idempotent
     ready.days = ready.settings = ready.learn = ready.exp = true;
     var wasLoaded = state.loaded; checkLoaded();
     if (wasLoaded && snap() !== before) render();
@@ -3266,7 +3673,7 @@ tr:last-child td { border-block-end: 0; }
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
     state.exp = { categories: [], items: [], salary: {} }; state.expMonth = null; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
-    state.quiz = null; state.card = null; state.spk = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; state.hv = "dashboard"; state.az = null; state.azProgress = {}; panelCache = {};
+    state.quiz = null; state.card = null; state.spk = null; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; state.hv = "dashboard"; state.az = null; state.azProgress = {}; state.azOpen = {}; panelCache = {};
     resetPermissions(); // clear any restriction the previous account left behind
     $("#pager").scrollTo({ left: 0 }); render(); showLock("");
   }
