@@ -1164,26 +1164,44 @@
       case "mushaf-close": state.qv.page = null; render(); break;
       case "mushaf-next": state.qv.page = Math.min(604, Number(el.getAttribute("data-p")) + 1); $("#p-quran").scrollTop = 0; render(); break;
       case "mushaf-prev": state.qv.page = Math.max(1, Number(el.getAttribute("data-p")) - 1); $("#p-quran").scrollTop = 0; render(); break;
-      case "lawh-goto-mushaf":
-        state.qv = { mode: "mushaf", page: Number(el.getAttribute("data-p")), openJuz: state.qv.openJuz };
-        $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded(); break;
-      case "lawh-tap": lawhCycle(el.getAttribute("data-p")); break;
-      case "lawh-rev": lawhReview(el.getAttribute("data-p"), el.getAttribute("data-g") === "1"); break;
-      case "lawh-juz": var ljJ = el.getAttribute("data-j"); if (!state.qv.openJuz) state.qv.openJuz = {}; state.qv.openJuz[ljJ] = !state.qv.openJuz[ljJ]; render(); break;
-      case "lawh-hide": state.qv = { mode: "hide", hidePage: Number(el.getAttribute("data-p")), revealed: {}, openJuz: state.qv.openJuz }; $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded(); break;
+      case "lawh-goto-mushaf": {
+        var lgU = parseUnitId(el.getAttribute("data-u"));
+        if (lgU) { state.qv = { mode: "mushaf", page: pageForUnit(lgU) }; $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded(); }
+        break;
+      }
+      case "lawh-tap": lawhCycle(el.getAttribute("data-u")); break;
+      case "lawh-rev": lawhReview(el.getAttribute("data-u"), el.getAttribute("data-g") === "1"); break;
+      case "lawh-open": state.qv.lawhSurah = Number(el.getAttribute("data-s")); $("#p-quran").scrollTop = 0; render(); break;
+      case "lawh-close": state.qv.lawhSurah = null; render(); break;
+      case "lawh-add-range": {
+        var larS = Number(el.getAttribute("data-s")), larFrom = $("#lawhFrom"), larTo = $("#lawhTo");
+        lawhAddRange(larS, larFrom ? larFrom.value : 1, larTo ? larTo.value : "");
+        break;
+      }
+      case "lawh-remove": lawhRemoveRange(el.getAttribute("data-u")); break;
+      case "lawh-hide": {
+        var lhU = parseUnitId(el.getAttribute("data-u"));
+        if (lhU) {
+          state.qv = { mode: "hide", hideUnit: el.getAttribute("data-u"), revealed: {}, lawhSurah: lhU.s };
+          $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded();
+        }
+        break;
+      }
       case "hide-reveal": state.qv.revealed[el.getAttribute("data-i")] = true; render(); break;
-      case "hide-close": stopSmartListen(); state.qv = { mode: "lawh", openJuz: state.qv.openJuz }; render(); break;
+      case "hide-close": stopSmartListen(); state.qv = { mode: "lawh", lawhSurah: state.qv.lawhSurah }; render(); break;
       case "listen-start": startSmartListen(); break;
       case "listen-stop": stopSmartListen(); render(); break;
-      case "hide-finish":
+      case "hide-finish": {
         stopSmartListen();
-        var hfL = lawhData(), hfKey = nowR().key, hfP = state.qv.hidePage, hfTotal = pageAyahs(hfP).length, hfRevealed = Object.keys(state.qv.revealed || {}).length;
+        var hfL = lawhData(), hfKey = nowR().key, hfUnit = state.qv.hideUnit, hfU = parseUnitId(hfUnit);
+        var hfTotal = hfU ? unitAyahs(hfU).length : 0, hfRevealed = Object.keys(state.qv.revealed || {}).length;
         if (!hfL.log[hfKey]) hfL.log[hfKey] = { memorized: [], reviewed: [] };
         if (!hfL.log[hfKey].selfChecks) hfL.log[hfKey].selfChecks = [];
-        hfL.log[hfKey].selfChecks.push({ p: hfP, revealed: hfRevealed, total: hfTotal });
+        hfL.log[hfKey].selfChecks.push({ unit: hfUnit, revealed: hfRevealed, total: hfTotal });
         saveMeta("learn", 0);
-        toast(hfRevealed === 0 ? "ما شاء الله، تسميع كامل بدون مساعدة" : "تمام، احتجت تكشف " + hfRevealed + " من " + hfTotal);
-        state.qv = { mode: "lawh", openJuz: state.qv.openJuz }; render(); break;
+        toast(hfRevealed === 0 ? "ما شاء الله، تسميع كامل بدون غلطة" : "تمام، " + hfRevealed + " غلطة من " + hfTotal);
+        state.qv = { mode: "lawh", lawhSurah: state.qv.lawhSurah }; render(); break;
+      }
       case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
       case "weekly-open": state.hv = "weekly"; $("#p-home").scrollTop = 0; render(); break;
