@@ -14,8 +14,15 @@
   // with it — allSettled + per-course catch means a single bad fetch just leaves
   // that one course missing from COURSES (buildIndexes/learnView already guard for
   // that), instead of Promise.all rejecting and leaving COURSES empty entirely.
-  function loadCourses() {
-    return Promise.allSettled(COURSE_ORDER.map(function (cid) {
+  // ids: which course files to fetch — defaults to ALLOWED_COURSES so a restricted
+  // account never downloads JSON for courses it isn't permitted to see (previously
+  // this always fetched all 9, ~900KB, regardless of permissions). Admin sessions
+  // still get everything because ALLOWED_COURSES is the full list for admins
+  // (resetPermissions) — see ensureCoursesLoaded() in app.js, which is the only
+  // caller and always passes ALLOWED_COURSES explicitly once it's known.
+  function loadCourses(ids) {
+    var list = ids || ALLOWED_COURSES;
+    return Promise.allSettled(list.map(function (cid) {
       return fetch("courses/" + cid + ".json").then(function (r) {
         if (!r.ok) throw new Error("HTTP " + r.status + " loading course " + cid);
         return r.json();
@@ -694,13 +701,19 @@
   // state.lv.retry (the only bit of lesson-session state) — see lessonScreens().
   function lessonScreens(cid, id, u) {
     var pts = u.pts || [], qs = u.qs || [], used = {};
+    // Real pt-tag matches are resolved for BOTH checkpoints first (no fallback yet),
+    // so a question explicitly tagged pt:2 at array index 0 can't be swallowed by
+    // checkpoint 1's positional fallback before checkpoint 2 ever gets to look for it.
+    // Positional fallback (for a unit with no pt tags at all, or a point with none)
+    // only runs afterwards, and only claims an index neither checkpoint already took.
     function pickQuick(idx) {
       for (var k = 0; k < qs.length; k++) { if (!used[k] && qs[k].pt === idx + 1) { used[k] = true; return qs[k]; } }
-      if (!used[idx] && qs[idx]) { used[idx] = true; return qs[idx]; }
       return null;
     }
     var chunk1 = pts.slice(0, 2), chunk2 = pts.slice(2, 4), chunk3 = pts.slice(4);
     var q1 = pickQuick(0), q2 = pickQuick(1);
+    if (!q1 && !used[0] && qs[0]) { q1 = qs[0]; used[0] = true; }
+    if (!q2 && !used[1] && qs[1]) { q2 = qs[1]; used[1] = true; }
     var screens = [{ type: "intro" }], lastPointsIdx = 0;
     if (chunk1.length) { screens.push({ type: "points", items: chunk1, from: 0 }); lastPointsIdx = screens.length - 1; }
     if (q1) screens.push({ type: "quiz", q: q1, backTo: lastPointsIdx });

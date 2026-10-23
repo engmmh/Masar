@@ -679,6 +679,7 @@
     migrateSrsV2(nowR()); // fire-and-forget; see its own comment
     ready.days = ready.settings = ready.learn = ready.exp = true; checkLoaded(); render();
     var lockEl = document.getElementById("lock"); if (lockEl) lockEl.hidden = true;
+    ensureCoursesLoaded(); // local mode has no login/permissions step, so trigger it directly
   }
 
 
@@ -986,8 +987,27 @@
       if (panel) panel.hidden = hide;
       if (hide && state.tab === s) goTab("home");
     });
+    ensureCoursesLoaded();
   }
   function resetPermissions() { applyPermissions(null); }
+  // Fetches course JSON for exactly what ALLOWED_COURSES currently holds (set just
+  // above), and only once per distinct set — so re-calling applyPermissions with the
+  // same permissions (e.g. a later loadSupa refresh) doesn't re-fetch. Replaces the
+  // old unconditional "fetch all 9 courses on every boot" behavior.
+  var coursesLoadedFor = null, coursesLoadedPromise = Promise.resolve();
+  function ensureCoursesLoaded() {
+    var key = ALLOWED_COURSES.slice().sort().join(",");
+    if (coursesLoadedFor === key) return coursesLoadedPromise;
+    coursesLoadedFor = key;
+    coursesLoadedPromise = loadCourses(ALLOWED_COURSES).then(function () {
+      buildIndexes();
+      if (state.tab === "learn") render();
+    }).catch(function (err) {
+      console.error("Masar: failed to load course data", err);
+      if (state.tab === "learn") render();
+    });
+    return coursesLoadedPromise;
+  }
   var AR_MONTHS = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
   var THEMES = ["light", "dark", "auto"], THEME_LBL = { light: "نهاري", dark: "ليلي", auto: "تلقائي" };
   function getTheme() { try { return localStorage.getItem("masar:theme") || "light"; } catch (e) { return "light"; } }
@@ -1109,13 +1129,20 @@
       case "more": state.archiveN += 30; render(); break;
       case "pg": addPages(Number(el.getAttribute("data-n"))); break;
       case "pgdone": setPages(Math.max(pagesOn(now.key), target())); toast("تقبّل الله ورد اليوم"); break;
-      case "qv": state.qv = { mode: el.getAttribute("data-m") }; $("#p-quran").scrollTop = 0; render(); break;
-      case "mushaf-open": state.qv.surah = Number(el.getAttribute("data-s")); $("#p-quran").scrollTop = 0; render(); break;
-      case "mushaf-close": state.qv.surah = null; render(); break;
+      case "qv":
+        state.qv = { mode: el.getAttribute("data-m") }; $("#p-quran").scrollTop = 0; render();
+        ensureQuranLoaded(); break;
+      case "mushaf-open": state.qv.page = pageForSurah(Number(el.getAttribute("data-s"))); $("#p-quran").scrollTop = 0; render(); break;
+      case "mushaf-close": state.qv.page = null; render(); break;
+      case "mushaf-next": state.qv.page = Math.min(604, Number(el.getAttribute("data-p")) + 1); $("#p-quran").scrollTop = 0; render(); break;
+      case "mushaf-prev": state.qv.page = Math.max(1, Number(el.getAttribute("data-p")) - 1); $("#p-quran").scrollTop = 0; render(); break;
+      case "lawh-goto-mushaf":
+        state.qv = { mode: "mushaf", page: Number(el.getAttribute("data-p")), openJuz: state.qv.openJuz };
+        $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded(); break;
       case "lawh-tap": lawhCycle(el.getAttribute("data-p")); break;
       case "lawh-rev": lawhReview(el.getAttribute("data-p"), el.getAttribute("data-g") === "1"); break;
       case "lawh-juz": var ljJ = el.getAttribute("data-j"); if (!state.qv.openJuz) state.qv.openJuz = {}; state.qv.openJuz[ljJ] = !state.qv.openJuz[ljJ]; render(); break;
-      case "lawh-hide": state.qv = { mode: "hide", hidePage: Number(el.getAttribute("data-p")), revealed: {}, openJuz: state.qv.openJuz }; $("#p-quran").scrollTop = 0; render(); break;
+      case "lawh-hide": state.qv = { mode: "hide", hidePage: Number(el.getAttribute("data-p")), revealed: {}, openJuz: state.qv.openJuz }; $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded(); break;
       case "hide-reveal": state.qv.revealed[el.getAttribute("data-i")] = true; render(); break;
       case "hide-close": stopSmartListen(); state.qv = { mode: "lawh", openJuz: state.qv.openJuz }; render(); break;
       case "listen-start": startSmartListen(); break;
@@ -1508,6 +1535,7 @@
         resetPermissions(); // the admin is never restricted — always sees everything
         btn.textContent = "جارٍ التحميل…";
         if (!ACCOUNTS.length) await loadAccountsList(); // the dashboard itself still needs the full roster
+        await ensureCoursesLoaded(); // admin's per-course stats need COURSES populated first
         await loadAdminDashboard();
         $("#lock").hidden = true; btn.textContent = "دخول";
         btn.disabled = false;

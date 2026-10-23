@@ -84,34 +84,30 @@
 "use strict";
 
   /* ---------------- boot ---------------- */
-  // Course data (COURSES) now loads from separate JSON files instead of being
-  // inlined in this script. That fetch must never block login/sync: it runs
-  // in parallel with the normal boot sequence, not before it, so a slow or
-  // failed course-data fetch can't make the whole app (PIN screen included)
-  // look broken. If the user is already on the "learn" tab when the data
-  // lands, re-render so the courses list appears without needing a tap.
-  var coursesReady = loadCourses().then(function () {
-    buildIndexes();
-    if (state.tab === "learn") render();
-  }).catch(function (err) {
-    console.error("Masar: failed to load course data", err);
-    if (state.tab === "learn") render();
-  });
-  // Verified Quran text (quran/quran.json) — same fire-and-parallel pattern as
-  // course data above, so a slow/failed fetch never blocks the rest of the app.
-  var quranReady = loadQuran().then(function () {
-    if (state.tab === "quran" && state.qv && state.qv.mode === "mushaf") render();
-  });
+  // Course data (COURSES) and the Quran text (quran/quran.json, 1.4MB) are NOT
+  // fetched here anymore. Both used to load unconditionally on every boot —
+  // before the PIN screen, even for accounts whose permissions block those
+  // sections entirely — which wasted real data on mobile. Courses now load
+  // from ensureCoursesLoaded() (app.js), called once ALLOWED_COURSES is known
+  // (after login, or immediately in local mode), and only for the courses that
+  // account is actually permitted. The Quran text loads lazily the first time
+  // the Mushaf sub-tab is opened — see the "qv" case in the click handler.
   applyTheme(getTheme());
   render();
   setInterval(tick, 1000);
   // Phase 11 — هدف يومي بالدقايق: a coarse but simple minutes-studied tracker.
-  // While the person is actually on the "learn" tab and the page is visible,
-  // bank half a minute every 30s — good enough to drive a daily-minutes goal
-  // without wiring up a real per-action stopwatch.
+  // While the person is actually on the "learn" tab, the page is visible, AND
+  // they interacted within the last minute, bank half a minute every 30s — good
+  // enough to drive a daily-minutes goal without wiring up a real per-action
+  // stopwatch. The interaction check (added after this previously credited time
+  // for an idle, forgotten-open tab) is what keeps the daily-goal number honest.
+  var lastInteractionAt = Date.now();
+  ["pointerdown", "keydown", "scroll", "touchstart"].forEach(function (ev) {
+    document.addEventListener(ev, function () { lastInteractionAt = Date.now(); }, { passive: true, capture: true });
+  });
   function learnMinutesTick() {
     try {
-      if (state.loaded && state.tab === "learn" && document.visibilityState !== "hidden") {
+      if (state.loaded && state.tab === "learn" && document.visibilityState !== "hidden" && (Date.now() - lastInteractionAt) < 60000) {
         var k = nowR().key;
         if (!state.learn.minutes) state.learn.minutes = {};
         state.learn.minutes[k] = (state.learn.minutes[k] || 0) + 0.5;

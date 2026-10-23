@@ -227,7 +227,7 @@
   /* ---------------- quran logic ---------------- */
   // Verified Quran text + structure (Hafs): quran/quran.json. See QURAN.source
   // for the exact citation shown in the Mushaf view — never type Quran text by hand.
-  var QURAN = null;
+  var QURAN = null, quranLoadPromise = null;
   function loadQuran() {
     return fetch("quran/quran.json").then(function (r) {
       if (!r.ok) throw new Error("HTTP " + r.status + " loading quran.json");
@@ -235,6 +235,17 @@
     }).then(function (d) { QURAN = d; }).catch(function (err) {
       console.error("Masar: failed to load Quran data", err);
     });
+  }
+  // Lazy, once-only trigger: the 1.4MB quran.json used to load on every boot
+  // (even before the PIN screen, even for accounts without Quran access) — now
+  // it's fetched only the first time the person actually opens the Mushaf or
+  // the تسميع (hide-text) view, and re-renders the current Quran sub-view once it lands.
+  function ensureQuranLoaded() {
+    if (QURAN || quranLoadPromise) return quranLoadPromise;
+    quranLoadPromise = loadQuran().then(function () {
+      if (state.tab === "quran" && state.qv && (state.qv.mode === "mushaf" || state.qv.mode === "hide")) render();
+    });
+    return quranLoadPromise;
   }
   function arNum(n) { return String(n).replace(/[0-9]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩"[d]; }); }
   // Display-only: strips the optional Hafs waqf/pause-sign annotations (U+06D6–U+06ED —
@@ -388,6 +399,29 @@
     return out;
   }
 
+  // Which printed Mushaf page (1-604) contains ayah 1 of surah s? Most surahs start
+  // at the top of a fresh page (pageStart[p-1] === [s,1] exactly), but several short
+  // surahs — mostly in juz 30 — start mid-page, sharing it with the previous surah's
+  // tail, so a page's start surah alone can under/over-shoot. Walking pages in order
+  // and tracking the last page whose start is still <= (s, ayah 1) in reading order
+  // gets both cases right; results are memoized since the surah list calls this once
+  // per surah on every render.
+  var SURAH_PAGE_CACHE = {};
+  function pageForSurah(s) {
+    if (!QURAN) return 1;
+    if (SURAH_PAGE_CACHE[s]) return SURAH_PAGE_CACHE[s];
+    var candidate = 1;
+    for (var p = 1; p <= 604; p++) {
+      var st = QURAN.pageStart[p - 1], sp = st[0], ap = st[1];
+      if (sp < s) { candidate = p; }
+      else if (sp === s && ap === 1) { candidate = p; break; }
+      else if (sp === s) { /* page starts mid-surah s (ap>1) — ayah1 was earlier */ }
+      else { break; } // sp > s: gone past it
+    }
+    SURAH_PAGE_CACHE[s] = candidate;
+    return candidate;
+  }
+
   /* ---------------- quran tab sub-navigation ---------------- */
   // Mirrors the state.lv sub-view pattern used throughout the Learn tab: a small
   // mode object drives which sub-screen renders inside the same tab panel.
@@ -446,8 +480,8 @@
       return head(now) + '<div class="card"><h3 style="margin:0 0 6px">المصحف الشريف</h3>' +
         '<p class="muted" style="font-size:14px">جاري تحميل نص القرآن…</p></div>';
     }
-    var sNum = state.qv.surah;
-    if (!sNum) {
+    var p = state.qv.page;
+    if (!p) {
       var rows = QURAN.surahs.map(function (s, i) {
         var num = i + 1;
         return '<button class="surah-row" data-act="mushaf-open" data-s="' + num + '">' +
@@ -460,14 +494,29 @@
         '<p class="muted" style="font-size:12px">' + esc(QURAN.source) + "</p></div>" +
         '<div class="card surah-list" style="padding:6px">' + rows + "</div>";
     }
-    var surah = QURAN.surahs[sNum - 1];
-    var ayahs = surah.verses.map(function (v) {
-      return '<span class="ayah">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">﴿' + arNum(v.id) + "﴾</span></span>";
-    }).join(" ");
+    // A real printed-Mushaf page, not an endless per-surah scroll — exactly the
+    // ayahs QURAN.pageStart puts on page p (pageAyahs), one page at a time, with
+    // prev/next navigation. A page can open mid-surah or span two surahs, so each
+    // ayah is tagged with its own surah name whenever that surah changes within
+    // the page rather than assuming one surah heading for the whole page.
+    p = Math.max(1, Math.min(604, p));
+    var ayahs = pageAyahs(p), lastSurah = null, body = "";
+    ayahs.forEach(function (v) {
+      if (v.surah !== lastSurah) {
+        body += '<div class="pt-line" style="font-weight:600;margin-block-start:' + (lastSurah ? "14px" : "0") + '">﴾ ' + esc(v.surahName) + " ﴿</div>";
+        lastSurah = v.surah;
+      }
+      body += '<span class="ayah">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">﴿' + arNum(v.ayah) + "﴾</span></span> ";
+    });
+    var juz = juzOf(p);
     return '<button class="linkbtn" data-act="mushaf-close">← كل السور</button>' +
-      '<div class="card"><div class="row between"><h2 style="margin:0">' + esc(surah.name) + '</h2><span class="chip">' + arNum(surah.ayahCount) + ' آية</span></div>' +
-      '<p class="ayah-block" style="margin-block-start:10px">' + ayahs + "</p>" +
-      '<p class="muted" style="font-size:11px;margin-block-start:14px">' + esc(QURAN.source) + "</p></div>";
+      '<div class="card"><div class="row between"><h2 style="margin:0">صفحة ' + arNum(p) + '</h2><span class="chip">الجزء ' + arNum(juz) + "</span></div>" +
+      '<p class="ayah-block" style="margin-block-start:10px">' + body + "</p>" +
+      '<p class="muted" style="font-size:11px;margin-block-start:14px">' + esc(QURAN.source) + "</p></div>" +
+      '<div class="row between" style="margin-block-start:4px">' +
+      '<button class="btn sm alt" data-act="mushaf-next" data-p="' + p + '"' + (p >= 604 ? " disabled" : "") + '>الصفحة التالية ←</button>' +
+      '<button class="btn sm alt" data-act="mushaf-prev" data-p="' + p + '"' + (p <= 1 ? " disabled" : "") + '>→ الصفحة السابقة</button>' +
+      "</div>";
   }
 
   /* ---------------- لوح الحفظ (lawh) view ---------------- */
@@ -501,11 +550,16 @@
       var body = "";
       if (open) {
         var cells = "";
+        // The first page in this juz already marked (memorizing or memorized) —
+        // falls back to the juz's first page if nothing's been marked yet, so the
+        // jump button always has somewhere real to take you.
+        var firstMarked = byJuz[j].find(function (pp) { var cc = L.pages[pp]; return cc && cc.status > 0; }) || byJuz[j][0];
         byJuz[j].forEach(function (pp) {
           var cc = L.pages[pp], st = cc ? cc.status : 0;
           cells += '<button class="lawh-cell st' + st + '" data-act="lawh-tap" data-p="' + pp + '">' + arNum(pp) + "</button>";
         });
-        body = '<div class="lawh-grid" style="margin-block-start:10px">' + cells + "</div>";
+        body = '<div class="row" style="margin-block-start:10px"><button class="linkbtn" data-act="lawh-goto-mushaf" data-p="' + firstMarked + '">📖 افتح في المصحف من صفحة ' + arNum(firstMarked) + "</button></div>" +
+          '<div class="lawh-grid" style="margin-block-start:8px">' + cells + "</div>";
       }
       groups += '<div class="card lawh-juz"><button class="row between" data-act="lawh-juz" data-j="' + j + '" style="width:100%;background:none;border:0;padding:0;font-weight:700">' +
         '<span>الجزء ' + arNum(j) + '</span><span class="muted" style="font-size:12px">(' + gMemorized + " محفوظة) " + (open ? "▲" : "▼") + "</span></button>" + body + "</div>";
@@ -515,8 +569,9 @@
       '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
       '<p class="muted" style="font-size:13px;margin-block-start:10px">' + arNum(memorized) + ' من ٦٠٤ صفحة محفوظة · ' + arNum(memorizing) + " قيد الحفظ</p></div>" +
       '<div class="card"><div class="row between"><h3 style="margin:0">مراجعات اليوم</h3><span class="chip">' + arNum(dueToday.length) + "</span></div>" +
+      (dueToday.length ? '<div class="row" style="margin-block-start:8px"><button class="linkbtn" data-act="lawh-goto-mushaf" data-p="' + dueToday[0].p + '">📖 افتح أول صفحة مستحقة في المصحف (صفحة ' + arNum(dueToday[0].p) + ")</button></div>" : "") +
       '<div style="margin-block-start:10px">' + dueHTML + "</div></div>" +
-      '<p class="muted" style="font-size:13px;margin-block-end:8px">اضغط على الصفحة لتبديل حالتها: غير محفوظة ← قيد الحفظ ← محفوظة. راجع الصفحات المستحقة كل يوم.</p>' +
+      '<p class="muted" style="font-size:13px;margin-block-end:8px">اضغط على الصفحة لتبديل حالتها: غير محفوظة ← قيد الحفظ ← محفوظة. راجع الصفحات المستحقة كل يوم. وتقدر تفتح أي جزء في المصحف مباشرة من أول صفحة فيه حددتها.</p>' +
       groups;
   }
 
@@ -578,7 +633,13 @@
   // person recites from memory and taps only the ones they needed to check, so
   // the reveal count is an honest signal of how solid that page really is.
   function hideView(now) {
-    var p = state.qv.hidePage, ayahs = pageAyahs(p);
+    var p = state.qv.hidePage;
+    if (!QURAN) {
+      return head(now) + '<button class="linkbtn" data-act="hide-close">← رجوع للوح</button>' +
+        '<div class="card"><h3 style="margin:0 0 6px">تسميع صفحة ' + arNum(p) + '</h3>' +
+        '<p class="muted" style="font-size:14px">جاري تحميل نص القرآن…</p></div>';
+    }
+    var ayahs = pageAyahs(p);
     if (!state.qv.revealed) state.qv.revealed = {};
     var rows = ayahs.map(function (v, i) {
       if (state.qv.revealed[i]) {
