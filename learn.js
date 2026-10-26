@@ -1,7 +1,7 @@
 "use strict";
   /* ---------------- learning content ---------------- */
   var COURSES = {};
-  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso17025", "micro"];
+  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso17025", "micro", "nutrition"];
   // ALLOWED_COURSES is what the logged-in account is permitted to see — a derived,
   // per-session subset of COURSE_ORDER (never COURSE_ORDER itself, which must stay
   // the full master list: it's still used to load/index every course's data so admin
@@ -420,7 +420,7 @@
 
 
   /* learn */
-  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso17025: "flask", micro: "flask" };
+  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso17025: "flask", micro: "flask", nutrition: "flame" };
   function courseDone(cid) { var c = COURSES[cid]; return c.units.filter(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }).length; }
   function finalExamPool(cid) {
     var c = COURSES[cid]; if (!c) return [];
