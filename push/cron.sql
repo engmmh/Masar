@@ -11,7 +11,7 @@ select cron.schedule(
   '0 11-23,0-1 * * *',  -- بتوقيت UTC = من 2 الضهر لحد 4 الفجر بتوقيت الرياض (UTC+3)
   $$
   select net.http_get(
-    url := 'https://guorxzejmtvypiwxrogf.supabase.co/functions/v1/masar-send-notification?token=XTdp9YrgUypVOxkKsD-qIE64hE6r60cr'
+    url := 'https://guorxzejmtvypiwxrogf.supabase.co/functions/v1/masar-send-notification?token=<PUSH_SHARED_SECRET>'
   );
   $$
 );
@@ -22,7 +22,7 @@ select cron.schedule(
   '0 15 * * 5',  -- بتوقيت UTC = 6 المغرب الجمعة بتوقيت الرياض (UTC+3)
   $$
   select net.http_get(
-    url := 'https://guorxzejmtvypiwxrogf.supabase.co/functions/v1/masar-send-notification?token=XTdp9YrgUypVOxkKsD-qIE64hE6r60cr&mode=weekly'
+    url := 'https://guorxzejmtvypiwxrogf.supabase.co/functions/v1/masar-send-notification?token=<PUSH_SHARED_SECRET>&mode=weekly'
   );
   $$
 );

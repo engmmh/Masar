@@ -28,7 +28,8 @@
 ----------------------------------------------------
 1. من نفس صفحة الدالة masar-send-notification، روح لقسم Secrets / Settings الخاص بالدالة
    (أو من: https://supabase.com/dashboard/project/guorxzejmtvypiwxrogf/settings/functions لو عايز تحطهم كـ secrets عامة للمشروع كله).
-2. افتح ملف secrets.txt المرفق، وأضف الثلاث قيم بالظبط زي ما هي:
+2. ولّد القيم الثلاثة بنفسك (مفاتيح VAPID بأمر: npx web-push generate-vapid-keys، والسر المشترك أي نص عشوائي طويل)
+   وأضفها كـ Secrets — متحطّهاش أبدًا في ملف جوه الريبو لأنه عام:
    - VAPID_PUBLIC_KEY
    - VAPID_PRIVATE_KEY
    - PUSH_SHARED_SECRET
@@ -38,7 +39,7 @@
 الخطوة 4: جدولة الإرسال كل فترة (بدون لمس كود الموقع)
 ----------------------------------------------------
 رابط الدالة بتاعتك هيبقى بالشكل ده:
-https://guorxzejmtvypiwxrogf.supabase.co/functions/v1/masar-send-notification?token=XTdp9YrgUypVOxkKsD-qIE64hE6r60cr
+https://guorxzejmtvypiwxrogf.supabase.co/functions/v1/masar-send-notification?token=<PUSH_SHARED_SECRET>
 
 1. روح لموقع https://cron-job.org وسجّل حساب مجاني (بالإيميل، دقيقتين).
 2. من "Create cronjob":

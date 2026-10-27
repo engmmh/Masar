@@ -92,7 +92,13 @@
       t = {}; for (k in r) t[k] = r[k] / 24;
     }
     var adj = TZ - LNG / 15; for (k in r) r[k] += adj;
+    // Umm al-Qura: isha a fixed 90 min after maghrib (120 in Ramadan). Egyptian
+    // authority: fajr at 19.5° and isha at 17.5° below the horizon.
     var isha = r.sunset + (isRamadan(p[0], p[1], p[2]) ? 120 : 90) / 60;
+    if (CALC === "egypt") {
+      r.fajr = angleTime(jd, 19.5, t.fajr, true) + adj;
+      isha = angleTime(jd, 17.5, t.sunset, false) + adj;
+    }
     var out = { times: [r.fajr, r.dhuhr, r.asr, r.sunset, isha], sunrise: r.sunrise };
     schedCache[key] = out; return out;
   }
@@ -346,13 +352,15 @@
 
   function prayerView(now) {
     if (state.az) return azkarListHTML(state.az);
+    if (state.tool === "tasbih") return tasbihHTML();
+    if (state.tool === "qibla") return qiblaHTML();
     var pv = state.pv;
     // The streak banner and the prayer-times ring used to also sit on the home screen —
     // they now live only here, as this section's own header, since the home "خطة اليوم"
     // card already summarizes today's prayer count in one line.
     var top = pv === "today" ? streakBannerHTML(now) + heroHTML(now) : "";
     return top + '<div class="seg2 two" style="margin-block:6px 12px"><button data-act="pv" data-v="today" aria-pressed="' + (pv === "today") + '">اليوم</button><button data-act="pv" data-v="archive" aria-pressed="' + (pv === "archive") + '">الأرشيف والفائت</button></div>' +
-      (pv === "archive" ? archiveView(now) : alertHTML(now) + azkarEntryCardHTML() + prayersHTML(now));
+      (pv === "archive" ? archiveView(now) : alertHTML(now) + azkarEntryCardHTML() + toolsEntryCardHTML() + prayersHTML(now));
   }
   function azkarEntryCardHTML() {
     return '<div class="card"><h3>الأذكار</h3><p class="muted" style="font-size:14px;margin-block:4px 10px">أذكار الصباح والمساء من حصن المسلم</p><div class="row wrapr">' +
