@@ -508,19 +508,67 @@
     if (v.mode === "cert") return top + certHTML(v.c);
     if (v.mode === "weak") return top + weakHTML(now);
     if (v.mode === "weakdrill") return top + weakDrillHTML();
-    // courses select
-    var cards = ALLOWED_COURSES.map(function (cid) {
-      var c = COURSES[cid]; if (!c) return "";
-      var done = courseDone(cid), cpct = c.units.length ? Math.round(done / c.units.length * 100) : 0;
-      return '<button class="unit" data-act="course-open" data-c="' + cid + '"><span class="no">' + ico(COURSE_ICO[cid]) + '</span><span class="grow"><b>' + esc(c.title) + '</b><br><span class="muted" style="font-size:13px">' + esc(c.desc) + ' · ' + done + "/" + c.units.length + ' وحدة مكتملة</span><div class="bar" style="height:6px;margin-block-start:6px"><i style="width:' + cpct + "%\"></i></div></span></button>";
-    }).join("");
-    var L = level(), wc = weakCount();
-    return top +
-      '<div class="card"><div class="row between"><h2>المستوى <span class="num">' + L.lv + '</span></h2><span class="chip"><span class="num">' + L.xp + '</span> نقطة</span></div>' +
-      '<div class="bar amber"><i style="width:' + L.pct + '%"></i></div><p class="muted" style="font-size:14px;margin-block-start:6px">تبقى <span class="num">' + L.need + '</span> نقطة للمستوى التالي' + (studyStreak(now) ? " · مذاكرة متواصلة " + studyStreak(now) + " يوم" : "") + "</p>" +
-      '<button class="btn alt" style="margin-block-start:10px;width:100%;color:var(--weak)" data-act="weak-open">🎯 نقاط ضعفي' + (wc ? ' <span class="chip num">' + wc + "</span>" : "") + "</button></div>" +
-      badgesHTML() +
-      '<div class="sec-h">اختر الكورس</div><div class="units">' + cards + "</div>";
+    if (v.mode === "games") return top + gamesHubHTML(v.c);
+    if (v.mode === "game") return top + gameHTML();
+    return top + catalogHTML(now);
+  }
+  // Course catalog — the learn tab's landing page: a compact progress strip, a
+  // "continue where you left off" card, the recommended English course featured on
+  // its own, then every other allowed course as a cover card, and badges last.
+  var COURSE_THEME = {
+    en: ["#3B6FED", "#1E3FA8"], iso: ["#0DA66B", "#087A4F"], iso14001: ["#22A35A", "#136B3A"], iso45001: ["#F59E0B", "#B86E00"],
+    iso22000: ["#E8664A", "#B23E25"], iso17025: ["#7B5CE0", "#4E32A8"], micro: ["#14A3B8", "#0B6E7D"], nutrition: ["#E2477A", "#A6234F"]
+  };
+  function courseStyle(cid) { var t = COURSE_THEME[cid] || COURSE_THEME.iso; return ' style="--c1:' + t[0] + ";--c2:" + t[1] + '"'; }
+  function courseStats(cid) {
+    var c = COURSES[cid], done = courseDone(cid), total = c.units.length, vocab = c.vocab || [];
+    var started = vocab.filter(function (w) { return state.learn.cards[w.id]; }).length;
+    return { done: done, total: total, pct: total ? Math.round(done / total * 100) : 0, words: vocab.length, started: started, hours: Math.max(1, Math.round(total * 20 / 60)) };
+  }
+  function nextUnit(cid) {
+    var c = COURSES[cid], done = courseDone(cid);
+    return c.units.filter(function (u) { return !(state.learn.units[cid + ":" + u.id] || {}).done && !(u.unlockAfter && done < u.unlockAfter); })[0] || null;
+  }
+  function courseCardHTML(cid) {
+    var c = COURSES[cid], st = courseStats(cid);
+    return '<button class="ccard" data-act="course-open" data-c="' + cid + '"' + courseStyle(cid) + '>' +
+      '<span class="ccover">' + ico(COURSE_ICO[cid]) + (st.pct === 100 ? '<span class="ctag">✓ مكتمل</span>' : "") + "</span>" +
+      '<span class="cbody"><b>' + esc(c.title) + '</b><small class="muted">' + esc(c.desc) + "</small>" +
+      '<span class="cmeta"><span class="num">' + st.total + '</span> وحدة · <span class="num">' + st.words + '</span> كلمة · ~<span class="num">' + st.hours + "</span> س</span>" +
+      '<span class="cprog"><span class="bar"><i style="width:' + st.pct + '%"></i></span><span class="num">' + st.pct + "%</span></span></span></button>";
+  }
+  function featuredCourseHTML() {
+    if (ALLOWED_COURSES.indexOf("en") < 0 || !COURSES.en) return "";
+    var st = courseStats("en"), nu = nextUnit("en");
+    return '<div class="feat"' + courseStyle("en") + '><span class="feat-tag">⭐ ننصحك تبدأ بيه</span>' +
+      '<div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico("cap") + '</span><div><h2>' + esc(COURSES.en.title) + "</h2>" +
+      '<p>' + esc(COURSES.en.desc) + "</p></div></div>" +
+      '<ul class="feat-list"><li>🔊 كل كلمة بالنطق ومثال وترجمة</li><li>🎮 ألعاب: مطابقة، سباق، استماع، تهجئة</li><li>🎤 تحدي نطق بالمايك ومحادثات حقيقية</li><li>🧠 مراجعة ذكية (SRS) عشان متنساش</li></ul>' +
+      '<div class="feat-prog"><span class="bar"><i style="width:' + st.pct + '%"></i></span><span><span class="num">' + st.done + "/" + st.total + "</span> وحدة</span></div>" +
+      '<div class="row wrapr"><button class="btn" data-act="course-open" data-c="en">' + (st.done ? "كمّل الكورس" : "ابدأ الكورس") + "</button>" +
+      '<button class="btn alt" data-act="games-open" data-c="en">🎮 العب واتعلم</button></div>' +
+      (nu && st.done ? '<p class="feat-next">الوحدة الجاية: ' + esc(nu.title) + "</p>" : "") + "</div>";
+  }
+  function continueCardHTML() {
+    var r = state.learn.resume;
+    if (!r || !r.c || !COURSES[r.c] || ALLOWED_COURSES.indexOf(r.c) < 0) return "";
+    var u = unitOf(r.c, r.u); if (!u) return "";
+    var p = state.learn.units[r.c + ":" + r.u] || {};
+    var target = p.done ? nextUnit(r.c) : u; if (!target) return "";
+    return '<div class="card cont"' + courseStyle(r.c) + '><span class="cont-ic">' + ico(COURSE_ICO[r.c]) + '</span><div class="grow"><small class="muted">كمّل من حيث وقفت · ' + esc(COURSES[r.c].title) + "</small><b>" + esc(target.title) + "</b></div>" +
+      '<button class="btn sm" data-act="unit-open" data-c="' + r.c + '" data-u="' + target.id + '">▶</button></div>';
+  }
+  function catalogHTML(now) {
+    var L = level(), wc = weakCount(), streak = studyStreak(now);
+    var others = ALLOWED_COURSES.filter(function (cid) { return COURSES[cid] && !(cid === "en" && featuredCourseHTML()); });
+    return '<div class="lstats">' +
+      '<div><b class="num">' + L.lv + '</b><small>المستوى</small><span class="bar amber"><i style="width:' + L.pct + '%"></i></span></div>' +
+      '<div><b class="num">' + L.xp + '</b><small>نقطة</small></div>' +
+      '<div><b class="num">🔥 ' + streak + '</b><small>يوم متواصل</small></div>' +
+      '<button data-act="weak-open"><b class="num" style="color:var(--weak)">🎯 ' + wc + '</b><small>نقاط ضعفي</small></button></div>' +
+      continueCardHTML() + featuredCourseHTML() +
+      (others.length ? '<div class="sec-h">' + (featuredCourseHTML() ? "كورسات تانية" : "اختر الكورس") + '</div><div class="cgrid">' + others.map(courseCardHTML).join("") + "</div>" : "") +
+      badgesHTML();
   }
   function badgesHTML() {
     var earned = ACHIEVEMENTS.filter(function (b) { return state.learn.badges[b.id]; }).length;
@@ -636,22 +684,33 @@
     var c = COURSES[cid], lvl = state.cardLvl || 0, due = dueCards(now, cid, lvl).length, ms = weakList("all").filter(function (w) { return w.cid === cid; }).length, done = courseDone(cid);
     var notesCount = (state.learn.notes[cid] || []).length;
     var mySentCount = (state.learn.mySentences || []).filter(function (s) { return s.cid === cid; }).length;
-    var lvlChips = c.vocab && c.vocab.length ? '<div class="row wrapr" style="margin-block-start:8px">' + [0, 1, 2, 3].map(function (l) {
+    var st = courseStats(cid), nu = nextUnit(cid), hasVocab = !!(c.vocab && c.vocab.length);
+    var lvlChips = hasVocab ? '<div class="row wrapr" style="margin-block-start:10px">' + [0, 1, 2, 3].map(function (l) {
       return '<button class="chipbtn' + (lvl === l ? " on" : "") + '" data-act="cardlvl" data-lvl="' + l + '">' + LVL_LBL[l] + "</button>";
     }).join("") + "</div>" : "";
+    var cta = nu
+      ? '<button class="btn chero-cta" data-act="unit-open" data-c="' + cid + '" data-u="' + nu.id + '">▶ ' + (done ? "كمّل: " : "ابدأ: ") + esc(nu.title) + "</button>"
+      : '<button class="btn chero-cta" data-act="final-exam" data-c="' + cid + '">🏆 الامتحان النهائي</button>';
+    function tile(act, icon, label, count, extra) {
+      return '<button class="tile" data-act="' + act + '" data-c="' + cid + '"' + (extra || "") + '><span class="tile-ic">' + icon + "</span><b>" + label + "</b>" + (count != null ? '<small class="num">' + count + "</small>" : "") + "</button>";
+    }
     return '<button class="linkbtn" data-act="lcourses">← الكورسات</button>' +
-      '<div class="card"><h3>المراجعة اليومية</h3><div class="row wrapr">' +
-      '<button class="btn" data-act="cards" data-c="' + cid + '"' + (due ? "" : " disabled") + ">كروت المفردات (" + due + ')</button>' +
-      '<button class="btn alt" style="color:var(--weak)" data-act="weak-open">🎯 نقاط ضعفي' + (ms ? ' <span class="chip num">' + ms + "</span>" : "") + "</button>" +
-      (c.vocab && c.vocab.length ? '<button class="btn alt" data-act="speak-start" data-c="' + cid + '">' + ico("vol") + " تحدي النطق</button>" : "") +
-      (c.vocab && c.vocab.length ? '<button class="btn alt" data-act="bank-open" data-c="' + cid + '">' + ico("book") + " بنك الكلمات <span class=\"chip num\">" + c.vocab.length + "</span></button>" : "") +
-      '<button class="btn alt" data-act="notes-open" data-c="' + cid + '">' + ico("pin") + " المهم" + (notesCount ? ' <span class="chip num">' + notesCount + "</span>" : "") + "</button>" +
-      '<button class="btn alt" data-act="mysent-open" data-c="' + cid + '">📝 جملي' + (mySentCount ? ' <span class="chip num">' + mySentCount + "</span>" : "") + "</button>" +
-      (c.examBank && c.examBank.length ? '<button class="btn alt" data-act="exambank" data-c="' + cid + '">' + ico("cap") + " بنك أسئلة آيزو <span class=\"chip num\">" + c.examBank.length + "</span></button>" : "") +
-      "</div>" + lvlChips + "</div>" +
-      finalExamCardHTML(cid, c, done) +
-      '<div class="row between" style="margin-block:14px 4px"><h2>' + esc(c.title) + '</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
-      pathHTML(cid, c.units, done);
+      '<div class="chero"' + courseStyle(cid) + '><div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico(COURSE_ICO[cid]) + '</span><div><h2>' + esc(c.title) + "</h2><p>" + esc(c.desc) + "</p></div></div>" +
+      '<div class="chero-stats"><div><b class="num">' + st.done + "/" + st.total + '</b><small>وحدة</small></div><div><b class="num">' + st.started + '</b><small>كلمة اتعلمتها</small></div><div><b class="num">' + st.pct + '%</b><small>إنجاز</small></div></div>' +
+      '<span class="bar"><i style="width:' + st.pct + '%"></i></span>' + cta + "</div>" +
+      '<div class="sec-h">المراجعة والتدريب</div><div class="tiles">' +
+      tile("cards", ico("refresh"), "كروت المراجعة", due, due ? "" : " disabled") +
+      (hasVocab && c.vocab.length >= 8 ? tile("games-open", "🎮", "ألعاب", null) : "") +
+      tile("weak-open", "🎯", "نقاط ضعفي", ms) +
+      (hasVocab ? tile("speak-start", ico("vol"), "تحدي النطق", null) : "") +
+      (hasVocab ? tile("bank-open", ico("book"), "بنك الكلمات", c.vocab.length) : "") +
+      tile("notes-open", ico("pin"), "المهم", notesCount) +
+      tile("mysent-open", "📝", "جملي", mySentCount) +
+      (c.examBank && c.examBank.length ? tile("exambank", ico("cap"), "بنك الأسئلة", c.examBank.length) : "") +
+      "</div>" + lvlChips +
+      '<div class="row between" style="margin-block:18px 4px"><h2>خريطة الكورس</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
+      pathHTML(cid, c.units, done) +
+      finalExamCardHTML(cid, c, done);
   }
   // Phase 11 — خريطة الكورس gets a 🏁 milestone node interleaved every 5 units,
   // on top of the regular unit nodes; a separate rowN counter keeps the l/r zigzag
