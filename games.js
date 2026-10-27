@@ -16,7 +16,7 @@
   var GAME_LEVELS = {
     match: [{ pairs: 4, rounds: 3 }, { pairs: 5, rounds: 3 }, { pairs: 6, rounds: 3 }, { pairs: 6, rounds: 4 }],
     sprint: [{ secs: 60 }, { secs: 50 }, { secs: 45 }, { secs: 40 }],
-    listen: [{ n: 8, opts: 4 }, { n: 10, opts: 4 }, { n: 10, opts: 6 }, { n: 12, opts: 6 }],
+    listen: [{ n: 8, opts: 3 }, { n: 10, opts: 4 }, { n: 10, opts: 4 }, { n: 12, opts: 5 }],
     spell: [{ n: 6, min: 2, max: 5 }, { n: 8, min: 3, max: 7 }, { n: 8, min: 5, max: 9 }, { n: 10, min: 6, max: 12 }]
   };
   var LVL_NAMES = ["سهل", "متوسط", "صعب", "خبير"];
@@ -38,6 +38,7 @@
     var list = GAMES.filter(function (g) { return gameAvailable(g, cid); });
     return '<button class="linkbtn" data-act="course-open" data-c="' + cid + '">← ' + esc(c.title) + "</button>" +
       '<div class="sec-h">🎮 العب واتعلم</div><p class="muted" style="font-size:14px;margin-block:-4px 12px">كل لعبة بتديك نقاط، والكلمات اللي بتغلط فيها بتتضاف لنقاط ضعفك عشان تراجعها.</p>' +
+      (cid === "en" ? '<button class="card ph-promo" data-act="ph-open"><span style="font-size:30px">💬</span><span class="grow"><b>جمل الحياة اليومية</b><small class="muted">110 جملة هتحتاجها فعلًا، بتتحفظ بالتكرار الذكي</small></span><span class="chip">جديد</span></button>' : "") +
       '<div class="gtiles">' + list.map(function (g) {
         var r = gameRec(cid, g.k);
         return '<button class="gtile" data-act="game-start" data-c="' + cid + '" data-k="' + g.k + '"><span class="gtile-ic">' + g.ico + "</span><b>" + esc(g.t) + "</b><small>" + esc(g.d) + "</small>" +
@@ -165,11 +166,11 @@
   }
 
   /* listen */
-  function buildListen(g) { g.cur = g.words[g.i]; g.opts = distinctAr(g.cid, g.cur, g.L.opts); g.pick = null; }
+  function buildListen(g) { g.cur = g.words[g.i]; g.opts = distinctAr(g.cid, g.cur, g.L.opts); g.pick = null; g.peek = false; }
   function listenPick(val) {
     var g = state.game; if (g.pick != null) return;
     g.pick = val;
-    if (val === g.cur.ar) { g.score += 10; } else { g.miss++; noteMiss(g, g.cur); }
+    if (val === g.cur.ar) { g.score += g.peek ? 5 : 10; } else { g.miss++; noteMiss(g, g.cur); }
     render();
   }
   function listenNext() {
@@ -181,8 +182,9 @@
     var answered = g.pick != null;
     return gameTopHTML(g, '<span class="num">' + (g.i + 1) + "/" + g.words.length + "</span>") +
       '<div style="text-align:center;margin-block:8px 16px"><button class="lbig" data-act="speak" data-txt="' + esc(g.cur.en) + '" aria-label="اسمع تاني">' + ico("vol") + "</button>" +
-      '<p class="muted" style="font-size:13px">اضغط للسماع تاني · ضغطة طويلة = أبطأ</p>' +
-      (answered ? '<p dir="ltr" lang="en" style="font-size:22px;font-weight:700;margin:6px 0">' + esc(g.cur.en) + "</p>" : "") + "</div>" +
+      '<div class="row" style="gap:8px;justify-content:center;margin-block:10px 4px"><button class="btn sm alt" data-act="listen-slow">🐢 أبطأ</button>' +
+      (answered || g.peek ? "" : '<button class="btn sm alt" data-act="listen-peek">👁 وريني الكلمة</button>') + "</div>" +
+      (answered || g.peek ? '<p dir="ltr" lang="en" style="font-size:22px;font-weight:700;margin:6px 0">' + esc(g.cur.en) + "</p>" : "") + "</div>" +
       '<div class="gopts">' + g.opts.map(function (o) {
         var cls = "gopt" + (answered && o === g.cur.ar ? " ok" : "") + (answered && o === g.pick && o !== g.cur.ar ? " bad" : "");
         return '<button class="' + cls + '" data-act="listen-pick" data-v="' + esc(o) + '"' + (answered ? " disabled" : "") + ">" + esc(o) + "</button>";
@@ -313,6 +315,8 @@
       case "sprint-ans": sprintAnswer(el.getAttribute("data-v") === "1"); break;
       case "listen-pick": listenPick(el.getAttribute("data-v")); break;
       case "listen-next": listenNext(); break;
+      case "listen-slow": speak(state.game.cur.en, true); break;
+      case "listen-peek": state.game.peek = true; render(); break;
       case "spell-tap": spellTap(Number(el.getAttribute("data-i"))); break;
       case "spell-undo": spellUndo(); break;
       case "spell-hint": spellHint(); break;

@@ -994,3 +994,36 @@ button.adm-lrow { cursor: pointer; }
 .adm-table th { font-size: 12px; color: var(--muted); font-weight: 600; }
 .adm-table tbody tr:hover { background: var(--surface2); }
 .adm-empty { text-align: center; padding: 28px; color: var(--muted); }
+
+/* ---------------- جمل يومية ---------------- */
+.ph-promo { display: flex; align-items: center; gap: 12px; width: 100%; text-align: start; font: inherit; color: inherit; cursor: pointer; }
+.ph-promo b { display: block; }
+.ph-promo small { font-size: 12.5px; }
+.ph-how b { display: block; margin-block-end: 8px; }
+.ph-steps { display: flex; flex-wrap: wrap; gap: 6px; margin-block-end: 8px; }
+.ph-steps span { font-size: 12.5px; font-weight: 600; padding: 4px 10px; border-radius: 99px; background: var(--surface2); }
+.ph-dots { display: inline-flex; gap: 4px; }
+.ph-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--line); }
+.ph-dots i.on { background: linear-gradient(160deg, var(--teal), var(--teal-deep)); border-color: transparent; }
+.ph-item { margin-block-end: 10px; }
+.ph-en { font-family: var(--latin); font-weight: 700; font-size: 17px; line-height: 1.45; text-align: left; }
+.ph-en.big { font-size: 22px; text-align: center; margin-block: 6px; }
+.ph-ar { font-size: 15px; margin-block-start: 2px; }
+.ph-when { margin: 10px auto 12px; padding: 8px 12px; border-radius: 12px; background: color-mix(in srgb, var(--amber) 14%, transparent); font-size: 14px; }
+.ph-learn { text-align: center; }
+.ph-badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 99px; color: var(--teal-deep); background: color-mix(in srgb, var(--teal) 14%, transparent); }
+.ph-cat { font-size: 13px; text-align: center; margin-block: -4px 8px; }
+.ph-prog { flex: 1; margin-inline: 10px; }
+.ph-prog .bar { height: 8px; }
+.lbig.sm { width: 56px; height: 56px; margin: 0; box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 8px 18px -8px color-mix(in srgb, var(--blue) 80%, transparent); }
+.lbig.sm svg { width: 26px; height: 26px; }
+.ph-blank { display: inline-block; min-width: 60px; border-bottom: 3px solid var(--blue); color: var(--blue-deep); }
+.ph-built { min-height: 54px; margin-block-start: 12px; padding: 12px; border-radius: 14px; background: var(--surface2); font-family: var(--latin); font-size: 18px; font-weight: 600; text-align: left; }
+.ph-built.ok { box-shadow: inset 0 0 0 2px var(--done); }
+.ph-built.bad { box-shadow: inset 0 0 0 2px var(--miss); animation: gshake .3s; }
+.ph-tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.ph-tile { width: auto; height: auto; min-height: 44px; padding: 6px 14px; font-size: 17px; font-family: var(--latin); }
+.ph-reveal { margin-block-start: 10px; padding: 12px 14px; border-radius: 16px; display: grid; gap: 4px; }
+.ph-reveal.ok { background: color-mix(in srgb, var(--done) 15%, transparent); box-shadow: inset 0 0 0 1.5px var(--done); }
+.ph-reveal.bad { background: color-mix(in srgb, var(--miss) 12%, transparent); box-shadow: inset 0 0 0 1.5px var(--miss); }
+.ph-reveal small { font-size: 12.5px; color: var(--muted); }

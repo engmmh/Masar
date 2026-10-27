@@ -510,6 +510,7 @@
     if (v.mode === "weakdrill") return top + weakDrillHTML();
     if (v.mode === "games") return top + gamesHubHTML(v.c);
     if (v.mode === "intro") return top + introHTML();
+    if (v.mode === "phrases") return top + dailyPhrasesHTML();
     if (v.mode === "game") return top + gameHTML();
     return top + catalogHTML(now);
   }
@@ -548,7 +549,8 @@
       '<div class="feat-prog"><span class="bar"><i style="width:' + st.pct + '%"></i></span><span><span class="num">' + st.done + "/" + st.total + "</span> وحدة</span></div>" +
       '<div class="row wrapr"><button class="btn" data-act="course-open" data-c="en">' + (st.done ? "كمّل الكورس" : "ابدأ الكورس") + "</button>" +
       '<button class="btn alt" data-act="games-open" data-c="en">🎮 العب واتعلم</button>' +
-      '<button class="btn alt" data-act="intro-open">🎤 قدّم نفسك</button></div>' +
+      '<button class="btn alt" data-act="intro-open">🎤 قدّم نفسك</button>' +
+      '<button class="btn alt" data-act="ph-open">💬 جمل يومية</button></div>' +
       (nu && st.done ? '<p class="feat-next">الوحدة الجاية: ' + esc(nu.title) + "</p>" : "") + "</div>";
   }
   function continueCardHTML() {
@@ -702,6 +704,7 @@
       '<span class="bar"><i style="width:' + st.pct + '%"></i></span>' + cta + "</div>" +
       '<div class="sec-h">المراجعة والتدريب</div><div class="tiles">' +
       tile("cards", ico("refresh"), "كروت المراجعة", due, due ? "" : " disabled") +
+      (cid === "en" ? tile("ph-open", "💬", "جمل يومية", null) : "") +
       (cid === "en" ? tile("intro-open", "🎤", "قدّم نفسك", null) : "") +
       (hasVocab && c.vocab.length >= 8 ? tile("games-open", "🎮", "ألعاب", null) : "") +
       tile("weak-open", "🎯", "نقاط ضعفي", ms) +
