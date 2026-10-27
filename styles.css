@@ -680,3 +680,147 @@ tr:last-child td { border-block-end: 0; }
 .gmissed { text-align: start; margin-block-start: 12px; padding: 12px; border-radius: 14px; background: var(--surface2); display: grid; gap: 6px; font-size: 14px; }
 @keyframes gshake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 @media (prefers-reduced-motion: reduce) { .mbtn, .sprint, .sslots, .ccard { animation: none !important; transition: none !important; } }
+
+/* ======================================================================
+   Crystal theme — frosted-glass surfaces over a soft colour mesh.
+   Overrides the flat surfaces above; colours stay token-driven so the
+   light/dark switch keeps working.
+   ====================================================================== */
+:root {
+  --teal: #0E9F6E; --teal-deep: #087553;
+  --blue: #3D6BF0; --blue-deep: #2449C2;
+  --violet: #7B61F0; --violet-deep: #5A41D1;
+  --bg: #EEF5F2;
+  --surface: rgba(255, 255, 255, .72);
+  --surface2: rgba(10, 70, 52, .065);
+  --line: rgba(10, 70, 52, .11);
+  --g-a: rgba(255, 255, 255, .82);
+  --g-b: rgba(255, 255, 255, .5);
+  --g-edge: rgba(255, 255, 255, .9);
+  --g-hi: rgba(255, 255, 255, .95);
+  --g-shadow: 0 10px 30px -14px rgba(12, 60, 46, .28), 0 2px 6px -2px rgba(12, 60, 46, .08);
+  --mesh:
+    radial-gradient(55% 38% at 100% 0%, rgba(14, 159, 110, .30), transparent 70%),
+    radial-gradient(50% 34% at 0% 28%, rgba(61, 107, 240, .20), transparent 70%),
+    radial-gradient(60% 40% at 70% 100%, rgba(123, 97, 240, .20), transparent 70%),
+    radial-gradient(40% 30% at 10% 85%, rgba(245, 185, 66, .14), transparent 70%),
+    linear-gradient(180deg, #F4FBF8, #EAF1F6);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #06100E;
+    --surface: rgba(255, 255, 255, .07); --surface2: rgba(255, 255, 255, .07); --line: rgba(255, 255, 255, .11);
+    --g-a: rgba(255, 255, 255, .10); --g-b: rgba(255, 255, 255, .035);
+    --g-edge: rgba(255, 255, 255, .14); --g-hi: rgba(255, 255, 255, .14);
+    --g-shadow: 0 14px 34px -14px rgba(0, 0, 0, .7);
+    --mesh:
+      radial-gradient(55% 38% at 100% 0%, rgba(53, 226, 160, .20), transparent 70%),
+      radial-gradient(50% 34% at 0% 30%, rgba(94, 129, 255, .18), transparent 70%),
+      radial-gradient(60% 40% at 70% 100%, rgba(167, 139, 255, .18), transparent 70%),
+      linear-gradient(180deg, #07130F, #0A0F1A);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #06100E;
+  --surface: rgba(255, 255, 255, .07); --surface2: rgba(255, 255, 255, .07); --line: rgba(255, 255, 255, .11);
+  --g-a: rgba(255, 255, 255, .10); --g-b: rgba(255, 255, 255, .035);
+  --g-edge: rgba(255, 255, 255, .14); --g-hi: rgba(255, 255, 255, .14);
+  --g-shadow: 0 14px 34px -14px rgba(0, 0, 0, .7);
+  --mesh:
+    radial-gradient(55% 38% at 100% 0%, rgba(53, 226, 160, .20), transparent 70%),
+    radial-gradient(50% 34% at 0% 30%, rgba(94, 129, 255, .18), transparent 70%),
+    radial-gradient(60% 40% at 70% 100%, rgba(167, 139, 255, .18), transparent 70%),
+    linear-gradient(180deg, #07130F, #0A0F1A);
+}
+body, #shell, #lock, #welcome { background: var(--mesh), var(--bg); }
+#p-quran {
+  background:
+    radial-gradient(circle at 15% 8%, color-mix(in srgb, var(--quran) 9%, transparent), transparent 42%),
+    radial-gradient(circle at 85% 92%, color-mix(in srgb, var(--quran) 7%, transparent), transparent 46%);
+}
+
+/* glass surfaces */
+.card, .unit, .prow, .tile, .gtile, .ccard, .lstats > *, .sprint, #welcome .wfeat > div, .plan-resume {
+  background: linear-gradient(150deg, var(--g-a), var(--g-b));
+  border: 1px solid var(--g-edge);
+  box-shadow: inset 0 1px 0 var(--g-hi), var(--g-shadow);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+}
+.ccard { background: linear-gradient(150deg, var(--g-a), var(--g-b)); }
+.mbtn, .gopt, .stile, .chipbtn, .seg2 button, .pnode, .badge .ic, .inp {
+  background: linear-gradient(160deg, var(--g-a), var(--g-b));
+  border-color: var(--g-edge);
+  box-shadow: inset 0 1px 0 var(--g-hi), 0 4px 12px -8px rgba(12, 60, 46, .35);
+}
+.mbtn.sel { background: linear-gradient(160deg, color-mix(in srgb, var(--blue) 22%, transparent), color-mix(in srgb, var(--blue) 8%, transparent)); border-color: var(--blue); }
+.mbtn.bad, .gopt.bad { background: linear-gradient(160deg, color-mix(in srgb, var(--miss) 24%, transparent), color-mix(in srgb, var(--miss) 8%, transparent)); border-color: var(--miss); }
+.gopt.ok { background: linear-gradient(160deg, color-mix(in srgb, var(--done) 26%, transparent), color-mix(in srgb, var(--done) 8%, transparent)); border-color: var(--done); }
+.stile { box-shadow: inset 0 1px 0 var(--g-hi), 0 4px 0 var(--line); }
+
+/* crystal buttons: a lit top edge, a soft inner sheen and a coloured glow */
+.btn, .btn.sm, .chipbtn.on, .seg2 button[aria-pressed="true"], .tabs button[aria-current="page"], .pnode.cur, .pnode.done {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .38), rgba(255, 255, 255, 0) 52%),
+    linear-gradient(160deg, color-mix(in srgb, var(--teal) 85%, #6FF2C2), var(--teal-deep));
+  border: 1px solid color-mix(in srgb, var(--teal-deep) 55%, transparent);
+  color: var(--teal-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 18px -8px color-mix(in srgb, var(--teal) 75%, transparent);
+}
+.btn:active, .btn.sm:active { transform: translateY(1px) scale(.99); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 3px 8px -4px color-mix(in srgb, var(--teal) 70%, transparent); }
+.btn.alt, .btn.alt.sm {
+  background: linear-gradient(160deg, var(--g-a), var(--g-b));
+  border: 1px solid var(--g-edge); color: var(--text);
+  box-shadow: inset 0 1px 0 var(--g-hi), 0 6px 16px -10px rgba(12, 60, 46, .35);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.btn.alt:active, .btn.alt.sm:active { box-shadow: inset 0 1px 0 var(--g-hi); }
+.gbig.no {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, #FF7A8E, var(--miss-deep));
+  border-color: color-mix(in srgb, var(--miss-deep) 60%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 8px 18px -8px color-mix(in srgb, var(--miss) 75%, transparent);
+}
+.lbig {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .4), rgba(255, 255, 255, 0) 52%), linear-gradient(160deg, #6E93FF, var(--blue-deep));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 14px 28px -10px color-mix(in srgb, var(--blue) 80%, transparent);
+}
+.bar { background: var(--surface2); box-shadow: inset 0 1px 2px rgba(0, 0, 0, .08); }
+.bar > i { background: linear-gradient(180deg, rgba(255, 255, 255, .35), transparent 60%), linear-gradient(90deg, var(--teal-deep), var(--teal), #5FE6B4); }
+
+/* frosted header + floating glass tab bar */
+.tabs {
+  margin: 0 10px calc(8px + env(safe-area-inset-bottom, 0px)); padding: 6px; border-radius: 22px;
+  background: linear-gradient(150deg, var(--g-a), var(--g-b));
+  border: 1px solid var(--g-edge);
+  box-shadow: inset 0 1px 0 var(--g-hi), 0 12px 30px -12px rgba(12, 60, 46, .35);
+  -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%);
+}
+.tabs button[aria-current="page"] { border-radius: 16px; }
+
+/* gloss on the big coloured hero cards */
+.card:has(.ringbox), .feat, .chero { position: relative; overflow: hidden; }
+.card:has(.ringbox) {
+  background: radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, .22), transparent 60%), linear-gradient(150deg, color-mix(in srgb, var(--teal) 88%, #6FF2C2), var(--teal-deep));
+  border: 1px solid rgba(255, 255, 255, .35);
+}
+.card:has(.ringbox)::after, .feat::after, .chero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none; border-radius: inherit;
+  background: linear-gradient(165deg, rgba(255, 255, 255, .28) 0%, rgba(255, 255, 255, .06) 32%, transparent 33%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5);
+}
+.feat .btn, .chero .btn { background: linear-gradient(180deg, #fff, rgba(255, 255, 255, .86)); color: var(--c2); border-color: rgba(255, 255, 255, .9); box-shadow: 0 8px 18px -8px rgba(0, 0, 0, .35); }
+.feat .btn.alt { background: rgba(255, 255, 255, .16); color: #fff; border-color: rgba(255, 255, 255, .35); }
+.ccover { box-shadow: inset 0 -1px 0 rgba(255, 255, 255, .25); }
+.ccover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(165deg, rgba(255, 255, 255, .3), transparent 45%); }
+.sec-h::before { background: linear-gradient(160deg, var(--teal), var(--blue)); border-radius: 3px; }
+
+/* game level dots */
+.gtile-lvl { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--muted); }
+.gtile-lvl i { width: 7px; height: 7px; border-radius: 50%; background: var(--surface2); border: 1px solid var(--line); }
+.gtile-lvl i.on { background: linear-gradient(160deg, var(--amber), var(--amber-deep)); border-color: transparent; }
+.glvl { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 99px; background: var(--surface2); color: var(--muted); vertical-align: middle; }
+.glvlup { margin: 6px auto 0; padding: 8px 12px; border-radius: 12px; font-weight: 700; font-size: 14px; color: var(--done-deep); background: color-mix(in srgb, var(--done) 16%, transparent); }
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --g-a: rgba(255, 255, 255, .94); --g-b: rgba(255, 255, 255, .86); }
+}

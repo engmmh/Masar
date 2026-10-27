@@ -11,6 +11,15 @@
     { k: "spell", ico: "🔤", t: "تهجئة", d: "رتّب الحروف وكوّن الكلمة", en: true }
   ];
   var gameTimer = null;
+  // Each game has 4 levels; 3 stars on a level unlocks the next one. Levels change
+  // round size, timer, option count and word length, so a replay is never the same.
+  var GAME_LEVELS = {
+    match: [{ pairs: 4, rounds: 3 }, { pairs: 5, rounds: 3 }, { pairs: 6, rounds: 3 }, { pairs: 6, rounds: 4 }],
+    sprint: [{ secs: 60 }, { secs: 50 }, { secs: 45 }, { secs: 40 }],
+    listen: [{ n: 8, opts: 4 }, { n: 10, opts: 4 }, { n: 10, opts: 6 }, { n: 12, opts: 6 }],
+    spell: [{ n: 6, min: 2, max: 5 }, { n: 8, min: 3, max: 7 }, { n: 8, min: 5, max: 9 }, { n: 10, min: 6, max: 12 }]
+  };
+  var LVL_NAMES = ["سهل", "متوسط", "صعب", "خبير"];
 
   function gamePool(cid) {
     return ((COURSES[cid] && COURSES[cid].vocab) || []).filter(function (v) { return v.en && v.ar; });
@@ -22,6 +31,7 @@
     return gamePool(cid).filter(function (v) { return /^[A-Za-z][A-Za-z' -]*$/.test(v.en); }).length >= 8;
   }
   function gameRec(cid, k) { return ((state.learn.games || {})[cid + ":" + k]) || null; }
+  function gameLvl(cid, k) { var r = gameRec(cid, k); return Math.min(3, (r && r.lvl) || 0); }
 
   function gamesHubHTML(cid) {
     var c = COURSES[cid]; if (!c) return "";
@@ -31,35 +41,50 @@
       '<div class="gtiles">' + list.map(function (g) {
         var r = gameRec(cid, g.k);
         return '<button class="gtile" data-act="game-start" data-c="' + cid + '" data-k="' + g.k + '"><span class="gtile-ic">' + g.ico + "</span><b>" + esc(g.t) + "</b><small>" + esc(g.d) + "</small>" +
+          '<span class="gtile-lvl">' + [0, 1, 2, 3].map(function (n) { return '<i class="' + (n <= gameLvl(cid, g.k) ? "on" : "") + '"></i>'; }).join("") + " " + LVL_NAMES[gameLvl(cid, g.k)] + "</span>" +
           '<span class="gtile-best">' + (r ? "🏆 أفضل نتيجة <span class=\"num\">" + r.best + "</span>" : "جديدة") + "</span></button>";
       }).join("") + "</div>";
   }
 
+  // Words rotate: each game prefers words this course's games haven't shown
+  // recently (state.learn.gameSeen), plus at most two weak words, so replays keep
+  // bringing new vocab until the whole list has been seen, then the cycle restarts.
   function pickWords(cid, n, filter) {
     var pool = gamePool(cid).filter(filter || function () { return true; });
-    var weakFirst = shuffle(pool.filter(function (v) { return state.learn.weak[v.id]; }));
-    var rest = shuffle(pool.filter(function (v) { return !state.learn.weak[v.id]; }));
-    return weakFirst.slice(0, Math.ceil(n / 3)).concat(rest).slice(0, n);
+    if (!state.learn.gameSeen) state.learn.gameSeen = {};
+    var seen = state.learn.gameSeen[cid] || [], seenSet = {};
+    seen.forEach(function (id) { seenSet[id] = 1; });
+    var fresh = pool.filter(function (v) { return !seenSet[v.id]; });
+    if (fresh.length < n) { seen = []; seenSet = {}; fresh = pool.slice(); }
+    var weak = shuffle(fresh.filter(function (v) { return state.learn.weak[v.id]; })).slice(0, 2);
+    var picked = weak.concat(shuffle(fresh.filter(function (v) { return weak.indexOf(v) < 0; }))).slice(0, n);
+    if (picked.length < n) picked = picked.concat(shuffle(pool.filter(function (v) { return picked.indexOf(v) < 0; }))).slice(0, n);
+    state.learn.gameSeen[cid] = seen.concat(picked.map(function (v) { return v.id; })).slice(-Math.max(10, pool.length - n));
+    return shuffle(picked);
   }
   function distinctAr(cid, correct, n) {
     var seen = {}; seen[correct.ar] = 1;
-    var out = shuffle(gamePool(cid)).filter(function (v) { if (seen[v.ar]) return false; seen[v.ar] = 1; return true; }).slice(0, n - 1).map(function (v) { return v.ar; });
+    // Same-level distractors are harder to rule out than random ones.
+    var pool = gamePool(cid), same = pool.filter(function (v) { return v.lvl === correct.lvl; });
+    var out = shuffle(same.length >= n * 2 ? same : pool).filter(function (v) { if (seen[v.ar]) return false; seen[v.ar] = 1; return true; }).slice(0, n - 1).map(function (v) { return v.ar; });
     return shuffle(out.concat([correct.ar]));
   }
   var singleWord = function (v) { return /^[A-Za-z][A-Za-z']{1,11}$/.test(v.en); };
 
   function startGame(cid, k) {
     stopGameTimer();
-    var g = { kind: k, cid: cid, score: 0, miss: 0, missed: [], t0: Date.now(), over: false };
+    var lvl = gameLvl(cid, k), L = GAME_LEVELS[k][lvl];
+    var g = { kind: k, cid: cid, lvl: lvl, L: L, score: 0, miss: 0, missed: [], t0: Date.now(), over: false };
     if (k === "match") {
-      g.words = pickWords(cid, 15); g.round = 0; g.rounds = Math.min(3, Math.floor(g.words.length / 5)); g.sel = null; g.gone = {}; g.bad = null;
+      g.pairs = L.pairs; g.words = pickWords(cid, L.pairs * L.rounds); g.round = 0; g.rounds = Math.max(1, Math.floor(g.words.length / g.pairs)); g.sel = null; g.gone = {}; g.bad = null;
       buildMatchRound(g);
     } else if (k === "sprint") {
-      g.left = 60; g.combo = 0; g.bestCombo = 0; g.answered = 0; nextSprint(g);
+      g.left = L.secs; g.combo = 0; g.bestCombo = 0; g.answered = 0; g.queue = pickWords(cid, 30); g.qi = 0; nextSprint(g);
     } else if (k === "listen") {
-      g.words = pickWords(cid, 10, function (v) { return /^[A-Za-z][A-Za-z' -]*$/.test(v.en); }); g.i = 0; g.pick = null; buildListen(g);
+      g.words = pickWords(cid, L.n, function (v) { return /^[A-Za-z][A-Za-z' -]*$/.test(v.en); }); g.i = 0; g.pick = null; buildListen(g);
     } else if (k === "spell") {
-      g.words = pickWords(cid, 8, singleWord); g.i = 0; buildSpell(g);
+      var lenOk = function (v) { return singleWord(v) && v.en.length >= L.min && v.en.length <= L.max; };
+      g.words = pickWords(cid, L.n, gamePool(cid).filter(lenOk).length >= L.n ? lenOk : singleWord); g.i = 0; buildSpell(g);
     }
     state.game = g; state.lv = { mode: "game", c: cid };
     $("#p-learn").scrollTop = 0; render();
@@ -70,7 +95,7 @@
 
   /* match */
   function buildMatchRound(g) {
-    var ws = g.words.slice(g.round * 5, g.round * 5 + 5);
+    var ws = g.words.slice(g.round * g.pairs, g.round * g.pairs + g.pairs);
     g.left5 = shuffle(ws); g.right5 = shuffle(ws); g.gone = {}; g.sel = null; g.bad = null;
   }
   function matchTap(side, id) {
@@ -79,7 +104,7 @@
     if (g.sel.id === id) {
       g.gone[id] = true; g.score += 10; g.sel = null; g.bad = null;
       if (navigator.vibrate) navigator.vibrate(10);
-      if (Object.keys(g.gone).length === 5) {
+      if (Object.keys(g.gone).length === g.left5.length) {
         g.round++;
         if (g.round >= g.rounds) { endGame(); render(); return; }
         buildMatchRound(g);
@@ -106,7 +131,7 @@
 
   /* sprint */
   function nextSprint(g) {
-    var w = pickWords(g.cid, 1)[0], ok = Math.random() < 0.5;
+    var w = g.queue[g.qi++ % g.queue.length], ok = Math.random() < 0.5;
     var shown = ok ? w.ar : (distinctAr(g.cid, w, 2).filter(function (a) { return a !== w.ar; })[0] || w.ar);
     g.cur = w; g.shown = shown; g.truth = shown === w.ar; g.flash = null;
   }
@@ -140,7 +165,7 @@
   }
 
   /* listen */
-  function buildListen(g) { g.cur = g.words[g.i]; g.opts = distinctAr(g.cid, g.cur, 4); g.pick = null; }
+  function buildListen(g) { g.cur = g.words[g.i]; g.opts = distinctAr(g.cid, g.cur, g.L.opts); g.pick = null; }
   function listenPick(val) {
     var g = state.game; if (g.pick != null) return;
     g.pick = val;
@@ -230,14 +255,15 @@
   }
   function gameTopHTML(g, mid) {
     var meta = GAMES.filter(function (x) { return x.k === g.kind; })[0];
-    return '<div class="gtop"><button class="linkbtn" data-act="game-quit">✕</button><b>' + meta.ico + " " + esc(meta.t) + "</b><span>" + mid + "</span></div>" +
+    return '<div class="gtop"><button class="linkbtn" data-act="game-quit">✕</button><b>' + meta.ico + " " + esc(meta.t) + ' <span class="glvl">' + LVL_NAMES[g.lvl] + "</span></b><span>" + mid + "</span></div>" +
       '<div class="gscore"><span>⭐ <span class="num">' + g.score + '</span></span><span style="color:var(--miss)">✗ <span class="num">' + g.miss + "</span></span></div>";
   }
   function endGame() {
     var g = state.game; if (!g || g.over) return;
     stopGameTimer();
     g.over = true; g.secs = Math.round((Date.now() - g.t0) / 1000);
-    if (g.kind === "match") g.score = Math.max(0, g.score + Math.max(0, 90 - g.secs) - g.miss * 5);
+    if (g.kind === "match") g.score = Math.max(0, g.score + Math.max(0, g.rounds * g.pairs * 6 - g.secs) - g.miss * 5);
+    g.score = Math.round(g.score * (1 + g.lvl * 0.25));
     var key = g.cid + ":" + g.kind;
     if (!state.learn.games) state.learn.games = {};
     var rec = state.learn.games[key] || { best: 0, plays: 0 };
@@ -245,21 +271,27 @@
     rec.best = Math.max(rec.best, g.score); rec.plays++; state.learn.games[key] = rec;
     g.xp = Math.max(3, Math.min(25, Math.round(g.score / 10)));
     addXp(g.xp); checkAchievements(nowR()); saveMeta("learn", 0);
-    var total = g.kind === "match" ? g.rounds * 5 : g.kind === "sprint" ? g.answered : g.words.length;
+    var total = g.kind === "match" ? g.rounds * g.pairs : g.kind === "sprint" ? g.answered : g.words.length;
     var acc = total ? (total - Math.min(total, g.missed.length)) / total : 0;
     g.stars = acc >= 0.95 ? 3 : acc >= 0.75 ? 2 : acc > 0 ? 1 : 0;
+    // A sprint with only a handful of answers shouldn't count as mastery.
+    if (g.kind === "sprint" && g.answered < 15) g.stars = Math.min(g.stars, 2);
+    g.levelUp = g.stars === 3 && g.lvl < 3;
+    if (g.levelUp) rec.lvl = g.lvl + 1;
   }
   function gameEndHTML(g) {
     var meta = GAMES.filter(function (x) { return x.k === g.kind; })[0];
     var missedWords = g.missed.map(function (id) { return VOCAB_INDEX[id]; }).filter(Boolean);
     return '<div class="card gend"><div class="gend-stars">' + [1, 2, 3].map(function (n) { return '<span class="' + (n <= g.stars ? "on" : "") + '">★</span>'; }).join("") + "</div>" +
       "<h2>" + (g.newBest ? "🏆 رقم قياسي جديد!" : g.stars === 3 ? "ممتاز! 👏" : g.stars === 2 ? "شغل حلو 👍" : "كمّل وهتتحسن 💪") + "</h2>" +
+      (g.levelUp ? '<p class="glvlup">⬆️ فتحت مستوى «' + LVL_NAMES[g.lvl + 1] + "» — اللعبة الجاية أصعب وفيها كلمات جديدة</p>"
+        : g.lvl < 3 ? '<p class="muted" style="font-size:13px">جيب 3 نجوم عشان تفتح مستوى «' + LVL_NAMES[g.lvl + 1] + "»</p>" : '<p class="muted" style="font-size:13px">أنت في أعلى مستوى 🔥</p>') +
       '<p class="muted">' + esc(meta.t) + "</p>" +
       '<div class="chero-stats" style="color:inherit"><div><b class="num">' + g.score + '</b><small>النقاط</small></div><div><b class="num">+' + g.xp + '</b><small>XP</small></div><div><b class="num">' + g.secs + '</b><small>ثانية</small></div></div>' +
       (missedWords.length ? '<div class="gmissed"><b>كلمات تراجعها (اتضافت لنقاط ضعفي):</b>' + missedWords.map(function (v) {
         return '<div class="row between"><span dir="ltr" lang="en">' + esc(v.en) + '</span><span class="muted">' + esc(v.ar) + "</span></div>";
       }).join("") + "</div>" : "") +
-      '<div class="row wrapr" style="justify-content:center;margin-block-start:14px"><button class="btn" data-act="game-start" data-c="' + g.cid + '" data-k="' + g.kind + '">العب تاني</button>' +
+      '<div class="row wrapr" style="justify-content:center;margin-block-start:14px"><button class="btn" data-act="game-start" data-c="' + g.cid + '" data-k="' + g.kind + '">' + (g.levelUp ? "العب المستوى الجاي" : "العب تاني بكلمات جديدة") + '</button>' +
       '<button class="btn alt" data-act="games-open" data-c="' + g.cid + '">ألعاب تانية</button></div></div>';
   }
   function gameHTML() {
