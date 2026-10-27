@@ -9,7 +9,7 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v8";
+var CACHE_NAME = "masar-v9";
 var PRECACHE = [
   "./",
   "./index.html",
