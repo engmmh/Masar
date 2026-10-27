@@ -1,6 +1,21 @@
 "use strict";
   /* ---------------- constants ---------------- */
-  var LAT = 24.7136, LNG = 46.6753, TZ = 3;
+  var LAT = 24.7136, LNG = 46.6753, TZ = 3, CALC = "umm";
+  // Per-device location override for prayer times / qibla, set from the settings
+  // "الموقع" card (tools.js). Defaults stay Riyadh + Umm al-Qura when nothing is saved.
+  var LOC_NAME = "الرياض";
+  try {
+    var savedLoc = JSON.parse(localStorage.getItem("masar:loc") || "null");
+    if (savedLoc && isFinite(savedLoc.lat) && isFinite(savedLoc.lng) && isFinite(savedLoc.tz)) {
+      LAT = Number(savedLoc.lat); LNG = Number(savedLoc.lng); TZ = Number(savedLoc.tz);
+      // Prefer the IANA zone (handles DST, e.g. Egypt's summer time) over the saved fixed offset.
+      if (savedLoc.tzName) {
+        var tzm = /GMT(?:([+-]\d+)(?::(\d+))?)?$/.exec(new Intl.DateTimeFormat("en-US", { timeZone: savedLoc.tzName, timeZoneName: "shortOffset" }).format(new Date()));
+        if (tzm) TZ = tzm[1] ? Number(tzm[1]) + (tzm[1][0] === "-" ? -1 : 1) * Number(tzm[2] || 0) / 60 : 0;
+      }
+      CALC = savedLoc.calc === "egypt" ? "egypt" : "umm"; LOC_NAME = String(savedLoc.name || "موقعي");
+    }
+  } catch (e) { }
   var PRAYERS = [
     { k: "fajr", n: "الفجر" }, { k: "dhuhr", n: "الظهر" }, { k: "asr", n: "العصر" },
     { k: "maghrib", n: "المغرب" }, { k: "isha", n: "العشاء" }
@@ -964,6 +979,7 @@
   }
   function settingsHTML(now) {
     return '<button class="linkbtn" data-act="settings-close">← رجوع</button><div class="sec-h">الإعدادات</div>' + pushCardHTML() +
+      locationCardHTML() + backupCardHTML() +
       '<div class="card"><h3 style="margin:0 0 6px">المظهر</h3><p class="muted" style="font-size:13px;margin-block-end:10px">النهاري / الليلي / حسب الجهاز</p><button class="btn sm alt" data-act="theme">' + esc(THEME_LBL[getTheme()]) + "</button></div>" +
       '<div class="card"><h3 style="margin:0 0 6px">سرعة النطق</h3><p class="muted" style="font-size:13px;margin-block-end:10px">سرعة زرار 🔊 العادي — الضغطة الطويلة على 🔊 دايمًا بتنطق ببطء زيادة عن كده.</p>' +
       '<div class="row wrapr">' + SPEECH_RATES.map(function (r) {

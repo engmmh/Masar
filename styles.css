@@ -559,3 +559,28 @@ tr:last-child td { border-block-end: 0; }
 #toast.on { opacity: 1; }
 #toast button { pointer-events: auto; }
 @media (prefers-reduced-motion: reduce) { #toast { transition: none; } }
+
+/* ---------------- prayer tools: tasbih + qibla ---------------- */
+.tasbih-btn {
+  display: grid; place-items: center; align-content: center; gap: 4px;
+  width: min(240px, 70vw); aspect-ratio: 1; margin: 8px auto 0; border-radius: 50%;
+  border: 0; cursor: pointer; color: var(--text); font: inherit;
+  background:
+    radial-gradient(closest-side, var(--surface) 86%, transparent 87%),
+    conic-gradient(var(--teal) calc(var(--p, 0) * 1%), var(--surface2) 0);
+  box-shadow: 0 6px 20px rgba(8, 122, 79, .15);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; user-select: none;
+}
+.tasbih-btn:active { transform: scale(.97); }
+.tasbih-n { font-size: 56px; font-weight: 700; line-height: 1; color: var(--teal-deep); }
+.tasbih-d { font-family: var(--display); font-size: 18px; }
+.qibla-dial {
+  position: relative; width: min(240px, 70vw); aspect-ratio: 1; margin: 0 auto; border-radius: 50%;
+  border: 3px solid var(--line); background: var(--surface2); transition: transform .15s linear;
+}
+.qibla-n { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); font-weight: 700; color: var(--miss); }
+.qibla-needle { position: absolute; inset: 0; display: flex; justify-content: center; }
+.qibla-needle::before {
+  content: ""; position: absolute; top: 18%; bottom: 50%; width: 4px; border-radius: 2px; background: var(--teal);
+}
+.qibla-needle span { position: absolute; top: 6%; font-size: 26px; transform: translateY(-20%); }
