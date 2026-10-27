@@ -824,3 +824,35 @@ body, #shell, #lock, #welcome { background: var(--mesh), var(--bg); }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   :root { --g-a: rgba(255, 255, 255, .94); --g-b: rgba(255, 255, 255, .86); }
 }
+
+/* ---------------- قدّم نفسك (self-intro coach) ---------------- */
+.gtile.locked { opacity: .6; }
+.ilines { display: grid; gap: 8px; margin-block-start: 12px; }
+.iline { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--surface2); }
+.iline p { font-weight: 600; font-family: var(--latin); text-align: left; }
+.iline small { display: block; margin-block-start: 2px; }
+.itips { margin: 8px 0 0; padding-inline-start: 18px; display: grid; gap: 6px; font-size: 14px; }
+.iheard { margin: 10px auto 0; padding: 8px 12px; border-radius: 12px; background: var(--surface2); font-family: var(--latin); font-size: 15px; }
+.iheard.ok { box-shadow: inset 0 0 0 1.5px var(--done); }
+.iheard.bad { box-shadow: inset 0 0 0 1.5px var(--miss); }
+.ichat { display: flex; flex-direction: column; gap: 8px; margin-block: 8px 12px; }
+.ibub { max-width: 86%; padding: 10px 14px; border-radius: 18px; font-family: var(--latin); font-size: 15px; line-height: 1.45; text-align: left; }
+.ibub small { display: block; font-size: 11px; font-weight: 700; opacity: .7; margin-block-end: 2px; }
+.ibub.them { align-self: flex-end; border-end-end-radius: 6px; background: linear-gradient(150deg, var(--g-a), var(--g-b)); border: 1px solid var(--g-edge); box-shadow: inset 0 1px 0 var(--g-hi), var(--g-shadow); }
+.ibub.me { align-self: flex-start; border-end-start-radius: 6px; color: #fff; background: linear-gradient(180deg, rgba(255,255,255,.3), transparent 55%), linear-gradient(160deg, #8B74FF, #4C35C4); }
+.ibub-ar { align-self: flex-end; font-size: 13px; margin-block-start: -4px; }
+.ispk { border: 0; background: none; color: var(--blue); padding: 0 2px; min-height: 0; vertical-align: middle; }
+.ispk svg { width: 18px; height: 18px; }
+.iopts { display: grid; gap: 8px; }
+.iopt { text-align: left; font-family: var(--latin); font-weight: 500; padding: 12px 14px; line-height: 1.45; }
+.ifb { padding: 12px 14px; border-radius: 16px; font-size: 14px; }
+.ifb.s2 { background: color-mix(in srgb, var(--done) 16%, transparent); box-shadow: inset 0 0 0 1.5px var(--done); }
+.ifb.s1 { background: color-mix(in srgb, var(--amber) 16%, transparent); box-shadow: inset 0 0 0 1.5px var(--amber); }
+.ifb.s0 { background: color-mix(in srgb, var(--miss) 14%, transparent); box-shadow: inset 0 0 0 1.5px var(--miss); }
+.ichat-sum { display: grid; gap: 2px; font-size: 13px; padding-block: 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.ichat-sum b { color: var(--violet-deep); }
+.idial { width: 140px; aspect-ratio: 1; margin: 16px auto; border-radius: 50%; display: grid; place-content: center; text-align: center; background: linear-gradient(150deg, var(--g-a), var(--g-b)); border: 1px solid var(--g-edge); box-shadow: inset 0 1px 0 var(--g-hi), var(--g-shadow); }
+.idial b { font-size: 44px; line-height: 1; }
+.idial.on { box-shadow: 0 0 0 6px color-mix(in srgb, var(--miss) 25%, transparent), var(--g-shadow); animation: ipulse 1.6s ease-in-out infinite; }
+@keyframes ipulse { 50% { box-shadow: 0 0 0 12px color-mix(in srgb, var(--miss) 10%, transparent), var(--g-shadow); } }
+@media (prefers-reduced-motion: reduce) { .idial.on { animation: none; } }
