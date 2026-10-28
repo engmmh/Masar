@@ -551,7 +551,7 @@
       '<button class="btn alt" data-act="games-open" data-c="en">' + ic("gamepad") + ' العب واتعلم</button>' +
       '<button class="btn alt" data-act="intro-open">' + ic("mic") + ' قدّم نفسك</button>' +
       '<button class="btn alt" data-act="ph-open">' + ic("chat") + ' جمل يومية</button></div>' +
-      (nu && st.done ? '<p class="feat-next">الوحدة الجاية: ' + esc(nu.title) + "</p>" : "") + "</div>";
+      (nu && st.done ? '<p class="feat-next">الوحدة الجاية: ' + esc(plainTitle(nu.title)) + "</p>" : "") + "</div>";
   }
   function continueCardHTML() {
     var r = state.learn.resume;
@@ -559,7 +559,7 @@
     var u = unitOf(r.c, r.u); if (!u) return "";
     var p = state.learn.units[r.c + ":" + r.u] || {};
     var target = p.done ? nextUnit(r.c) : u; if (!target) return "";
-    return '<div class="card cont"' + courseStyle(r.c) + '><span class="cont-ic">' + ico(COURSE_ICO[r.c]) + '</span><div class="grow"><small class="muted">كمّل من حيث وقفت · ' + esc(COURSES[r.c].title) + "</small><b>" + esc(target.title) + "</b></div>" +
+    return '<div class="card cont"' + courseStyle(r.c) + '><span class="cont-ic">' + ico(COURSE_ICO[r.c]) + '</span><div class="grow"><small class="muted">كمّل من حيث وقفت · ' + esc(COURSES[r.c].title) + "</small><b>" + esc(plainTitle(target.title)) + "</b></div>" +
       '<button class="btn sm" data-act="unit-open" data-c="' + r.c + '" data-u="' + target.id + '">' + ic("play") + '</button></div>';
   }
   function catalogHTML(now) {
@@ -684,6 +684,14 @@
       "</div>";
     return '<div class="card" style="margin-block-start:14px"><div class="row between"><div><h3 style="margin:0">الامتحان النهائي</h3>' + info + "</div>" + actions + "</div></div>";
   }
+  function courseAboutHTML(c, cid) {
+    if (!c.outcomes || !c.outcomes.length) return "";
+    return '<details class="card c-about"' + (courseDoneAny(c, cid) ? "" : " open") + "><summary><b>" + ic("target") + " هتطلع من الكورس ده بإيه؟</b></summary>" +
+      (c.about ? '<p class="muted" style="font-size:14px;margin-block:8px">' + fmtEn(c.about) + "</p>" : "") +
+      "<ul>" + c.outcomes.map(function (o) { return "<li>" + fmtEn(o) + "</li>"; }).join("") + "</ul>" +
+      (c.audience ? '<p class="muted" style="font-size:13px"><b>مناسب لـ:</b> ' + esc(c.audience) + "</p>" : "") + "</details>";
+  }
+  function courseDoneAny(c, cid) { return c.units.some(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }); }
   function courseHomeHTML(cid, now) {
     var c = COURSES[cid], lvl = state.cardLvl || 0, due = dueCards(now, cid, lvl).length, ms = weakList("all").filter(function (w) { return w.cid === cid; }).length, done = courseDone(cid);
     var notesCount = (state.learn.notes[cid] || []).length;
@@ -693,7 +701,7 @@
       return '<button class="chipbtn' + (lvl === l ? " on" : "") + '" data-act="cardlvl" data-lvl="' + l + '">' + LVL_LBL[l] + "</button>";
     }).join("") + "</div>" : "";
     var cta = nu
-      ? '<button class="btn chero-cta" data-act="unit-open" data-c="' + cid + '" data-u="' + nu.id + '">' + ic("play") + ' ' + (done ? "كمّل: " : "ابدأ: ") + esc(nu.title) + "</button>"
+      ? '<button class="btn chero-cta" data-act="unit-open" data-c="' + cid + '" data-u="' + nu.id + '">' + ic("play") + ' ' + (done ? "كمّل: " : "ابدأ: ") + esc(plainTitle(nu.title)) + "</button>"
       : '<button class="btn chero-cta" data-act="final-exam" data-c="' + cid + '">' + ic("trophy") + ' الامتحان النهائي</button>';
     function tile(act, icon, label, count, extra) {
       return '<button class="tile" data-act="' + act + '" data-c="' + cid + '"' + (extra || "") + '><span class="tile-ic">' + icon + "</span><b>" + label + "</b>" + (count != null ? '<small class="num">' + count + "</small>" : "") + "</button>";
@@ -702,6 +710,7 @@
       '<div class="chero"' + courseStyle(cid) + '><div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico(COURSE_ICO[cid]) + '</span><div><h2>' + esc(c.title) + "</h2><p>" + esc(c.desc) + "</p></div></div>" +
       '<div class="chero-stats"><div><b class="num">' + st.done + "/" + st.total + '</b><small>وحدة</small></div><div><b class="num">' + st.started + '</b><small>كلمة اتعلمتها</small></div><div><b class="num">' + st.pct + '%</b><small>إنجاز</small></div></div>' +
       '<span class="bar"><i style="width:' + st.pct + '%"></i></span>' + cta + "</div>" +
+      courseAboutHTML(c, cid) +
       '<div class="sec-h">المراجعة والتدريب</div><div class="tiles">' +
       tile("cards", ico("refresh"), "كروت المراجعة", due, due ? "" : " disabled") +
       (cid === "en" ? tile("ph-open", "" + ic("chat") + "", "جمل يومية", null) : "") +
@@ -754,13 +763,40 @@
       var inner = locked ? ico("lock") : (p.done ? "✓" : (u.kind === "dialogue" ? ico("chat") : esc(u.icon)));
       var act = locked ? ' data-act="locked-unit" data-need="' + u.unlockAfter + '"' : ' data-act="unit-open" data-c="' + cid + '" data-u="' + u.id + '"';
       var sub = locked ? "يفتح بعد إكمال " + u.unlockAfter + " وحدات" : (p.best != null ? "أفضل نتيجة " + p.best + "%" : (isCur ? "التالي" : "لم تبدأ بعد"));
-      out.push('<div class="prow ' + side + (isCur ? " path-cur" : "") + '"><button class="' + cls + '"' + act + '>' + inner + '</button><div class="plbl">' + esc(u.title) + '<small>' + esc(sub) + '</small></div></div>');
+      out.push('<div class="prow ' + side + (isCur ? " path-cur" : "") + '"><button class="' + cls + '"' + act + '>' + inner + '</button><div class="plbl">' + esc(plainTitle(u.title)) + '<small>' + esc(sub) + '</small></div></div>');
       if (bounds.indexOf(idx + 1) !== -1) { out.push(milestoneRowHTML(cid, idx + 1, done, rowN)); rowN++; }
     });
     var rows = out.join("");
     return '<div class="path">' + rows + "</div>";
   }
   function lessonSteps(u) { return u.pts; }
+  // Optional per-unit teaching frame (any course JSON can add these):
+  //   hook     — why this matters, in one or two sentences
+  //   goals    — "after this lesson you can …" outcomes
+  //   summary  — the key takeaways to remember
+  //   mistakes — common misunderstandings to avoid
+  //   task     — one practical thing to do at work / in life
+  function unitIntroHTML(u) {
+    if (!u.hook && !(u.goals && u.goals.length)) return "";
+    return (u.hook ? '<div class="ug-hook">' + ic("bulb") + "<p>" + fmtEn(u.hook) + "</p></div>" : "") +
+      (u.goals && u.goals.length ? '<div class="ug-box"><b>' + ic("target") + " بعد الدرس ده هتقدر:</b><ul>" + u.goals.map(function (g) { return "<li>" + fmtEn(g) + "</li>"; }).join("") + "</ul></div>" : "");
+  }
+  function unitOutroHTML(u, cid) {
+    var out = "";
+    if (u.summary && u.summary.length) out += '<div class="ug-box sum"><b>' + ic("check") + " الخلاصة اللي لازم تفتكرها:</b><ul>" + u.summary.map(function (x) { return "<li>" + fmtEn(x) + "</li>"; }).join("") + "</ul></div>";
+    if (u.mistakes && u.mistakes.length) out += '<div class="ug-box warn"><b>' + ic("help") + " أخطاء شائعة:</b><ul>" + u.mistakes.map(function (x) { return "<li>" + fmtEn(x) + "</li>"; }).join("") + "</ul></div>";
+    if (u.task) {
+      var k = cid + ":" + u.id, done = !!((state.learn.tasks || {})[k]);
+      out += '<div class="ug-box task"><b>' + ic("briefcase") + " طبّقها في الواقع:</b><p>" + fmtEn(u.task) + "</p>" +
+        '<button class="btn sm' + (done ? "" : " alt") + '" data-act="unit-task" data-k="' + k + '">' + (done ? ic("check") + " طبّقتها" : "علّمها إني طبّقتها") + "</button></div>";
+    }
+    return out;
+  }
+  function wrongWhyHTML(q, a) {
+    if (!a || a.ok || !q.wrong || !q.wrong[a.sel]) return "";
+    return '<div class="rule warn"><b>ليه مش «' + esc(a.sel) + '»؟</b> ' + fmtEn(q.wrong[a.sel]) + "</div>";
+  }
+  function whyLabel(q) { return q.c === "en" ? "القاعدة" : "الشرح"; }
   // Phase 9 — الدرس التفاعلي: "اتعلم ← اتأكد ← طبّق" instead of slides + a next-only
   // button. Screens are rebuilt fresh every render from u.pts/u.qs (stateless) plus
   // state.lv.retry (the only bit of lesson-session state) — see lessonScreens().
@@ -809,7 +845,7 @@
     }
     var correctTxt = Array.isArray(q.a) ? q.a[0] : q.a;
     var fb = a ? '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(correctTxt) + "</span>" + spkBtn(correctTxt)) + "</div>" +
-      (q.why ? '<div class="rule"><b>' + ic("book") + ' القاعدة:</b> ' + esc(q.why) + "</div>" : "") : "";
+      wrongWhyHTML(q, a) + (q.why ? '<div class="rule"><b>' + ic("book") + " " + whyLabel(q) + ':</b> ' + fmtEn(q.why) + "</div>" : "") : "";
     var qRow = '<p class="qtext' + (arQ ? " ar" : "") + '">' + esc(q.q) + "</p>";
     if (!arQ) qRow = '<div class="qtext-row"><p class="qtext" style="margin:0">' + esc(q.q) + "</p>" + spkBtn(q.q.replace(/___/g, "")) + "</div>";
     qRow = questionStemVisual(q) + qRow;
@@ -835,7 +871,7 @@
     var pct = n > 1 ? Math.round(i / (n - 1) * 100) : 100;
     var body, nav;
     if (sc.type === "intro") {
-      body = '<div class="lstep-card"><p class="muted" style="margin:0">يلا نبدأ درس <b>' + esc(u.title) + "</b> سوا، خطوة خطوة.</p></div>";
+      body = '<div class="lstep-card">' + (unitIntroHTML(u) || '<p class="muted" style="margin:0">يلا نبدأ درس <b>' + esc(plainTitle(u.title)) + "</b> سوا، خطوة خطوة.</p>") + "</div>";
       nav = lessonNavBtn("lesson-next", "يلا نبدأ");
     } else if (sc.type === "points") {
       body = sc.items.map(function (t, k) {
@@ -856,11 +892,11 @@
       body = lessonProdBody(sc.q, a);
       nav = a ? lessonNavBtn("lesson-next", "التالي") : "";
     } else {
-      body = '<div class="lstep-card"><p class="muted" style="margin:0">🎉 خلّصت درس <b>' + esc(u.title) + "</b>! جاهز للتدريب الكامل؟</p></div>";
+      body = '<div class="lstep-card">' + unitOutroHTML(u, cid) + '<p class="muted" style="margin:0">خلّصت درس <b>' + esc(plainTitle(u.title)) + "</b>. التدريب الكامل محتاج 80% عشان الوحدة تتحسب مكتملة.</p></div>";
       nav = '<div class="lnav lnav-sticky"><button class="btn" data-act="quiz" data-c="' + cid + '" data-u="' + id + '">ابدأ التدريب (' + u.qs.length + ' أسئلة)</button></div>';
     }
     return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button>' +
-      '<div class="card"><h2 style="margin:0 0 10px">' + esc(u.icon + ". " + u.title) + '</h2><div class="bar"><i style="width:' + pct + '%"></i></div>' +
+      '<div class="card"><h2 style="margin:0 0 10px">' + esc(u.icon + ". " + plainTitle(u.title)) + '</h2><div class="bar"><i style="width:' + pct + '%"></i></div>' +
       '<div class="lseq">' + body + "</div></div>" + nav +
       '<button class="linkbtn" style="margin-block-start:10px" data-act="unit-flat" data-c="' + cid + '" data-u="' + id + '">عرض كل النقاط دفعة واحدة</button>' +
       (p.best != null ? '<p class="muted" style="font-size:14px;margin-block-start:8px">أفضل نتيجة سابقة: ' + p.best + "%</p>" : "") +
@@ -896,8 +932,8 @@
   }
   function unitFlatHTML(cid, id) {
     var u = unitOf(cid, id), p = state.learn.units[cid + ":" + id] || {};
-    return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button><div class="card"><h2>' + esc(u.icon + ". " + u.title) + '</h2><ul class="pts">' +
-      u.pts.map(function (t) { return "<li>" + renderPt(t) + "</li>"; }).join("") + "</ul>" +
+    return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button><div class="card"><h2>' + esc(u.icon + ". " + plainTitle(u.title)) + '</h2>' + unitIntroHTML(u) + '<ul class="pts">' +
+      u.pts.map(function (t) { return "<li>" + renderPt(t) + "</li>"; }).join("") + "</ul>" + unitOutroHTML(u, cid) +
       '<button class="btn" data-act="quiz" data-c="' + cid + '" data-u="' + id + '">ابدأ التدريب (' + u.qs.length + " أسئلة)</button>" +
       (p.best != null ? '<p class="muted" style="font-size:14px;margin-block-start:8px">أفضل نتيجة: ' + p.best + "%</p>" : "") +
       (u.reading ? '<button class="btn alt" style="margin-block-start:10px" data-act="reading-open" data-c="' + cid + '" data-u="' + id + '">' + ic("book") + ' فقرة قراءة · ' + esc(LVL_LBL[u.reading.lvl]) + '</button>' : "") + "</div>";
@@ -948,7 +984,7 @@
         (sh && !sh.listening ? ('<small class="muted">' + (sh.err ? "معرفناش نسمعك" : (sh.ok ? "✓ تمام" : "✕ سمعنا: " + esc(sh.heard))) + "</small>") : "") + "</div>";
       return '<div class="bub ' + t.who + '"><div class="en"><span>' + esc(t.en) + "</span>" + spkBtn(t.en) + '</div><div class="ar">' + esc(t.ar) + "</div>" + shadowRow + "</div>";
     }).join("");
-    return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button><div class="card"><h2>' + esc(u.title) + '</h2>' +
+    return '<button class="linkbtn" data-act="lhome" data-c="' + cid + '">← رجوع للكورس</button><div class="card"><h2>' + esc(plainTitle(u.title)) + '</h2>' +
       '<p class="muted" style="font-size:14px;margin-block-end:6px">' + fmtEn(u.pts[0]) + '</p>' +
       '<div class="chat">' + bubbles + '</div></div>' +
       '<div class="card" style="margin-block:12px"><h3 style="margin:0 0 6px">اكتب عن نفسك</h3><p class="muted" style="font-size:13px;margin:0 0 8px">جرّب تكتب جملة زي اللي فوق، بس عن نفسك.</p>' +
@@ -1031,7 +1067,7 @@
     var fb = "";
     if (a) fb = '<div class="fb ' + (a.ok ? "ok" : "bad") + '">' + (a.ok ? "✓ صحيح" : "✕ الصواب: <span class=\"en\">" + esc(correctTxt) + "</span>" + spkBtn(correctTxt)) +
       (a.ok && z.lastCombo > 1 ? ' <span class="chip" style="color:var(--amber-deep)">' + ic("zap") + ' ×' + z.lastCombo + "</span>" : "") + "</div>" +
-      (q.why ? '<div class="rule"><b>' + ic("book") + ' القاعدة:</b> ' + esc(q.why) + "</div>" : "") +
+      wrongWhyHTML(q, a) + (q.why ? '<div class="rule"><b>' + ic("book") + " " + whyLabel(q) + ':</b> ' + fmtEn(q.why) + "</div>" : "") +
       '<button class="btn" data-act="qnext">' + (z.i + 1 >= z.qs.length ? "النتيجة" : "التالي") + "</button>";
     var qRow = '<p class="qtext' + (arQ ? " ar" : "") + '" style="margin-block-start:14px">' + esc(q.q) + "</p>";
     if (!arQ) qRow = '<div class="qtext-row" style="margin-block-start:14px">' + '<p class="qtext" style="margin:0">' + esc(q.q) + "</p>" + spkBtn(q.q.replace(/___/g, "")) + "</div>";

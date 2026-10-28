@@ -87,6 +87,8 @@
     "wallet": "<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"/><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"/>",
     "chart": "<path d=\"M3 3v18h18\"/><path d=\"M18 17V9M13 17V5M8 17v-3\"/>",
     "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>",
+    "check": "<path d=\"M20 6 9 17l-5-5\"/>",
+    "x": "<path d=\"M18 6 6 18M6 6l12 12\"/>",
     "backspace": "<path d=\"M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z\"/><path d=\"m18 9-6 6M12 9l6 6\"/>"
     };
   function ic(name, cls) {
@@ -94,6 +96,7 @@
   }
   function $(s) { return document.querySelector(s); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+  function plainTitle(s) { return String(s || "").replace(/[{}]/g, ""); }
   function fmtEn(s) { return esc(s).replace(/\{([^}]+)\}/g, '<span class="en">$1</span>'); }
   function fmtPt(s) {
     var segs = String(s).split(/[؛·]\s*/).map(function (t) { return t.trim(); }).filter(Boolean);
@@ -1337,6 +1340,7 @@
       case "reading-tr": state.lv.tr = !state.lv.tr; render(); break;
       case "lstep": var lsC = el.getAttribute("data-c"), lsU = el.getAttribute("data-u"), lsD = Number(el.getAttribute("data-d"));
         state.lv = { mode: "lesson", c: lsC, u: lsU, step: (state.lv.step || 0) + lsD }; $("#p-learn").scrollTop = 0; render(); break;
+      case "unit-task": if (!state.learn.tasks) state.learn.tasks = {}; var utK = el.getAttribute("data-k"); state.learn.tasks[utK] = !state.learn.tasks[utK]; if (state.learn.tasks[utK]) { addXp(10); toast("برافو! التطبيق هو اللي بيثبّت التعلم"); } saveMeta("learn", 400); render(); break;
       case "lesson-next": state.lv.step = (state.lv.step || 0) + 1; state.lv.ans = null; $("#p-learn").scrollTop = 0; render(); break;
       case "lesson-retry-next": if (state.lv.retry) state.lv.retry.shift(); state.lv.ans = null; $("#p-learn").scrollTop = 0; render(); break;
       case "lesson-jump": state.lv.step = Number(el.getAttribute("data-step")) || 0; state.lv.ans = null; render(); break;
