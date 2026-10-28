@@ -567,7 +567,7 @@
       '<div class="bar"><i style="width:' + Math.min(100, Math.round(n / t * 100)) + '%"></i></div>' +
       '<div class="row wrapr" style="margin-block-start:12px"><button class="btn sm" data-act="pg" data-n="1">+1 صفحة</button><button class="btn sm" data-act="pg" data-n="5">+5</button><button class="btn sm" data-act="pg" data-n="10">+10</button>' +
       '<button class="btn sm alt" data-act="pgdone">أتممت وردي</button><button class="btn sm alt" data-act="pg" data-n="-1">−1</button></div></div>' +
-      khatmaHTML +
+      khatmaHTML + qWirdExtrasHTML(now) +
       '<div class="stats"><div class="stat"><b class="num">' + khat + '</b><span>ختمات مكتملة</span></div>' +
       '<div class="stat"><b class="num">' + tot + '</b><span>مجموع الصفحات المقروءة</span></div></div>' +
       '<div class="card"><h3>آخر 7 أيام</h3>' + (weekAllZero
@@ -584,43 +584,7 @@
       return head(now) + '<div class="card"><h3 style="margin:0 0 6px">المصحف الشريف</h3>' +
         '<p class="muted" style="font-size:14px">جاري تحميل نص القرآن…</p></div>';
     }
-    var p = state.qv.page;
-    if (!p) {
-      var rows = QURAN.surahs.map(function (s, i) {
-        var num = i + 1;
-        return '<button class="surah-row" data-act="mushaf-open" data-s="' + num + '">' +
-          '<span class="surah-num">' + arNum(num) + '</span>' +
-          '<span class="surah-name">' + esc(s.name) + '</span>' +
-          '<span class="muted" style="font-size:12px">' + arNum(s.ayahCount) + ' آية</span></button>';
-      }).join("");
-      return head(now) +
-        '<div class="card"><h3 style="margin:0 0 4px">المصحف الشريف</h3>' +
-        '<p class="muted" style="font-size:12px">' + esc(QURAN.source) + "</p></div>" +
-        '<div class="card surah-list" style="padding:6px">' + rows + "</div>";
-    }
-    // A real printed-Mushaf page, not an endless per-surah scroll — exactly the
-    // ayahs QURAN.pageStart puts on page p (pageAyahs), one page at a time, with
-    // prev/next navigation. A page can open mid-surah or span two surahs, so each
-    // ayah is tagged with its own surah name whenever that surah changes within
-    // the page rather than assuming one surah heading for the whole page.
-    p = Math.max(1, Math.min(604, p));
-    var ayahs = pageAyahs(p), lastSurah = null, body = "";
-    ayahs.forEach(function (v) {
-      if (v.surah !== lastSurah) {
-        body += '<div class="pt-line" style="font-weight:600;margin-block-start:' + (lastSurah ? "14px" : "0") + '">﴾ ' + esc(v.surahName) + " ﴿</div>";
-        lastSurah = v.surah;
-      }
-      body += '<span class="ayah">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">﴿' + arNum(v.ayah) + "﴾</span></span> ";
-    });
-    var juz = juzOf(p);
-    return '<button class="linkbtn" data-act="mushaf-close">← كل السور</button>' +
-      '<div class="card"><div class="row between"><h2 style="margin:0">صفحة ' + arNum(p) + '</h2><span class="chip">الجزء ' + arNum(juz) + "</span></div>" +
-      '<p class="ayah-block" style="margin-block-start:10px">' + body + "</p>" +
-      '<p class="muted" style="font-size:11px;margin-block-start:14px">' + esc(QURAN.source) + "</p></div>" +
-      '<div class="row between" style="margin-block-start:4px">' +
-      '<button class="btn sm alt" data-act="mushaf-next" data-p="' + p + '"' + (p >= 604 ? " disabled" : "") + '>الصفحة التالية ←</button>' +
-      '<button class="btn sm alt" data-act="mushaf-prev" data-p="' + p + '"' + (p <= 1 ? " disabled" : "") + '>→ الصفحة السابقة</button>' +
-      "</div>";
+    return state.qv.page ? mushafPageHTML(now, state.qv.page) : mushafHomeHTML(now);
   }
 
   /* ---------------- لوح الحفظ (lawh) view ---------------- */
@@ -681,6 +645,7 @@
       '<button class="btn sm" data-act="lawh-tap" data-u="' + wholeId + '">' + (whole.status === 0 ? "ابدأ الحفظ" : whole.status === 1 ? "تم الحفظ" : "إعادة ضبط") + "</button>" +
       '<button class="btn sm alt" data-act="lawh-hide" data-u="' + wholeId + '">تسميع (إخفاء النص)</button>' +
       (whole.status === 2 ? '<button class="btn sm alt" data-act="lawh-rev" data-u="' + wholeId + '" data-g="1">تمت المراجعة</button><button class="btn sm alt" data-act="lawh-rev" data-u="' + wholeId + '" data-g="0">نسيتها</button>' : "") +
+      '<button class="btn sm alt" data-act="qa-unit" data-u="' + wholeId + '">🎧 استمع وكرّر</button>' +
       '<button class="linkbtn" data-act="lawh-goto-mushaf" data-u="' + wholeId + '">📖 افتح في المصحف</button>' +
       "</div></div>";
 
@@ -693,7 +658,7 @@
           '<button class="linkbtn" data-act="lawh-tap" data-u="' + id + '" style="font-weight:600">آية ' + arNum(u.from) + "-" + arNum(u.to) + " — " + lawhStatusLabel(c.status) + "</button>" +
           '<button class="linkbtn" style="color:var(--bad)" data-act="lawh-remove" data-u="' + id + '">حذف</button></div>' +
           '<div class="row wrapr" style="margin-block-start:6px">' +
-          '<button class="btn sm alt" data-act="lawh-hide" data-u="' + id + '">تسميع</button>' +
+          '<button class="btn sm alt" data-act="lawh-hide" data-u="' + id + '">تسميع</button><button class="btn sm alt" data-act="qa-unit" data-u="' + id + '">🎧</button>' +
           (c.status === 2 ? '<button class="btn sm alt" data-act="lawh-rev" data-u="' + id + '" data-g="1">تمت المراجعة</button><button class="btn sm alt" data-act="lawh-rev" data-u="' + id + '" data-g="0">نسيتها</button>' : "") +
           "</div></div>";
       }).join("");
@@ -709,7 +674,7 @@
 
     return '<button class="linkbtn" data-act="lawh-close">← كل السور</button>' +
       '<div class="card"><h3 style="margin:0 0 4px">' + esc(surah.name) + '</h3><p class="muted" style="font-size:12px">' + arNum(surah.ayahCount) + " آية</p></div>" +
-      wholeCard + rangesHTML;
+      wholeCard + rangesHTML + qaBarHTML();
   }
 
   /* ---------------- استماع ذكي (Beta) — word-matching mistake detector ---------------- */

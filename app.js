@@ -563,7 +563,7 @@
     settings: { startDate: today0, unit: "page", amount: 5, startPage: 1, certName: "" },
     days: {},
     learn: freshLearn(),
-    exp: { categories: [], items: [], salary: {}, budgets: {}, recurring: [] },
+    exp: { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} },
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
     expKind: "expense", expEditId: null, expBudgetEditCat: null, expRecurAdd: false, expSwipeId: null,
     tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, qv: { mode: "wird" }, quiz: null, card: null, spk: null,
@@ -1115,6 +1115,7 @@
   /* ---------------- events ---------------- */
   document.addEventListener("input", function (e) {
     if (e.target && e.target.id === "bankq") { state.bankQ = e.target.value; render(); }
+    if (e.target && e.target.id === "expQ") { state.expQ = e.target.value; render(); }
   });
   // Phase 9: long-press on any 🔊 button speaks slower, regardless of the normal
   // speechRate setting. spkHoldFired suppresses the "speak" click case right after,
@@ -1311,7 +1312,7 @@
       case "exp-sal-edit": state.expSalEdit = true; render(); break;
       case "exp-sal-save": var esIn = $("#expSalInput"), esV = esIn ? Math.max(0, parseFloat(esIn.value) || 0) : 0; state.exp.salary[curExpMonth(now)] = esV; state.expSalEdit = false; saveMeta("exp", 300); render(); break;
       case "exp-add-toggle": state.expAdd = !state.expAdd; state.expNewCat = false; state.expEditId = null; state.expCat = ""; state.expKind = "expense"; render(); break;
-      case "exp-kind": state.expKind = el.getAttribute("data-k") === "advance" ? "advance" : "expense"; render(); break;
+      case "exp-kind": var ekK = el.getAttribute("data-k"); state.expKind = ekK === "advance" || ekK === "income" ? ekK : "expense"; render(); break;
       case "exp-cat-pick": state.expCat = el.getAttribute("data-c"); state.expNewCat = false; render(); break;
       case "exp-cat-new-toggle": state.expNewCat = true; render(); break;
       case "exp-cat-new-save":
@@ -1321,7 +1322,7 @@
         state.expNewCat = false; render(); break;
       case "exp-edit":
         var editIt = state.exp.items.filter(function (x) { return x.id === el.getAttribute("data-id"); })[0]; if (!editIt) break;
-        state.expEditId = editIt.id; state.expCat = editIt.cat; state.expKind = editIt.kind === "advance" ? "advance" : "expense";
+        state.expEditId = editIt.id; state.expCat = editIt.cat; state.expKind = editIt.kind === "advance" || editIt.kind === "income" ? editIt.kind : "expense";
         state.expAdd = true; state.expSwipeId = null; render(); break;
       case "exp-save":
         var eaIn = $("#expAmt"), edIn = $("#expDate"), enIn = $("#expNote");
@@ -1330,14 +1331,14 @@
         if (!eAmt || eAmt <= 0) { toast("اكتب مبلغ صحيح"); break; }
         if (state.expEditId) {
           var editTarget = state.exp.items.filter(function (x) { return x.id === state.expEditId; })[0];
-          if (editTarget) { editTarget.cat = state.expCat; editTarget.amount = eAmt; editTarget.date = eDate; editTarget.note = eNote; editTarget.kind = state.expKind === "advance" ? "advance" : undefined; }
-          state.expEditId = null;
+          if (editTarget) { editTarget.cat = state.expCat; editTarget.amount = eAmt; editTarget.date = eDate; editTarget.note = eNote; editTarget.kind = state.expKind === "advance" || state.expKind === "income" ? state.expKind : undefined; }
+          state.expEditId = null; var wasEdit = true;
         } else {
-          state.exp.items.push({ id: "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: eDate, cat: state.expCat, amount: eAmt, note: eNote, kind: state.expKind === "advance" ? "advance" : undefined });
+          state.exp.items.push({ id: "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), date: eDate, cat: state.expCat, amount: eAmt, note: eNote, kind: state.expKind === "advance" || state.expKind === "income" ? state.expKind : undefined });
         }
-        state.expAdd = false; state.expCat = ""; state.expKind = "expense"; saveMeta("exp", 200);
+        var savedKind = state.expKind; state.expAdd = false; state.expCat = ""; state.expKind = "expense"; state.expPrefill = null; saveMeta("exp", 200);
         if (eDate.slice(0, 7) !== curExpMonth(now)) state.expMonth = eDate.slice(0, 7);
-        render(); toast(state.expEditId ? "تم الحفظ" : "تم تسجيل المصروف"); break;
+        render(); toast(wasEdit ? "تم الحفظ" : savedKind === "income" ? "تم تسجيل الدخل" : savedKind === "advance" ? "تم تسجيل السلفة" : "تم تسجيل المصروف"); break;
       case "exp-swipe": state.expSwipeId = state.expSwipeId === el.getAttribute("data-id") ? null : el.getAttribute("data-id"); render(); break;
       case "exp-del":
         var delId = el.getAttribute("data-id"), delIdx = state.exp.items.findIndex(function (x) { return x.id === delId; });

@@ -1027,3 +1027,107 @@ button.adm-lrow { cursor: pointer; }
 .ph-reveal.ok { background: color-mix(in srgb, var(--done) 15%, transparent); box-shadow: inset 0 0 0 1.5px var(--done); }
 .ph-reveal.bad { background: color-mix(in srgb, var(--miss) 12%, transparent); box-shadow: inset 0 0 0 1.5px var(--miss); }
 .ph-reveal small { font-size: 12.5px; color: var(--muted); }
+
+/* ---------------- الحاسبة: reports / goals / tools ---------------- */
+.seg2.four { grid-template-columns: repeat(4, 1fr); }
+.seg2.four button { font-size: 13px; padding-inline: 4px; }
+.mx-kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-block-end: 12px; }
+.mx-kpis > div { display: grid; gap: 2px; padding: 12px 14px; border-radius: 16px; background: linear-gradient(150deg, var(--g-a), var(--g-b)); border: 1px solid var(--g-edge); box-shadow: inset 0 1px 0 var(--g-hi), var(--g-shadow); }
+.mx-kpis small { font-size: 12px; color: var(--muted); font-weight: 600; }
+.mx-kpis b { font-size: 21px; }
+.mx-d { justify-self: start; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 99px; }
+.mx-d.bad { color: var(--miss-deep); background: color-mix(in srgb, var(--miss) 14%, transparent); }
+.mx-d.good { color: var(--done-deep); background: color-mix(in srgb, var(--done) 15%, transparent); }
+.mx-donut-wrap { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.mx-donut { width: 160px; height: 160px; flex: none; margin-inline: auto; }
+.mx-donut-v { font-family: var(--latin); font-weight: 700; font-size: 17px; fill: var(--text); }
+.mx-donut-l { font-size: 11px; fill: var(--muted); }
+.mx-leg { flex: 1; min-width: 160px; display: grid; gap: 6px; }
+.mx-leg-row { display: flex; justify-content: space-between; gap: 8px; font-size: 13.5px; }
+.mx-leg-row i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-inline-end: 6px; }
+.mx-chart { width: 100%; height: auto; display: block; }
+.mx-chart .mx-bar { fill: color-mix(in srgb, var(--blue) 55%, transparent); }
+.mx-chart .mx-cum { fill: none; stroke: var(--teal); stroke-width: 3; stroke-linejoin: round; }
+.mx-chart .mx-pace { stroke: var(--amber); stroke-width: 2; stroke-dasharray: 6 5; }
+.mx-chart .mx-base { stroke: var(--line); }
+.mx-chart .mx-axis { fill: var(--muted); font-size: 11px; font-family: var(--latin); }
+.mx-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--muted); margin-block-start: 6px; }
+.mx-legend i { display: inline-block; width: 12px; height: 4px; border-radius: 2px; margin-inline-end: 6px; vertical-align: middle; }
+.mx-legend i.b { background: color-mix(in srgb, var(--blue) 55%, transparent); height: 10px; }
+.mx-legend i.c { background: var(--teal); }
+.mx-legend i.p { background: var(--amber); }
+.mx-legend i.inc { background: var(--done); height: 10px; }
+.mx-legend i.out { background: var(--miss); height: 10px; }
+.mx-trend { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; height: 130px; align-items: end; }
+.mx-trend > div { display: grid; grid-template-rows: 1fr auto; height: 100%; text-align: center; }
+.mx-cols { display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
+.mx-cols i { width: 40%; min-height: 2px; border-radius: 5px 5px 2px 2px; }
+.mx-cols i.inc { background: linear-gradient(180deg, #5BE39A, var(--done)); }
+.mx-cols i.out { background: linear-gradient(180deg, #FF8FA0, var(--miss)); }
+.mx-trend small { font-size: 11px; color: var(--muted); }
+.mx-ins { display: grid; gap: 10px; }
+.mx-ins > div { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; }
+.mx-ins span { font-size: 18px; line-height: 1.4; }
+.mx-goal-sum { display: grid; grid-template-columns: 1fr 1fr; text-align: center; }
+.mx-goal-sum small { display: block; font-size: 12px; color: var(--muted); }
+.mx-goal-sum b { font-size: 22px; }
+.mx-ring { width: 64px; height: 64px; flex: none; }
+.mx-ring circle { fill: none; stroke-width: 7; stroke-linecap: round; }
+.mx-ring .bg { stroke: var(--surface2); }
+.mx-ring text { font-family: var(--latin); font-size: 13px; font-weight: 700; fill: var(--text); }
+.mx-goal b { font-size: 16px; }
+.mx-plan { font-size: 12.5px; color: var(--blue-deep); margin-block-start: 2px; }
+.mx-calc-scr { display: grid; justify-items: end; gap: 2px; padding: 14px 16px; border-radius: 16px; background: var(--surface2); margin-block-end: 12px; min-height: 84px; }
+.mx-calc-scr small { font-family: var(--latin); color: var(--muted); font-size: 15px; word-break: break-all; }
+.mx-calc-scr b { font-size: 34px; line-height: 1.1; }
+.mx-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; direction: ltr; }
+.mx-key { min-height: 56px; border-radius: 16px; border: 1px solid var(--g-edge); background: linear-gradient(160deg, var(--g-a), var(--g-b)); box-shadow: inset 0 1px 0 var(--g-hi), 0 4px 10px -6px rgba(0,0,0,.25); font-family: var(--latin); font-size: 22px; font-weight: 600; }
+.mx-key:active { transform: scale(.96); }
+.mx-key.op { color: var(--teal-deep); font-size: 26px; }
+.mx-key.clr { color: var(--miss-deep); }
+.mx-key.eq { grid-column: 1 / -1; color: #fff; border-color: transparent; background: linear-gradient(180deg, rgba(255,255,255,.35), transparent 52%), linear-gradient(160deg, color-mix(in srgb, var(--teal) 85%, #6FF2C2), var(--teal-deep)); }
+.mx-zgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; }
+.mx-zgrid .field { margin-block: 6px; font-size: 12.5px; }
+.mx-zres.due { box-shadow: inset 0 0 0 1.5px var(--teal), var(--g-shadow); }
+.mx-zline { font-size: 16px; font-weight: 600; margin-block: 12px 6px; }
+.mx-zline b { font-size: 22px; color: var(--teal-deep); }
+
+/* ---------------- القرآن: reader / recitation / plan ---------------- */
+.q-continue { display: flex; align-items: center; gap: 12px; width: 100%; text-align: start; font: inherit; color: inherit; cursor: pointer; }
+.q-continue b { display: block; }
+.q-continue-ic { width: 44px; height: 44px; flex: none; display: grid; place-items: center; font-size: 22px; border-radius: 14px; background: color-mix(in srgb, var(--quran) 18%, transparent); }
+.q-search { margin-block-end: 12px; }
+.q-search input { width: 100%; }
+.q-hit { display: grid; gap: 2px; width: 100%; text-align: start; padding: 10px 4px; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: inherit; }
+.q-hit small { color: var(--amber-deep); font-weight: 600; font-size: 12px; }
+.q-hit-t { font-family: var(--display); font-size: 18px; line-height: 1.9; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.q-mark { display: flex; align-items: center; justify-content: space-between; padding-block: 4px; }
+.q-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-block-end: 10px; }
+.q-tools .q-rec { flex: 1; min-width: 130px; min-height: 36px; padding-block: 4px; }
+.q-page { background: linear-gradient(180deg, color-mix(in srgb, var(--quran) 7%, var(--g-a)), var(--g-b)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--quran) 30%, transparent), inset 0 1px 0 var(--g-hi), var(--g-shadow); }
+.q-page-h { font-size: 12.5px; color: var(--amber-deep); font-weight: 600; padding-block-end: 8px; border-bottom: 1px solid color-mix(in srgb, var(--quran) 30%, transparent); margin-block-end: 10px; }
+.q-page-f { text-align: center; font-size: 13px; color: var(--amber-deep); margin-block-start: 8px; }
+.q-surah-head { margin: 10px 0 6px; padding: 6px; text-align: center; font-family: var(--display); font-size: 1em; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--quran) 45%, transparent); background: color-mix(in srgb, var(--quran) 12%, transparent); }
+.q-basmala { text-align: center; margin-block-end: 6px; }
+.ayah-block .ayah { cursor: pointer; border-radius: 8px; transition: background-color .2s; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
+.ayah-block .ayah.sel { background: color-mix(in srgb, var(--blue) 16%, transparent); }
+.ayah-block .ayah.hl { background: color-mix(in srgb, var(--amber) 28%, transparent); }
+.ayah-block .ayah.playing { background: color-mix(in srgb, var(--teal) 22%, transparent); }
+.q-selbar, .qa-bar { position: sticky; bottom: 8px; z-index: 3; display: flex; align-items: center; gap: 6px; margin-block-start: 10px; padding: 10px 12px; border-radius: 18px;
+  background: linear-gradient(150deg, var(--g-a), var(--g-b)); border: 1px solid var(--g-edge); box-shadow: inset 0 1px 0 var(--g-hi), 0 14px 30px -12px rgba(0,0,0,.35);
+  -webkit-backdrop-filter: blur(20px) saturate(170%); backdrop-filter: blur(20px) saturate(170%); }
+.q-selbar b { flex: 1; font-size: 13.5px; }
+.qa-bar b { display: block; font-size: 13.5px; }
+.qa-bar small { font-size: 12px; color: var(--muted); }
+.qa-btn { width: 42px; height: 42px; flex: none; border-radius: 50%; border: 0; display: grid; place-items: center; font-size: 17px; color: #fff; background: linear-gradient(180deg, rgba(255,255,255,.35), transparent 52%), linear-gradient(160deg, color-mix(in srgb, var(--teal) 85%, #6FF2C2), var(--teal-deep)); }
+.qa-btn.x { background: var(--surface2); color: var(--muted); }
+.qa-rep { min-height: 36px; padding: 0 10px; border-radius: 99px; border: 1px solid var(--line); background: var(--surface2); font-weight: 700; font-size: 13px; }
+.q-plan-st { margin-block-start: 10px; padding: 8px 12px; border-radius: 12px; font-size: 14px; font-weight: 600; }
+.q-plan-st.ok { color: var(--done-deep); background: color-mix(in srgb, var(--done) 15%, transparent); }
+.q-plan-st.late { color: var(--amber-deep); background: color-mix(in srgb, var(--amber) 16%, transparent); }
+.q-heat { display: grid; grid-template-columns: repeat(15, 1fr); gap: 4px; margin-block: 12px; }
+.q-heat i { aspect-ratio: 1; border-radius: 4px; background: var(--surface2); border: 1px solid var(--line); }
+.q-heat i.h1 { background: color-mix(in srgb, var(--quran) 45%, transparent); }
+.q-heat i.h3 { background: var(--amber-deep); }
+.q-auto { display: flex; align-items: center; gap: 8px; font-size: 13.5px; }
+.q-auto input { width: 18px; height: 18px; accent-color: var(--teal); }

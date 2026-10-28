@@ -11,7 +11,7 @@
   // kept in the same items[] array (so they still show up in the day's list and can be
   // edited/deleted like anything else) but excluded from every spending total below.
   function expItemsOf(mk) {
-    return state.exp.items.filter(function (it) { return it.date.slice(0, 7) === mk && it.kind !== "advance"; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
+    return state.exp.items.filter(function (it) { return it.date.slice(0, 7) === mk && it.kind !== "advance" && it.kind !== "income"; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
   }
   function expAllItemsOf(mk) {
     return state.exp.items.filter(function (it) { return it.date.slice(0, 7) === mk; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
@@ -19,6 +19,10 @@
   function expActiveAdvances() {
     return state.exp.items.filter(function (it) { return it.kind === "advance" && !it.repaid; }).sort(function (a, b) { return a.date < b.date ? 1 : a.date > b.date ? -1 : 0; });
   }
+  // Extra income (anything besides the monthly salary) is logged as kind "income":
+  // it raises what's available this month but never counts as spending.
+  function expIncomeItemsOf(mk) { return state.exp.items.filter(function (it) { return it.date.slice(0, 7) === mk && it.kind === "income"; }); }
+  function expIncomeOf(mk) { return (state.exp.salary[mk] || 0) + expIncomeItemsOf(mk).reduce(function (s, it) { return s + it.amount; }, 0); }
   function expTotalOf(mk) { return expItemsOf(mk).reduce(function (s, it) { return s + it.amount; }, 0); }
   function expByCat(mk) {
     var m = {};
@@ -78,14 +82,16 @@
     var pct = sal ? Math.round(tot / sal * 100) : 0;
     return '<span class="num">' + fmtMoney(tot) + "</span> صرفت هذا الشهر" + (sal ? " · " + pct + "%" : "");
   }
-  function expView(now) {
+  function expMainView(now) {
     // Defensive normalize: guards against any state.exp loaded/reset from a source
     // that left recurring/budgets missing or null, which would otherwise crash
     // every render() (money.js reads .recurring.length and .budgets[...] below
     // assuming they're always a real array/object).
     if (!Array.isArray(state.exp.recurring)) state.exp.recurring = [];
     if (!state.exp.budgets || typeof state.exp.budgets !== "object") state.exp.budgets = {};
-    var mk = curExpMonth(now), isCurMonth = mk === monthKey(now.key), sal = state.exp.salary[mk] || 0, items = expItemsOf(mk), tot = expTotalOf(mk), cats = expByCat(mk);
+    var mk = curExpMonth(now), isCurMonth = mk === monthKey(now.key), baseSal = state.exp.salary[mk] || 0, sal = expIncomeOf(mk), extraInc = sal - baseSal, tot = expTotalOf(mk), cats = expByCat(mk);
+    var q = (state.expQ || "").trim().toLowerCase();
+    var items = expAllItemsOf(mk).filter(function (it) { return it.kind !== "advance" && (!q || (it.cat + " " + (it.note || "")).toLowerCase().indexOf(q) >= 0); });
     var prevCats = expByCat(shiftMonth(mk, -1));
     var prevByName = {}; prevCats.forEach(function (c) { prevByName[c.cat] = c.amount; });
     var pct = sal ? Math.min(999, Math.round(tot / sal * 100)) : 0;
@@ -100,8 +106,8 @@
       dailyAvail = '<p class="muted" style="font-size:13px;margin-block-start:4px">المتاح يوميًا لحد آخر الشهر: <b class="num">' + fmtMoney(avail) + "</b></p>";
     }
     var salBlock = state.expSalEdit
-      ? '<div class="row" style="gap:8px;margin-block-start:8px"><input type="number" id="expSalInput" inputmode="decimal" min="0" placeholder="الراتب" value="' + (sal || "") + '" style="flex:1"><button class="btn sm" data-act="exp-sal-save">حفظ</button></div>'
-      : '<div class="row between" style="margin-block-start:4px"><span class="muted">الراتب هذا الشهر: <b class="num">' + (sal ? fmtMoney(sal) : "لم يُسجَّل") + '</b></span><button class="btn sm alt" data-act="exp-sal-edit">' + (sal ? "تعديل" : "تسجيل") + "</button></div>";
+      ? '<div class="row" style="gap:8px;margin-block-start:8px"><input type="number" id="expSalInput" inputmode="decimal" min="0" placeholder="الراتب" value="' + (baseSal || "") + '" style="flex:1"><button class="btn sm" data-act="exp-sal-save">حفظ</button></div>'
+      : '<div class="row between" style="margin-block-start:4px"><span class="muted">الراتب هذا الشهر: <b class="num">' + (baseSal ? fmtMoney(baseSal) : "لم يُسجَّل") + "</b>" + (extraInc ? ' · دخل إضافي <b class="num" style="color:var(--done-deep)">+' + fmtMoney(extraInc) + "</b>" : "") + '</span><button class="btn sm alt" data-act="exp-sal-edit">' + (baseSal ? "تعديل" : "تسجيل") + "</button></div>";
 
     var recentCats = expRecentCats(5);
     var recentChips = recentCats.length ? '<div class="row wrapr" style="gap:6px;margin-block-end:8px">' + recentCats.map(function (c) {
@@ -114,11 +120,11 @@
     var editingItem = state.expEditId ? state.exp.items.filter(function (x) { return x.id === state.expEditId; })[0] : null;
     var addForm = !state.expAdd ? "" :
       '<div class="card" style="margin-block-start:10px"><h3>' + (editingItem ? "تعديل المصروف" : "مصروف جديد") + '</h3>' +
-      '<div class="seg2 two" style="margin-block-end:10px"><button type="button" data-act="exp-kind" data-k="expense" aria-pressed="' + (state.expKind !== "advance") + '">مصروف</button><button type="button" data-act="exp-kind" data-k="advance" aria-pressed="' + (state.expKind === "advance") + '">سلفة</button></div>' +
+      '<div class="seg2" style="margin-block-end:10px"><button type="button" data-act="exp-kind" data-k="expense" aria-pressed="' + (state.expKind !== "advance" && state.expKind !== "income") + '">مصروف</button><button type="button" data-act="exp-kind" data-k="income" aria-pressed="' + (state.expKind === "income") + '">دخل</button><button type="button" data-act="exp-kind" data-k="advance" aria-pressed="' + (state.expKind === "advance") + '">سلفة</button></div>' +
       recentChips +
       '<div class="catrow">' + catChips + "</div>" +
       (state.expNewCat ? '<div class="row" style="gap:8px;margin-block-end:8px"><input type="text" id="expNewCatInput" placeholder="اسم البند" style="flex:1"><button class="btn sm" data-act="exp-cat-new-save">إضافة</button></div>' : "") +
-      '<label class="field">المبلغ<input type="number" id="expAmt" inputmode="decimal" min="0" placeholder="0" value="' + (editingItem ? editingItem.amount : "") + '"></label>' +
+      '<label class="field">المبلغ<input type="number" id="expAmt" inputmode="decimal" min="0" placeholder="0" value="' + (editingItem ? editingItem.amount : (state.expPrefill || "")) + '"></label>' +
       '<label class="field">التاريخ<input type="date" id="expDate" value="' + (editingItem ? editingItem.date : now.key) + '" max="' + now.key + '"></label>' +
       '<label class="field">ملاحظة (اختياري)<input type="text" id="expNote" placeholder="..." value="' + (editingItem && editingItem.note ? esc(editingItem.note) : "") + '"></label>' +
       '<div class="row" style="gap:8px;margin-block-start:10px"><button class="btn sm" data-act="exp-save">' + (editingItem ? "حفظ التعديل" : "حفظ المصروف") + '</button><button class="btn sm alt" data-act="exp-add-toggle">إلغاء</button></div></div>';
@@ -162,14 +168,14 @@
       if (!gi.hasOwnProperty(it.date)) { gi[it.date] = groups.length; groups.push({ date: it.date, items: [] }); }
       groups[gi[it.date]].items.push(it);
     });
-    var itemsHTML = !items.length ? "" :
-      '<div class="sec-h">كل المصاريف</div><div class="card">' + groups.map(function (g) {
+    var itemsHTML = !items.length ? (q ? '<div class="sec-h">كل المصاريف</div>' + expSearchHTML() + '<p class="muted">مفيش نتايج لـ «' + esc(q) + "».</p>" : "") :
+      '<div class="sec-h">كل المصاريف</div>' + expSearchHTML() + '<div class="card">' + groups.map(function (g) {
         return '<div class="expgroup"><div class="datelbl">' + expDateLabel(g.date, now) + '</div>' + g.items.map(function (it) {
-          var clr = catColor(it.cat), revealed = state.expSwipeId === it.id;
+          var clr = catColor(it.cat), revealed = state.expSwipeId === it.id, inc = it.kind === "income";
           return '<div class="exprow' + (revealed ? " revealed" : "") + '" data-swipeid="' + it.id + '"><div class="exprow-l"><i class="catdot" style="background:' + clr + '"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '</div>' +
             (revealed
               ? '<div class="exprow-r exprow-actions"><button class="btn sm alt" data-act="exp-edit" data-id="' + it.id + '">تعديل</button><button class="btn sm" style="background:var(--bad)" data-act="exp-del" data-id="' + it.id + '">حذف</button></div>'
-              : '<div class="exprow-r"><span class="num">' + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-swipe" data-id="' + it.id + '" aria-label="خيارات">' + ico("trash") + "</button></div>") +
+              : '<div class="exprow-r"><span class="num"' + (inc ? ' style="color:var(--done-deep);font-weight:700"' : "") + ">" + (inc ? "+" : "") + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-swipe" data-id="' + it.id + '" aria-label="خيارات">' + ico("trash") + "</button></div>") +
             "</div>";
         }).join("") + "</div>";
       }).join("") + "</div>";
@@ -179,8 +185,8 @@
       "<b>" + monthLabel(mk) + "</b>" +
       '<button class="btn sm alt" data-act="exp-month" data-n="1">الشهر التالي ›</button></div>' +
       '<div class="card"><div class="dual"><div class="stat"><b class="num">' + fmtMoney(tot) + '</b><span>إجمالي المصروف</span></div>' +
-      '<div class="stat"><b class="num">' + (sal ? fmtMoney(Math.max(0, sal - tot)) : "—") + '</b><span>المتبقي من الراتب</span></div></div>' +
-      (sal ? '<div class="bar ' + barCls + '" style="margin-block-start:10px"><i style="width:' + Math.min(100, pct) + '%"></i></div><p class="muted" style="font-size:13px;margin-block-start:6px">صرفت ' + pct + '% من راتبك هذا الشهر</p>' : "") +
+      '<div class="stat"><b class="num">' + (sal ? fmtMoney(sal - tot) : "—") + '</b><span>المتبقي من الدخل</span></div></div>' +
+      (sal ? '<div class="bar ' + barCls + '" style="margin-block-start:10px"><i style="width:' + Math.min(100, pct) + '%"></i></div><p class="muted" style="font-size:13px;margin-block-start:6px">صرفت ' + pct + '% من دخلك هذا الشهر</p>' : "") +
       dailyAvail + salBlock + "</div>" +
       recurBanner +
       (state.expAdd ? "" : '<div class="row" style="margin-block:12px"><button class="btn" data-act="exp-add-toggle">+ إضافة مصروف</button></div>') +
@@ -188,3 +194,6 @@
       '<div class="sec-h">المصروف حسب البند</div>' + catsHTML + itemsHTML + recurSection;
   }
 
+  function expSearchHTML() {
+    return '<input class="inp" id="expQ" type="search" placeholder="🔍 دوّر في البنود والملاحظات" value="' + esc(state.expQ || "") + '" style="width:100%;margin-block-end:10px" autocomplete="off">';
+  }

@@ -848,6 +848,8 @@
           salary: (ed.salary && typeof ed.salary === "object") ? ed.salary : {},
           budgets: (ed.budgets && typeof ed.budgets === "object") ? ed.budgets : {},
           recurring: Array.isArray(ed.recurring) ? ed.recurring : [],
+          goals: Array.isArray(ed.goals) ? ed.goals : [],
+          zakat: (ed.zakat && typeof ed.zakat === "object") ? ed.zakat : {}
         };
       }
     });
@@ -863,7 +865,7 @@
     try { await store.sb.auth.signOut(); } catch (e) { }
     store.uid = null; state.days = {}; state.learn = freshLearn();
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
-    state.exp = { categories: [], items: [], salary: {}, budgets: {}, recurring: [] }; state.expMonth = null; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
+    state.exp = { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} }; state.expMonth = null; state.expTab = "main"; state.expQ = ""; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
     state.quiz = null; state.card = null; state.spk = null; state.wd = null; state.weakTab = "all"; state.lv = { mode: "courses" }; state.tab = "home"; state.pv = "today"; state.hv = "dashboard"; state.az = null; state.azProgress = {}; state.azOpen = {}; panelCache = {};
     resetPermissions(); // clear any restriction the previous account left behind
