@@ -97,10 +97,10 @@
     return expMonthNav(mk) + kpis +
       (items.length ? '<div class="card"><h3>توزيع المصروف</h3><div class="mx-donut-wrap">' + expDonut(cats, tot) + '<div class="mx-leg">' + legend + "</div></div></div>" +
         '<div class="card"><h3>إيقاع الصرف خلال الشهر</h3>' + expPaceChart(mk, now, inc) + "</div>" +
-        '<div class="card"><h3>💡 ملاحظات ذكية</h3><div class="mx-ins">' + ins.map(function (x) { return '<div><span>' + x.i + "</span><p>" + esc(x.t) + "</p></div>"; }).join("") + "</div></div>"
+        '<div class="card"><h3>' + ic("bulb") + ' ملاحظات ذكية</h3><div class="mx-ins">' + ins.map(function (x) { return '<div><span>' + x.i + "</span><p>" + esc(x.t) + "</p></div>"; }).join("") + "</div></div>"
         : '<div class="card"><p class="muted">مفيش مصاريف في ' + monthLabel(mk) + " لسه.</p></div>") +
       '<div class="card"><h3>آخر 6 شهور</h3>' + expTrendHTML(mk) + "</div>" +
-      '<button class="btn alt" style="width:100%" data-act="exp-csv">⬇️ تصدير ' + monthLabel(mk) + " (Excel)</button>";
+      '<button class="btn alt" style="width:100%" data-act="exp-csv">' + ic("download") + ' تصدير ' + monthLabel(mk) + " (Excel)</button>";
   }
   function expCsv(now) {
     var mk = curExpMonth(now), rows = expAllItemsOf(mk).slice().reverse();
@@ -126,7 +126,7 @@
   function expGoalsView(now) {
     var goals = state.exp.goals, totalSaved = goals.reduce(function (s, g) { return s + (g.saved || 0); }, 0), totalTarget = goals.reduce(function (s, g) { return s + g.target; }, 0);
     var form = state.expGoalAdd ? '<div class="card"><h3>هدف جديد</h3><div class="row wrapr" style="gap:6px;margin-block-end:8px">' + GOAL_EMOJI.map(function (e) {
-      return '<button class="chipbtn' + ((state.expGoalEmoji || "🎯") === e ? " on" : "") + '" data-act="goal-emoji" data-v="' + e + '">' + e + "</button>";
+      return '<button class="chipbtn' + ((state.expGoalEmoji || "" + ic("target") + "") === e ? " on" : "") + '" data-act="goal-emoji" data-v="' + e + '">' + e + "</button>";
     }).join("") + "</div>" +
       '<label class="field">اسم الهدف<input class="inp" id="goalName" placeholder="مثلًا: عربية، عمرة، طوارئ"></label>' +
       '<label class="field">المبلغ المطلوب<input class="inp" id="goalTarget" type="number" inputmode="decimal" min="1"></label>' +
@@ -146,7 +146,7 @@
           '<button class="linkbtn" style="color:var(--bad);font-size:13px;margin-block-start:8px" data-act="goal-del" data-id="' + g.id + '">حذف الهدف</button>' : "") + "</div>";
     }).join("");
     return '<div class="card mx-goal-sum"><div><small>إجمالي المدّخر</small><b class="num">' + fmtMoney(totalSaved) + '</b></div><div><small>من أهداف بقيمة</small><b class="num">' + fmtMoney(totalTarget) + "</b></div></div>" +
-      form + (goals.length ? list : (state.expGoalAdd ? "" : '<div class="card" style="text-align:center"><div style="font-size:40px">🎯</div><p class="muted">حط هدف تحوّش له، وتابع تقدّمك خطوة بخطوة.</p></div>')) +
+      form + (goals.length ? list : (state.expGoalAdd ? "" : '<div class="card" style="text-align:center"><div style="font-size:40px">' + ic("target") + '</div><p class="muted">حط هدف تحوّش له، وتابع تقدّمك خطوة بخطوة.</p></div>')) +
       (state.expGoalAdd ? "" : '<button class="btn" style="width:100%" data-act="goal-add-toggle">+ هدف ادخار جديد</button>');
   }
 
@@ -158,9 +158,9 @@
     s = s.replace(/(\d+(?:\.\d+)?)([+\-])(\d+(?:\.\d+)?)%/g, "$1$2($1*$3/100)").replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
     try { var v = Function('"use strict";return (' + s + ")")(); return isFinite(v) ? Math.round(v * 1e8) / 1e8 : null; } catch (e) { return null; }
   }
-  var CALC_KEYS = ["C", "(", ")", "÷", "7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "%", "0", ".", "⌫"];
+  var CALC_KEYS = ["C", "(", ")", "÷", "7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "%", "0", ".", "" + ic("backspace") + ""];
   function expToolsView(now) {
-    var t = state.expTool || "calc", seg = '<div class="seg2" style="margin-block-end:12px">' + [["calc", "🧮 آلة حاسبة"], ["zakat", "🕌 الزكاة"], ["split", "🍽️ تقسيم"]].map(function (x) {
+    var t = state.expTool || "calc", seg = '<div class="seg2" style="margin-block-end:12px">' + [["calc", "" + ic("calc") + " آلة حاسبة"], ["zakat", "" + ic("scale") + " الزكاة"], ["split", "" + ic("receipt") + " تقسيم"]].map(function (x) {
       return '<button data-act="exp-tool" data-v="' + x[0] + '" aria-pressed="' + (t === x[0]) + '">' + x[1] + "</button>";
     }).join("") + "</div>";
     if (t === "zakat") return seg + zakatHTML();
@@ -173,31 +173,57 @@
       }).join("") + '<button class="mx-key eq" data-act="calc-key" data-v="=">=</button></div>' +
       '<button class="btn alt" style="width:100%;margin-block-start:12px" data-act="calc-to-exp"' + (val ? "" : " disabled") + ">سجّل الناتج كمصروف</button></div>";
   }
+  // Accepts Arabic-Indic digits and separators too ("٥٦٫٥" → 56.5).
+  function toNum(v) {
+    var t = String(v == null ? "" : v).replace(/[٠-٩]/g, function (d) { return d.charCodeAt(0) - 1632; }).replace(/[۰-۹]/g, function (d) { return d.charCodeAt(0) - 1776; })
+      .replace(/[٫,]/g, ".").replace(/[٬\s]/g, "");
+    var n = parseFloat(t); return isFinite(n) ? n : 0;
+  }
+  // These inputs are plain text with a decimal keypad, and typing only refreshes
+  // the result box. Re-rendering the whole panel on every key put the caret back
+  // at the start of the field, so "56" came out as "65".
+  function numInput(id, attr, key, val, ph) {
+    return '<input class="inp" type="text" inputmode="decimal" dir="ltr" autocomplete="off" id="' + id + '" ' + attr + '="' + key + '" value="' + esc(val == null ? "" : String(val)) + '" placeholder="' + esc(ph || "0") + '">';
+  }
+  function zakatCalc() {
+    var z = state.exp.zakat, gp = toNum(z.goldPrice), nisab = gp * 85;
+    var assets = toNum(z.cash) + toNum(z.invest) + toNum(z.owed) + toNum(z.gold24) * gp + toNum(z.gold21) * gp * 21 / 24 + toNum(z.gold18) * gp * 18 / 24;
+    var net = Math.max(0, assets - toNum(z.debts));
+    return { gp: gp, nisab: nisab, net: net, due: nisab && net >= nisab ? net * 0.025 : 0 };
+  }
+  function zakatResultHTML() {
+    var r = zakatCalc();
+    return '<div class="mx-kpis" style="margin:0"><div><small>صافي المال</small><b class="num">' + fmtMoney(Math.round(r.net)) + '</b></div><div><small>النصاب</small><b class="num">' + (r.gp ? fmtMoney(Math.round(r.nisab)) : "—") + "</b></div></div>" +
+      '<p class="mx-zline">' + (!r.gp ? "اكتب سعر جرام الدهب عشان نحسب النصاب." : r.due ? 'الزكاة الواجبة: <b class="num">' + fmtMoney(Math.round(r.due)) + "</b>" : "مالك لسه مبلغش النصاب، مفيش زكاة واجبة.") + "</p>" +
+      '<p class="muted" style="font-size:11.5px">حساب تقريبي للمساعدة. دهب الزينة المستعمل فيه خلاف فقهي، وفي الحالات الخاصة اسأل أهل العلم.</p>';
+  }
   function zakatHTML() {
-    var z = state.exp.zakat;
-    function f(id, label, ph) { return '<label class="field">' + label + '<input class="inp" type="number" inputmode="decimal" min="0" id="zk_' + id + '" data-zk="' + id + '" value="' + (z[id] || "") + '" placeholder="' + (ph || "0") + '"></label>'; }
-    var gp = Number(z.goldPrice) || 0, nisab = gp * 85;
-    var assets = (Number(z.cash) || 0) + (Number(z.invest) || 0) + (Number(z.owed) || 0) + (Number(z.gold24) || 0) * gp + (Number(z.gold21) || 0) * gp * 21 / 24 + (Number(z.gold18) || 0) * gp * 18 / 24;
-    var net = Math.max(0, assets - (Number(z.debts) || 0)), due = nisab && net >= nisab ? net * 0.025 : 0;
-    return '<div class="card"><h3>🕌 حاسبة زكاة المال</h3><p class="muted" style="font-size:13px">الزكاة 2.5% من المال اللي بلغ النصاب (قيمة 85 جرام دهب عيار 24) وعدّى عليه سنة هجرية.</p>' +
+    var z = state.exp.zakat, r = zakatCalc();
+    function f(id, label, ph) { return '<label class="field">' + label + numInput("zk_" + id, "data-zk", id, z[id], ph) + "</label>"; }
+    return '<div class="card"><h3>' + ic("scale") + ' حاسبة زكاة المال</h3><p class="muted" style="font-size:13px">الزكاة 2.5% من المال اللي بلغ النصاب (قيمة 85 جرام دهب عيار 24) وعدّى عليه سنة هجرية.</p>' +
       f("goldPrice", "سعر جرام الدهب عيار 24 النهارده", "مثلًا 4000") +
       '<div class="mx-zgrid">' + f("cash", "الفلوس السايلة والبنك") + f("invest", "استثمارات وأسهم وبضاعة") + f("owed", "ديون ليك مضمون ترجع") + f("debts", "ديون عليك مستحقة") +
       f("gold24", "دهب عيار 24 (جرام)") + f("gold21", "دهب عيار 21 (جرام)") + f("gold18", "دهب عيار 18 (جرام)") + "</div></div>" +
-      '<div class="card mx-zres ' + (due ? "due" : "") + '"><div class="mx-kpis" style="margin:0"><div><small>صافي المال</small><b class="num">' + fmtMoney(Math.round(net)) + '</b></div><div><small>النصاب</small><b class="num">' + (gp ? fmtMoney(Math.round(nisab)) : "—") + "</b></div></div>" +
-      '<p class="mx-zline">' + (!gp ? "اكتب سعر جرام الدهب عشان نحسب النصاب." : due ? "الزكاة الواجبة: <b class=\"num\">" + fmtMoney(Math.round(due)) + "</b>" : "مالك لسه مبلغش النصاب، مفيش زكاة واجبة.") + "</p>" +
-      '<p class="muted" style="font-size:11.5px">حساب تقريبي للمساعدة. دهب الزينة المستعمل فيه خلاف فقهي، وفي الحالات الخاصة اسأل أهل العلم.</p></div>';
+      '<div class="card mx-zres' + (r.due ? " due" : "") + '" id="zkRes">' + zakatResultHTML() + "</div>";
+  }
+  function splitCalc() {
+    var s = state.expSplit, total = toNum(s.total), withTip = Math.round(total * (100 + (s.tip || 0))) / 100;
+    return { withTip: withTip, per: s.people ? Math.ceil(Math.round(withTip / s.people * 1e4) / 100) / 100 : 0 };
+  }
+  function splitResultHTML() {
+    var r = splitCalc();
+    return '<div class="mx-kpis" style="margin:0"><div><small>الإجمالي مع الخدمة</small><b class="num">' + fmtMoney(r.withTip) + '</b></div><div><small>على كل واحد</small><b class="num">' + fmtMoney(r.per) + "</b></div></div>" +
+      '<button class="btn alt" style="width:100%;margin-block-start:12px" data-act="split-to-exp"' + (r.per ? "" : " disabled") + ">سجّل نصيبي كمصروف</button>";
   }
   function splitHTML() {
     var s = state.expSplit || (state.expSplit = { total: "", people: 2, tip: 0 });
-    var total = Number(s.total) || 0, withTip = Math.round(total * (100 + (s.tip || 0))) / 100, per = s.people ? Math.ceil(Math.round(withTip / s.people * 1e4) / 100) / 100 : 0;
-    return '<div class="card"><h3>🍽️ تقسيم الفاتورة</h3>' +
-      '<label class="field">إجمالي الفاتورة<input class="inp" type="number" inputmode="decimal" min="0" id="splitTotal" data-split="total" value="' + (s.total || "") + '"></label>' +
+    return '<div class="card"><h3>' + ic("receipt") + ' تقسيم الفاتورة</h3>' +
+      '<label class="field">إجمالي الفاتورة' + numInput("splitTotal", "data-split", "total", s.total, "0") + "</label>" +
       '<div class="field">عدد الأشخاص<div class="stepper"><button class="btn sm alt" data-act="split-n" data-v="-1">−</button><b class="num">' + s.people + '</b><button class="btn sm alt" data-act="split-n" data-v="1">+</button></div></div>' +
       '<div class="field">بقشيش / خدمة</div><div class="row wrapr" style="gap:6px">' + [0, 5, 10, 12, 15].map(function (p) {
         return '<button class="chipbtn' + ((s.tip || 0) === p ? " on" : "") + '" data-act="split-tip" data-v="' + p + '">' + (p ? p + "%" : "بدون") + "</button>";
       }).join("") + "</div></div>" +
-      '<div class="card mx-zres due"><div class="mx-kpis" style="margin:0"><div><small>الإجمالي مع الخدمة</small><b class="num">' + fmtMoney(withTip) + '</b></div><div><small>على كل واحد</small><b class="num">' + fmtMoney(per) + "</b></div></div>" +
-      '<button class="btn alt" style="width:100%;margin-block-start:12px" data-act="split-to-exp"' + (per ? "" : " disabled") + ">سجّل نصيبي كمصروف</button></div>";
+      '<div class="card mx-zres due" id="splitRes">' + splitResultHTML() + "</div>";
   }
   function openAddWithAmount(amount) {
     state.expTab = "main"; state.expAdd = true; state.expEditId = null; state.expKind = "expense"; state.expCat = ""; state.expPrefill = Math.round(amount * 100) / 100;
@@ -207,9 +233,12 @@
   document.addEventListener("input", function (e) {
     var t = e.target; if (!t || !t.getAttribute) return;
     var zk = t.getAttribute("data-zk");
-    if (zk) { state.exp.zakat[zk] = t.value; saveMeta("exp", 1500); render(); }
+    if (zk) {
+      state.exp.zakat[zk] = t.value; saveMeta("exp", 1500);
+      var zr = document.getElementById("zkRes"); if (zr) { zr.innerHTML = zakatResultHTML(); zr.classList.toggle("due", !!zakatCalc().due); }
+    }
     var sp = t.getAttribute("data-split");
-    if (sp) { state.expSplit[sp] = t.value; render(); }
+    if (sp) { state.expSplit[sp] = t.value; var sr = document.getElementById("splitRes"); if (sr) sr.innerHTML = splitResultHTML(); }
   });
   document.addEventListener("click", function (e) {
     var el = e.target.closest("[data-act]"); if (!el || el.disabled) return;
@@ -223,7 +252,7 @@
         var name = ($("#goalName").value || "").trim(), tgt = parseFloat($("#goalTarget").value), by = $("#goalBy").value || null;
         if (!name) { toast("اكتب اسم الهدف"); break; }
         if (!(tgt > 0)) { toast("اكتب المبلغ المطلوب"); break; }
-        state.exp.goals.push({ id: "g" + Date.now().toString(36), name: name, target: tgt, saved: 0, emoji: state.expGoalEmoji || "🎯", by: by, created: now.key, log: [] });
+        state.exp.goals.push({ id: "g" + Date.now().toString(36), name: name, target: tgt, saved: 0, emoji: state.expGoalEmoji || "" + ic("target") + "", by: by, created: now.key, log: [] });
         state.expGoalAdd = false; state.expGoalEmoji = null; saveMeta("exp", 0); render(); toast("🎯 بالتوفيق!"); break;
       }
       case "goal-open": state.expGoalOpen = state.expGoalOpen === id ? null : id; render(); break;
@@ -254,7 +283,7 @@
       case "split-n": state.expSplit.people = Math.max(1, Math.min(50, (state.expSplit.people || 2) + Number(el.getAttribute("data-v")))); render(); break;
       case "split-tip": state.expSplit.tip = Number(el.getAttribute("data-v")); render(); break;
       case "split-to-exp": {
-        var s = state.expSplit, wt = Math.round((Number(s.total) || 0) * (100 + (s.tip || 0))) / 100, per = Math.ceil(Math.round(wt / (s.people || 1) * 1e4) / 100) / 100;
+        var per = splitCalc().per;
         if (per > 0) openAddWithAmount(per); break;
       }
     }

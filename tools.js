@@ -6,8 +6,8 @@
 
   function toolsEntryCardHTML() {
     return '<div class="card"><h3>أدوات</h3><p class="muted" style="font-size:14px;margin-block:4px 10px">السبحة الإلكترونية واتجاه القبلة</p><div class="row wrapr">' +
-      '<button class="btn" data-act="tool-open" data-k="tasbih">📿 السبحة</button>' +
-      '<button class="btn alt" data-act="tool-open" data-k="qibla">🧭 القبلة</button></div></div>';
+      '<button class="btn" data-act="tool-open" data-k="tasbih">' + ic("beads") + ' السبحة</button>' +
+      '<button class="btn alt" data-act="tool-open" data-k="qibla">' + ic("compass") + ' القبلة</button></div></div>';
   }
 
   function tasbihState() {
@@ -88,7 +88,7 @@
       "</b> (" + (CALC === "egypt" ? "الهيئة المصرية" : "أم القرى") + ").</p>" +
       '<div class="row wrapr">' + CITY_PRESETS.map(function (c, i) {
         return '<button class="chipbtn' + (LOC_NAME === c.name ? " on" : "") + '" data-act="loc-city" data-v="' + i + '">' + esc(c.name) + "</button>";
-      }).join("") + '<button class="chipbtn" data-act="loc-gps">📍 موقعي الحالي</button></div></div>';
+      }).join("") + '<button class="chipbtn" data-act="loc-gps">' + ic("pin") + ' موقعي الحالي</button></div></div>';
   }
   function saveLocation(loc) {
     try { localStorage.setItem("masar:loc", JSON.stringify(loc)); } catch (e) { toast("تعذّر حفظ الموقع."); return; }
@@ -109,7 +109,7 @@
   /* ---------------- backup (export / import) ---------------- */
   function backupCardHTML() {
     return '<div class="card"><h3 style="margin:0 0 6px">نسخة احتياطية</h3><p class="muted" style="font-size:13px;margin-block-end:10px">نزّل كل بياناتك (الصلاة، القرآن، الكورسات، المصروفات) في ملف، وترجّعها وقت ما تحب.</p>' +
-      '<div class="row wrapr"><button class="btn sm" data-act="backup-export">⬇️ تصدير</button>' +
+      '<div class="row wrapr"><button class="btn sm" data-act="backup-export">' + ic("download") + ' تصدير</button>' +
       '<button class="btn sm alt" data-act="backup-import">⬆️ استيراد</button></div>' +
       '<input type="file" id="backupFile" accept="application/json,.json" hidden></div>';
   }

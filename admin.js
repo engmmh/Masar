@@ -396,7 +396,7 @@
     }).join("") + "</div>";
     return admHead("الحسابات", ADM.stats.length + " حساب · اضغط على أي حساب عشان تفتح ملفه", '<button class="btn" data-adm="addtoggle">' + (ADM.addOpen ? "إلغاء" : "+ حساب جديد") + "</button>") +
       (ADM.addOpen ? adminAddAccountCard() : "") +
-      '<div class="adm-toolbar"><input class="inp" id="admQ" type="search" placeholder="🔍 دوّر باسم الحساب" value="' + esc(ADM.q) + '" autocomplete="off">' +
+      '<div class="adm-toolbar"><input class="inp" id="admQ" type="search" placeholder="دوّر باسم الحساب" value="' + esc(ADM.q) + '" autocomplete="off">' +
       '<select class="inp" id="admSort" aria-label="ترتيب"><option value="last"' + (ADM.sort === "last" ? " selected" : "") + '>آخر نشاط</option><option value="xp"' + (ADM.sort === "xp" ? " selected" : "") + '>الأكتر نقاط</option><option value="streak"' + (ADM.sort === "streak" ? " selected" : "") + '>أطول سلسلة</option><option value="name"' + (ADM.sort === "name" ? " selected" : "") + ">الاسم</option></select></div>" +
       filters + '<div id="admList">' + admAccountsList(now) + "</div>";
   }

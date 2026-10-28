@@ -69,9 +69,9 @@
     if (!QA.on) return "";
     var c = qaCur(), r = reciter();
     return '<div class="qa-bar"><div class="grow"><b>' + esc(r.n) + "</b><small>" + (c ? esc(surahName(c.s)) + " · آية " + arNum(c.a) : "") + "</small></div>" +
-      '<button class="qa-btn" data-act="qa-toggle" aria-label="' + (QA.playing ? "إيقاف مؤقت" : "تشغيل") + '">' + (QA.playing ? "⏸" : "▶") + "</button>" +
-      '<button class="qa-btn" data-act="qa-next" aria-label="الآية التالية">⏭</button>' +
-      '<button class="qa-rep" data-act="qa-rep">🔁 ×' + qSet().qRep + "</button>" +
+      '<button class="qa-btn" data-act="qa-toggle" aria-label="' + (QA.playing ? "إيقاف مؤقت" : "تشغيل") + '">' + (QA.playing ? "" + ic("pause") + "" : "" + ic("play") + "") + "</button>" +
+      '<button class="qa-btn" data-act="qa-next" aria-label="الآية التالية">' + ic("skip") + '</button>' +
+      '<button class="qa-rep" data-act="qa-rep">' + ic("repeat") + ' ×' + qSet().qRep + "</button>" +
       '<button class="qa-btn x" data-act="qa-stop" aria-label="إيقاف">✕</button></div>';
   }
 
@@ -104,20 +104,20 @@
       // morning before today's reading) never shows as behind.
       var done = pos.abs - plan.startAbs, expected = Math.min(604, Math.round((elapsed - 1) * 604 / plan.days)), diff = done - expected;
       var daysLeft = Math.max(1, plan.days - elapsed + 1), perDay = Math.ceil(Math.max(0, 604 - done) / daysLeft), pct = Math.min(100, Math.round(done / 604 * 100));
-      planHTML = '<div class="card"><div class="row between"><h3 style="margin:0">🎯 خطة الختمة</h3><button class="linkbtn" data-act="q-plan" data-v="0">إلغاء</button></div>' +
+      planHTML = '<div class="card"><div class="row between"><h3 style="margin:0">' + ic("target") + ' خطة الختمة</h3><button class="linkbtn" data-act="q-plan" data-v="0">إلغاء</button></div>' +
         '<p class="muted" style="font-size:13px;margin-block:4px 10px">ختمة في ' + plan.days + " يوم · اليوم " + Math.min(elapsed, plan.days) + " من " + plan.days + "</p>" +
         '<div class="bar"><i style="width:' + pct + '%"></i></div>' +
         '<div class="q-plan-st ' + (diff >= 0 ? "ok" : "late") + '">' + (done >= 604 ? "🎉 ختمت! تقبّل الله منك." : diff >= 0 ? "✓ ماشي على الخطة" + (diff > 0 ? " وسابقها بـ " + diff + " صفحة" : "") + " · المطلوب النهارده " + perDay + " صفحة" : "متأخر " + (-diff) + " صفحة — اقرأ " + perDay + " صفحة يوميًا عشان تلحق") + "</div></div>";
     } else {
-      planHTML = '<div class="card"><h3 style="margin:0 0 4px">🎯 خطة ختمة</h3><p class="muted" style="font-size:13px;margin-block-end:10px">اختار هتختم في قد إيه، وأنا أحسبلك المطلوب كل يوم وأقولك لو اتأخرت.</p><div class="row wrapr" style="gap:6px">' +
+      planHTML = '<div class="card"><h3 style="margin:0 0 4px">' + ic("target") + ' خطة ختمة</h3><p class="muted" style="font-size:13px;margin-block-end:10px">اختار هتختم في قد إيه، وأنا أحسبلك المطلوب كل يوم وأقولك لو اتأخرت.</p><div class="row wrapr" style="gap:6px">' +
         [[30, "شهر"], [60, "شهرين"], [90, "3 شهور"], [180, "6 شهور"], [365, "سنة"]].map(function (x) {
           return '<button class="chipbtn" data-act="q-plan" data-v="' + x[0] + '">' + x[1] + ' <small class="muted">(' + Math.ceil(604 / x[0]) + " ص/يوم)</small></button>";
         }).join("") + "</div></div>";
     }
     var heat = ""; for (var i = 29; i >= 0; i--) { var k = addDays(now.key, -i), v = pagesOn(k), t = target(); heat += '<i class="' + (v >= t ? "h3" : v > 0 ? "h1" : "") + '" title="' + esc(greg(k)) + ": " + v + ' صفحة"></i>'; }
-    return '<button class="card q-continue" data-act="q-continue" data-p="' + pos.cur + '"><span class="q-continue-ic">📖</span><span class="grow"><b>كمّل القراءة</b><small class="muted">صفحة ' + arNum(pos.cur) + " · الجزء " + arNum(juzOf(pos.cur)) + "</small></span><span>←</span></button>" +
+    return '<button class="card q-continue" data-act="q-continue" data-p="' + pos.cur + '"><span class="q-continue-ic">' + ic("book") + '</span><span class="grow"><b>كمّل القراءة</b><small class="muted">صفحة ' + arNum(pos.cur) + " · الجزء " + arNum(juzOf(pos.cur)) + "</small></span><span>←</span></button>" +
       planHTML +
-      '<div class="card"><div class="row between"><h3 style="margin:0">آخر 30 يوم</h3><span class="chip">🔥 ' + readStreak(now) + " يوم متواصل</span></div><div class=\"q-heat\">" + heat + "</div>" +
+      '<div class="card"><div class="row between"><h3 style="margin:0">آخر 30 يوم</h3><span class="chip">' + ic("flame") + ' ' + readStreak(now) + " يوم متواصل</span></div><div class=\"q-heat\">" + heat + "</div>" +
       '<label class="q-auto"><input type="checkbox" data-act="q-auto"' + (S.qAuto ? " checked" : "") + '> احسب الصفحات تلقائي وأنا بقرأ من المصحف</label></div>';
   }
 
@@ -133,11 +133,11 @@
   /* mushaf home + page */
   function mushafHomeHTML(now) {
     var S = qSet(), q = state.qv.q || "", nq = normalizeAr(q), tab = state.qv.list || "surah";
-    var cont = (S.qLast ? '<button class="card q-continue" data-act="q-goto" data-p="' + S.qLast + '"><span class="q-continue-ic">📖</span><span class="grow"><b>آخر صفحة قرأتها</b><small class="muted">صفحة ' + arNum(S.qLast) + " · الجزء " + arNum(juzOf(S.qLast)) + "</small></span><span>←</span></button>" : "");
-    var marks = S.qMarks.length ? '<div class="card"><h3 style="margin:0 0 8px">🔖 العلامات</h3>' + S.qMarks.slice().reverse().map(function (m) {
+    var cont = (S.qLast ? '<button class="card q-continue" data-act="q-goto" data-p="' + S.qLast + '"><span class="q-continue-ic">' + ic("book") + '</span><span class="grow"><b>آخر صفحة قرأتها</b><small class="muted">صفحة ' + arNum(S.qLast) + " · الجزء " + arNum(juzOf(S.qLast)) + "</small></span><span>←</span></button>" : "");
+    var marks = S.qMarks.length ? '<div class="card"><h3 style="margin:0 0 8px">' + ic("bookmark") + ' العلامات</h3>' + S.qMarks.slice().reverse().map(function (m) {
       return '<div class="q-mark"><button class="linkbtn" data-act="q-goto" data-p="' + m.p + '" data-s="' + m.s + '" data-a="' + m.a + '">' + esc(surahName(m.s)) + " · آية " + arNum(m.a) + ' <small class="muted">ص ' + arNum(m.p) + '</small></button><button class="del" data-act="q-mark-del" data-s="' + m.s + '" data-a="' + m.a + '" aria-label="حذف">' + ico("trash") + "</button></div>";
     }).join("") + "</div>" : "";
-    var search = '<div class="q-search"><input class="inp" id="qSearch" type="search" placeholder="🔍 دوّر على سورة أو كلمة في القرآن" value="' + esc(q) + '" autocomplete="off"></div>';
+    var search = '<div class="q-search"><input class="inp" id="qSearch" type="search" placeholder="دوّر على سورة أو كلمة في القرآن" value="' + esc(q) + '" autocomplete="off"></div>';
     var results = "";
     if (nq.length >= 2) {
       var surs = QURAN.surahs.map(function (s, i) { return { s: s, i: i }; }).filter(function (x) { return normalizeAr(x.s.name).indexOf(nq) >= 0; });
@@ -174,17 +174,17 @@
       }
       var cls = "ayah" + (cur && cur.s === v.surah && cur.a === v.ayah ? " playing" : "") + (sel && sel.s === v.surah && sel.a === v.ayah ? " sel" : "") + (hl && hl.s === v.surah && hl.a === v.ayah ? " hl" : "");
       var marked = S.qMarks.some(function (m) { return m.s === v.surah && m.a === v.ayah; });
-      body += '<span class="' + cls + '" data-act="q-ayah" data-s="' + v.surah + '" data-a="' + v.ayah + '">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">' + (marked ? "🔖" : "") + "﴿" + arNum(v.ayah) + "﴾</span></span> ";
+      body += '<span class="' + cls + '" data-act="q-ayah" data-s="' + v.surah + '" data-a="' + v.ayah + '">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">' + (marked ? "" + ic("bookmark") + "" : "") + "﴿" + arNum(v.ayah) + "﴾</span></span> ";
     });
     var pageMarked = S.qMarks.some(function (m) { return m.p === p; });
     var selBar = sel ? '<div class="q-selbar"><b>' + esc(surahName(sel.s)) + " · آية " + arNum(sel.a) + "</b>" +
-      '<button class="btn sm" data-act="qa-from">▶ من هنا</button><button class="btn sm alt" data-act="q-mark" data-s="' + sel.s + '" data-a="' + sel.a + '">🔖</button>' +
-      '<button class="btn sm alt" data-act="q-copy">📋</button><button class="btn sm alt" data-act="q-sel-x">✕</button></div>' : "";
+      '<button class="btn sm" data-act="qa-from">' + ic("play") + ' من هنا</button><button class="btn sm alt" data-act="q-mark" data-s="' + sel.s + '" data-a="' + sel.a + '">' + ic("bookmark") + '</button>' +
+      '<button class="btn sm alt" data-act="q-copy">' + ic("copy") + '</button><button class="btn sm alt" data-act="q-sel-x">✕</button></div>' : "";
     return '<div class="row between" style="margin-block-end:8px"><button class="linkbtn" data-act="mushaf-close">← الفهرس</button><span class="muted" style="font-size:13px">' + esc(names.join(" · ")) + "</span></div>" +
-      '<div class="q-tools"><button class="btn sm' + (QA.on && QA.mode === "page" ? "" : " alt") + '" data-act="qa-page">' + (QA.on ? "🔊 شغّال" : "▶ استمع") + "</button>" +
+      '<div class="q-tools"><button class="btn sm' + (QA.on && QA.mode === "page" ? "" : " alt") + '" data-act="qa-page">' + (QA.on ? "" + ic("vol") + " شغّال" : "" + ic("play") + " استمع") + "</button>" +
       '<select class="inp q-rec" id="qRec" aria-label="القارئ">' + RECITERS.map(function (r) { return '<option value="' + r.k + '"' + (S.qRec === r.k ? " selected" : "") + ">" + esc(r.n) + "</option>"; }).join("") + "</select>" +
       '<button class="btn sm alt" data-act="q-font" data-v="-2" aria-label="تصغير الخط">A−</button><button class="btn sm alt" data-act="q-font" data-v="2" aria-label="تكبير الخط">A+</button>' +
-      '<button class="btn sm ' + (pageMarked ? "" : "alt") + '" data-act="q-mark" data-s="' + ayahs[0].surah + '" data-a="' + ayahs[0].ayah + '" aria-label="علامة">🔖</button></div>' +
+      '<button class="btn sm ' + (pageMarked ? "" : "alt") + '" data-act="q-mark" data-s="' + ayahs[0].surah + '" data-a="' + ayahs[0].ayah + '" aria-label="علامة">' + ic("bookmark") + '</button></div>' +
       '<div class="card q-page"><div class="row between q-page-h"><span>الجزء ' + arNum(juzOf(p)) + "</span><span>صفحة " + arNum(p) + "</span></div>" +
       '<p class="ayah-block" style="font-size:' + S.qFont + 'px">' + body + "</p>" +
       '<div class="q-page-f">' + arNum(p) + "</div></div>" +

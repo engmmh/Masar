@@ -74,7 +74,7 @@
     if (d && d.done) {
       return '<div class="card daily done"><div class="row between"><div><h3 style="margin:0">✓ تحدي اليوم خلصته</h3><p class="muted" style="font-size:14px;margin-block-start:4px">نتيجتك: <span class="num">' + d.score + '%</span>. يجيلك تحدي جديد بكرة.</p></div></div></div>';
     }
-    return '<div class="card daily"><div class="row between"><div><h3 style="margin:0">⚡ تحدي اليوم</h3><p class="muted" style="font-size:14px;margin-block-start:4px">5 أسئلة سريعة من كل اللي اتعلمته، وتاخد نقاط إضافية.</p></div><button class="btn sm" data-act="daily-start">ابدأ</button></div></div>';
+    return '<div class="card daily"><div class="row between"><div><h3 style="margin:0">' + ic("zap") + ' تحدي اليوم</h3><p class="muted" style="font-size:14px;margin-block-start:4px">5 أسئلة سريعة من كل اللي اتعلمته، وتاخد نقاط إضافية.</p></div><button class="btn sm" data-act="daily-start">ابدأ</button></div></div>';
   }
   function expHomeSub(now) {
     var mk = monthKey(now.key), sal = state.exp.salary[mk] || 0, tot = expTotalOf(mk);
@@ -111,7 +111,7 @@
 
     var recentCats = expRecentCats(5);
     var recentChips = recentCats.length ? '<div class="row wrapr" style="gap:6px;margin-block-end:8px">' + recentCats.map(function (c) {
-      return '<button class="catchip" data-act="exp-cat-pick" data-c="' + esc(c) + '" aria-pressed="' + (state.expCat === c) + '">⚡ ' + esc(c) + "</button>";
+      return '<button class="catchip" data-act="exp-cat-pick" data-c="' + esc(c) + '" aria-pressed="' + (state.expCat === c) + '">' + ic("zap") + ' ' + esc(c) + "</button>";
     }).join("") + "</div>" : "";
     var catChips = state.exp.categories.map(function (c) {
       return '<button class="catchip" data-act="exp-cat-pick" data-c="' + esc(c) + '" aria-pressed="' + (state.expCat === c) + '">' + esc(c) + "</button>";
@@ -195,5 +195,5 @@
   }
 
   function expSearchHTML() {
-    return '<input class="inp" id="expQ" type="search" placeholder="🔍 دوّر في البنود والملاحظات" value="' + esc(state.expQ || "") + '" style="width:100%;margin-block-end:10px" autocomplete="off">';
+    return '<input class="inp" id="expQ" type="search" placeholder="دوّر في البنود والملاحظات" value="' + esc(state.expQ || "") + '" style="width:100%;margin-block-end:10px" autocomplete="off">';
   }

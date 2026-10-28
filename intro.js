@@ -124,7 +124,7 @@
 
   /* role-play scenes — s: 2 best, 1 okay, 0 wrong */
   var SCENES = [
-    { k: "meet", ico: "👋", t: "لقاء شخص جديد", d: "أول كلام مع حد لسه متعرف عليه", who: "Sarah", turns: [
+    { k: "meet", ico: "smile", t: "لقاء شخص جديد", d: "أول كلام مع حد لسه متعرف عليه", who: "Sarah", turns: [
       { q: "Hi! I don't think we've met. I'm Sarah.", qa: "أهلاً! مظنش إننا اتقابلنا قبل كده. أنا سارة.", o: [
         { t: "Hi Sarah, I'm {name}. Nice to meet you!", s: 2, f: "ممتاز! سلام ودود وفيه اسمك واسمها." },
         { t: "My name {name}.", s: 1, f: "قريب، بس ناقصة is: My name is {name}. وقول Nice to meet you." },
@@ -146,7 +146,7 @@
         { t: "OK, bye.", s: 1, f: "مقبول بس جاف. قول You too! قبل الوداع." },
         { t: "Thank you, you too nice.", s: 0, f: "التركيب غلط. الصح: It was nice talking to you too." }] }
     ] },
-    { k: "work", ico: "💼", t: "أول يوم في الشغل", d: "تعرّف على المدير والزمايل", who: "Manager", turns: [
+    { k: "work", ico: "briefcase", t: "أول يوم في الشغل", d: "تعرّف على المدير والزمايل", who: "Manager", turns: [
       { q: "Welcome to the team! Can you tell us a little about yourself?", qa: "أهلاً بيك في الفريق! ممكن تقولنا شوية عن نفسك؟", o: [
         { t: "Thank you! I'm {name}, I'm {job}, and I'm really happy to join the team.", s: 2, f: "ممتاز: شكر + اسم + وظيفة + حماس." },
         { t: "I am {name}. Thank you.", s: 1, f: "قصير قوي. زوّد وظيفتك وإنك مبسوط إنك معاهم." },
@@ -168,7 +168,7 @@
         { t: "It was good.", s: 1, f: "صح، زوّد سبب: I learned a lot." },
         { t: "It is bad day.", s: 0, f: "الزمن غلط (was) وسلبي. خليك إيجابي في الأول." }] }
     ] },
-    { k: "interview", ico: "🎯", t: "مقابلة عمل", d: "Tell me about yourself وأسئلة تانية", who: "Interviewer", turns: [
+    { k: "interview", ico: "target", t: "مقابلة عمل", d: "Tell me about yourself وأسئلة تانية", who: "Interviewer", turns: [
       { q: "Good morning! Please, have a seat. How are you today?", qa: "صباح الخير! اتفضل اقعد. عامل إيه النهارده؟", o: [
         { t: "Good morning! I'm very well, thank you. Thanks for having me.", s: 2, f: "بداية محترفة وواثقة." },
         { t: "Fine.", s: 1, f: "قصير. زوّد thank you وشكرهم على الفرصة." },
@@ -190,7 +190,7 @@
         { t: "How many vacation days do I get?", s: 1, f: "سؤال مشروع، بس مش أنسب أول سؤال." },
         { t: "No.", s: 0, f: "دايمًا جهّز سؤال واحد على الأقل." }] }
     ] },
-    { k: "network", ico: "🤝", t: "مؤتمر أو فعالية", d: "Networking وبناء علاقات", who: "David", turns: [
+    { k: "network", ico: "users", t: "مؤتمر أو فعالية", d: "Networking وبناء علاقات", who: "David", turns: [
       { q: "Hi, is this seat taken?", qa: "أهلاً، الكرسي ده فاضي؟", o: [
         { t: "No, please go ahead! I'm {name}, by the way.", s: 2, f: "ممتاز، فتحت باب للتعارف." },
         { t: "No.", s: 1, f: "صح بس قفلت الكلام. زوّد اسمك." },
@@ -212,7 +212,7 @@
         { t: "Yes.", s: 1, f: "زوّد Let's connect." },
         { t: "No, I don't like people.", s: 0, f: "رد بيقفل أي فرصة. لو مش عندك قول: Not yet, but I can give you my email." }] }
     ] },
-    { k: "call", ico: "💻", t: "اجتماع أونلاين", d: "مكالمة فيديو مع عميل", who: "Client", turns: [
+    { k: "call", ico: "laptop", t: "اجتماع أونلاين", d: "مكالمة فيديو مع عميل", who: "Client", turns: [
       { q: "Hi, can you hear me okay?", qa: "أهلاً، سامعني كويس؟", o: [
         { t: "Yes, I can hear you clearly. Can you hear me?", s: 2, f: "واضح ومهني." },
         { t: "Yes, yes.", s: 1, f: "مقبول، الأحسن جملة كاملة." },
@@ -234,7 +234,7 @@
         { t: "Bye.", s: 1, f: "مقبول بس جاف." },
         { t: "Finally.", s: 0, f: "😬 ده معناه «أخيرًا خلصنا»!" }] }
     ] },
-    { k: "travel", ico: "✈️", t: "دردشة في السفر", d: "Small talk مع حد غريب", who: "Traveler", turns: [
+    { k: "travel", ico: "plane", t: "دردشة في السفر", d: "Small talk مع حد غريب", who: "Traveler", turns: [
       { q: "Excuse me, is this your first time visiting Dubai?", qa: "لو سمحت، دي أول مرة تزور دبي؟", o: [
         { t: "Yes, it is! I'm really excited. Have you been here before?", s: 2, f: "حماس + سؤال = دردشة ناجحة." },
         { t: "Yes first time.", s: 1, f: "قول: Yes, it's my first time." },
@@ -300,18 +300,18 @@
         '<span class="gtile-best">' + (r ? "★".repeat(r.stars) + "☆".repeat(3 - r.stars) : (locked ? "نجمتين في اللي قبله" : "جديد")) + "</span></button>";
     }).join("");
     return '<button class="linkbtn" data-act="course-open" data-c="en">← الإنجليزي</button>' +
-      '<div class="chero" style="--c1:#7B61F0;--c2:#3D2BA8"><div class="row" style="gap:12px;align-items:center"><span class="feat-ic" style="font-size:28px">🎤</span><div><h2>قدّم نفسك واتكلم بثقة</h2><p>كل يوم خطوة، لحد ما الكلام مع أي حد يبقى سهل.</p></div></div>' +
-      '<div class="chero-stats"><div><b>' + esc(C.name) + '</b><small>مستوى ثقتك</small></div><div><b class="num">🔥 ' + sd + '</b><small>يوم كلام متواصل</small></div><div><b class="num">' + unlocked + "/" + SCENES.length + '</b><small>مواقف مفتوحة</small></div></div>' +
+      '<div class="chero" style="--c1:#7B61F0;--c2:#3D2BA8"><div class="row" style="gap:12px;align-items:center"><span class="feat-ic" style="font-size:28px">' + ic("mic") + '</span><div><h2>قدّم نفسك واتكلم بثقة</h2><p>كل يوم خطوة، لحد ما الكلام مع أي حد يبقى سهل.</p></div></div>' +
+      '<div class="chero-stats"><div><b>' + esc(C.name) + '</b><small>مستوى ثقتك</small></div><div><b class="num">' + ic("flame") + ' ' + sd + '</b><small>يوم كلام متواصل</small></div><div><b class="num">' + unlocked + "/" + SCENES.length + '</b><small>مواقف مفتوحة</small></div></div>' +
       '<span class="bar"><i style="width:' + C.pct + '%"></i></span></div>' +
-      '<div class="card"><div class="row between"><h3 style="margin:0">✍️ تقديمي الشخصي</h3>' + (hasP ? '<span class="chip">جاهز</span>' : "") + "</div>" +
+      '<div class="card"><div class="row between"><h3 style="margin:0">' + ic("pen") + ' تقديمي الشخصي</h3>' + (hasP ? '<span class="chip">جاهز</span>' : "") + "</div>" +
       '<p class="muted" style="font-size:14px;margin-block:6px 12px">' + (hasP ? "تقديمك بـ3 أشكال: ودّي، مهني، ومقابلة عمل. اسمعه واتدرب عليه بصوتك." : "جاوب على أسئلة بسيطة، وأنا أكتبلك تقديم احترافي بالإنجليزي عن نفسك.") + "</p>" +
       '<div class="row wrapr">' + (hasP ? '<button class="btn" data-act="intro-go" data-v="mine">اعرض تقديمي</button><button class="btn alt" data-act="intro-go" data-v="build">عدّل بياناتي</button>' : '<button class="btn" data-act="intro-go" data-v="build">ابني تقديمي</button>') + "</div></div>" +
-      '<div class="card"><div class="row between"><h3 style="margin:0">☀️ تحدي الكلام اليومي</h3>' + (doneToday ? '<span class="chip">✓ النهارده</span>' : "") + "</div>" +
+      '<div class="card"><div class="row between"><h3 style="margin:0">' + ic("sun") + ' تحدي الكلام اليومي</h3>' + (doneToday ? '<span class="chip">✓ النهارده</span>' : "") + "</div>" +
       '<p dir="ltr" lang="en" style="font-weight:700;margin-block:8px 2px">' + esc(dp[0]) + '</p><p class="muted" style="font-size:14px;margin-block-end:12px">' + esc(dp[1]) + " · دقيقة واحدة</p>" +
       '<button class="btn" data-act="intro-go" data-v="daily">' + (doneToday ? "اتكلم تاني" : "ابدأ التحدي") + "</button></div>" +
-      '<div class="sec-h">🎭 مواقف حقيقية</div><p class="muted" style="font-size:14px;margin-block:-4px 12px">اختار أحسن رد، وبعدين قوله بصوتك. الردود مكتوبة ببياناتك' + (hasP ? "" : " (ابني تقديمك الأول عشان تبقى عنك)") + ".</p>" +
+      '<div class="sec-h">' + ic("users") + ' مواقف حقيقية</div><p class="muted" style="font-size:14px;margin-block:-4px 12px">اختار أحسن رد، وبعدين قوله بصوتك. الردود مكتوبة ببياناتك' + (hasP ? "" : " (ابني تقديمك الأول عشان تبقى عنك)") + ".</p>" +
       '<div class="gtiles">' + scenes + "</div>" +
-      '<button class="card" data-act="intro-go" data-v="phrases" style="width:100%;text-align:start;margin-block-start:12px;font:inherit;color:inherit;cursor:pointer"><h3 style="margin:0">💬 عبارات ذهبية</h3><p class="muted" style="font-size:14px;margin-block-start:4px">جمل جاهزة تفتح بيها كلام، تكمّله، أو تقفله بلطف.</p></button>';
+      '<button class="card" data-act="intro-go" data-v="phrases" style="width:100%;text-align:start;margin-block-start:12px;font:inherit;color:inherit;cursor:pointer"><h3 style="margin:0">' + ic("chat") + ' عبارات ذهبية</h3><p class="muted" style="font-size:14px;margin-block-start:4px">جمل جاهزة تفتح بيها كلام، تكمّله، أو تقفله بلطف.</p></button>';
   }
 
   function chipsHTML(field, list, multi, max) {
@@ -327,7 +327,7 @@
       return '<input class="inp" id="' + id + '" data-intro-f="' + f + '" dir="ltr" lang="en" type="' + (type || "text") + '" placeholder="' + esc(ph) + '" value="' + esc(p[f] || "") + '" autocomplete="off">';
     }
     return back("hub", "رجوع") +
-      '<div class="card"><h2>✍️ ابني تقديمك</h2><p class="muted" style="font-size:14px">اكتب الأسماء بالإنجليزي، والباقي اختاره بالعربي وأنا أترجمه.</p>' +
+      '<div class="card"><h2>' + ic("pen") + ' ابني تقديمك</h2><p class="muted" style="font-size:14px">اكتب الأسماء بالإنجليزي، والباقي اختاره بالعربي وأنا أترجمه.</p>' +
       '<label class="field">اسمك' + inp("iName", "name", "Ahmed") + "</label>" +
       '<div class="row" style="gap:10px"><label class="field grow">مدينتك' + inp("iCity", "city", "Cairo") + '</label><label class="field grow">بلدك' + inp("iCountry", "country", "Egypt") + "</label></div>" +
       '<div class="field">شغلك</div>' + chipsHTML("job", IJOBS, false) +
@@ -336,7 +336,7 @@
       '<div class="field">هواياتك (اختار 2)</div>' + chipsHTML("hobbies", IHOBBIES, true, 2) +
       '<div class="field">صفاتك (اختار 2)</div>' + chipsHTML("traits", ITRAITS, true, 2) +
       '<div class="field">هدفك دلوقتي</div>' + chipsHTML("goal", IGOALS, false) +
-      '<button class="btn" style="width:100%;margin-block-start:16px" data-act="intro-save">✨ اعمل تقديمي</button></div>';
+      '<button class="btn" style="width:100%;margin-block-start:16px" data-act="intro-save">' + ic("sparkles") + ' اعمل تقديمي</button></div>';
   }
   function mineHTML() {
     var u = ui(), lines = introLines(u.style);
@@ -349,9 +349,9 @@
       '<div class="ilines">' + lines.map(function (l) {
         return '<div class="iline"><div class="grow"><p dir="ltr" lang="en">' + esc(l.en) + '</p><small class="muted">' + esc(l.ar) + "</small></div>" + spkBtn(l.en) + "</div>";
       }).join("") + "</div>" +
-      '<div class="row wrapr" style="margin-block-start:14px"><button class="btn" data-act="intro-practice" data-v="read">🎤 اتدرّب جملة جملة</button>' +
-      '<button class="btn alt" data-act="intro-practice" data-v="memory">🧠 من الذاكرة</button></div></div>' +
-      '<div class="card"><h3>💡 نصايح وإنت بتقدّم نفسك</h3><ul class="itips"><li>ابتسم وبص في عين اللي قدامك.</li><li>اتكلم ببطء، السرعة مش شطارة.</li><li>خلّص بسؤال: <span dir="ltr" lang="en">What about you?</span> عشان الكلام يكمّل.</li><li>مش لازم تحفظه حرفيًا، الفكرة أهم من الكلمات.</li></ul></div>';
+      '<div class="row wrapr" style="margin-block-start:14px"><button class="btn" data-act="intro-practice" data-v="read">' + ic("mic") + ' اتدرّب جملة جملة</button>' +
+      '<button class="btn alt" data-act="intro-practice" data-v="memory">' + ic("brain") + ' من الذاكرة</button></div></div>' +
+      '<div class="card"><h3>' + ic("bulb") + ' نصايح وإنت بتقدّم نفسك</h3><ul class="itips"><li>ابتسم وبص في عين اللي قدامك.</li><li>اتكلم ببطء، السرعة مش شطارة.</li><li>خلّص بسؤال: <span dir="ltr" lang="en">What about you?</span> عشان الكلام يكمّل.</li><li>مش لازم تحفظه حرفيًا، الفكرة أهم من الكلمات.</li></ul></div>';
   }
 
   /* sentence-by-sentence practice */
@@ -366,16 +366,16 @@
     var hide = pr.mode === "memory" && !pr.reveal && pr.res == null;
     var mic = speechOK();
     return back("mine", "تقديمي") +
-      '<div class="gtop"><b>' + (pr.mode === "memory" ? "🧠 من الذاكرة" : "🎤 اتدرّب") + '</b><span class="num">' + (pr.i + 1) + "/" + lines.length + "</span></div>" +
+      '<div class="gtop"><b>' + (pr.mode === "memory" ? "" + ic("brain") + " من الذاكرة" : "" + ic("mic") + " اتدرّب") + '</b><span class="num">' + (pr.i + 1) + "/" + lines.length + "</span></div>" +
       '<div class="card" style="text-align:center">' +
       '<p class="muted" style="font-size:15px;margin-block-end:8px">' + esc(l.ar) + "</p>" +
-      (hide ? '<p class="muted" style="margin-block:14px">قولها بالإنجليزي من دماغك 👇</p><button class="btn sm alt" data-act="prac-reveal">💡 وريني الجملة</button>'
+      (hide ? '<p class="muted" style="margin-block:14px">قولها بالإنجليزي من دماغك 👇</p><button class="btn sm alt" data-act="prac-reveal">' + ic("bulb") + ' وريني الجملة</button>'
         : '<p dir="ltr" lang="en" style="font-size:20px;font-weight:700;margin-block:6px 10px">' + esc(l.en) + "</p>" + spkBtn(l.en)) +
       (pr.heard ? '<p class="iheard ' + (pr.res >= 0.8 ? "ok" : "bad") + '" dir="ltr" lang="en">' + esc(pr.heard) + "</p>" : "") +
       (pr.res != null ? '<p style="font-weight:700;margin-block-start:8px;color:' + (pr.res >= 0.8 ? "var(--done-deep)" : "var(--miss-deep)") + '">' + (pr.res >= 0.8 ? "✓ ممتاز!" : "قريب، جرّب تاني بهدوء (" + Math.round(pr.res * 100) + "%)") + "</p>" : "") +
       "</div>" +
       '<div class="row" style="gap:10px">' +
-      (mic ? '<button class="btn gbig" data-act="prac-mic"' + (pr.listening ? " disabled" : "") + ">" + (pr.listening ? "بسمعك…" : "🎤 قول الجملة") + "</button>"
+      (mic ? '<button class="btn gbig" data-act="prac-mic"' + (pr.listening ? " disabled" : "") + ">" + (pr.listening ? "بسمعك…" : "" + ic("mic") + " قول الجملة") + "</button>"
         : '<button class="btn gbig" data-act="prac-self" data-v="1">✓ قلتها صح</button>') +
       '<button class="btn alt gbig" data-act="prac-next">' + (pr.res != null && pr.res >= 0.8 ? "التالي ←" : "تخطّي") + "</button></div>" +
       (mic ? "" : '<p class="muted" style="font-size:12px;text-align:center;margin-block-start:8px">المتصفح ده مفيهوش ميكروفون للتعرّف على الكلام، قولها بصوت عالي وقيّم نفسك.</p>');
@@ -416,7 +416,7 @@
       return back("hub", "قدّم نفسك") + '<div class="card gend"><div class="gend-stars">' + [1, 2, 3].map(function (n) { return '<span class="' + (n <= sc.stars ? "on" : "") + '">★</span>'; }).join("") + "</div>" +
         "<h2>" + (sc.stars === 3 ? "محادثة ممتازة! 🎉" : sc.stars === 2 ? "كويس جدًا 👍" : "كمّل تدريب 💪") + "</h2>" +
         '<p class="muted">' + esc(s.t) + " · " + sc.pts + "/" + max + " · قلت " + sc.spoke + " ردود بصوتك · +" + sc.xp + " نقطة ثقة</p>" +
-        (sc.stars >= 2 && SCENES.indexOf(s) < SCENES.length - 1 && !((idata().sc[SCENES[SCENES.indexOf(s) + 1].k]) || {}).stars ? '<p class="glvlup">🔓 فتحت موقف «' + esc(SCENES[SCENES.indexOf(s) + 1].t) + "»</p>" : "") +
+        (sc.stars >= 2 && SCENES.indexOf(s) < SCENES.length - 1 && !((idata().sc[SCENES[SCENES.indexOf(s) + 1].k]) || {}).stars ? '<p class="glvlup">' + ic("unlock") + ' فتحت موقف «' + esc(SCENES[SCENES.indexOf(s) + 1].t) + "»</p>" : "") +
         '<div class="gmissed"><b>المحادثة المثالية:</b>' + s.turns.map(function (t) {
           var best = t.o.filter(function (o) { return o.s === 2; })[0];
           return '<div dir="ltr" lang="en" class="ichat-sum"><span>' + esc(s.who) + ": " + esc(t.q) + "</span><b>You: " + esc(fill(best.t, V)) + "</b></div>";
@@ -441,7 +441,7 @@
           '<div class="card" style="text-align:center;margin-block-start:10px"><p class="muted" style="font-size:13px">قول الرد ده بصوتك (+1 بونص):</p><p dir="ltr" lang="en" style="font-weight:700;margin-block:6px">' + esc(bestTxt) + "</p>" +
           (sc.heard ? '<p class="iheard ' + (sc.said ? "ok" : "bad") + '" dir="ltr" lang="en">' + esc(sc.heard) + "</p>" : "") +
           '<div class="row" style="gap:10px;justify-content:center;margin-block-start:8px">' + spkBtn(bestTxt) +
-          (speechOK() ? '<button class="btn sm" data-act="scene-mic"' + (sc.listening || sc.said ? " disabled" : "") + ">" + (sc.said ? "✓ برافو" : sc.listening ? "بسمعك…" : "🎤 قولها") + "</button>"
+          (speechOK() ? '<button class="btn sm" data-act="scene-mic"' + (sc.listening || sc.said ? " disabled" : "") + ">" + (sc.said ? "✓ برافو" : sc.listening ? "بسمعك…" : "" + ic("mic") + " قولها") + "</button>"
             : '<button class="btn sm" data-act="scene-self"' + (sc.said ? " disabled" : "") + ">" + (sc.said ? "✓ برافو" : "✓ قلتها بصوت عالي") + "</button>") + "</div></div>" +
           '<button class="btn" style="width:100%;margin-block-start:10px" data-act="scene-next">' + (sc.i + 1 >= s.turns.length ? "النتيجة" : "كمّل المحادثة ←") + "</button>");
   }
@@ -479,7 +479,7 @@
   }
 
   function phrasesHTML() {
-    return back("hub", "رجوع") + '<div class="sec-h">💬 عبارات ذهبية</div>' + PHRASES.map(function (g) {
+    return back("hub", "رجوع") + '<div class="sec-h">' + ic("chat") + ' عبارات ذهبية</div>' + PHRASES.map(function (g) {
       return '<div class="card"><h3>' + esc(g.t) + "</h3>" + g.l.map(function (p) {
         return '<div class="iline"><div class="grow"><p dir="ltr" lang="en">' + esc(p[0]) + '</p><small class="muted">' + esc(p[1]) + "</small></div>" + spkBtn(p[0].replace(/…/g, "")) + "</div>";
       }).join("") + "</div>";
@@ -508,10 +508,10 @@
       body = '<div class="card" style="text-align:center"><p dir="ltr" lang="en" style="font-size:20px;font-weight:700">' + esc(p[0]) + '</p><p class="muted">' + esc(p[1]) + "</p>" +
         '<div class="idial' + (dc.state === "rec" ? " on" : "") + '"><b class="num" id="dLeft">' + dc.left + "</b><small>ثانية</small></div>" +
         (dc.state === "rec" ? '<p class="iheard" dir="ltr" lang="en" id="dText">' + esc(dc.text || "…") + "</p>" : '<p class="muted" style="font-size:13px">فكّر 10 ثواني في 3 أفكار، وبعدين ابدأ. مش مهم الغلط، المهم تفضل تتكلم.</p>') +
-        (dc.state === "rec" ? '<button class="btn alt" data-act="talk-stop">خلّصت</button>' : '<button class="btn gbig" data-act="talk-start">' + (mic ? "🎤 ابدأ الكلام" : "⏱ ابدأ الدقيقة") + "</button>") + "</div>" +
-        '<div class="card"><h3>💡 أفكار تساعدك</h3><ul class="itips"><li dir="ltr" lang="en">First, … Then, … Finally, …</li><li dir="ltr" lang="en">I think… because…</li><li dir="ltr" lang="en">For example, …</li></ul></div>';
+        (dc.state === "rec" ? '<button class="btn alt" data-act="talk-stop">خلّصت</button>' : '<button class="btn gbig" data-act="talk-start">' + (mic ? "" + ic("mic") + " ابدأ الكلام" : "" + ic("timer") + " ابدأ الدقيقة") + "</button>") + "</div>" +
+        '<div class="card"><h3>' + ic("bulb") + ' أفكار تساعدك</h3><ul class="itips"><li dir="ltr" lang="en">First, … Then, … Finally, …</li><li dir="ltr" lang="en">I think… because…</li><li dir="ltr" lang="en">For example, …</li></ul></div>';
     }
-    return back("hub", "رجوع") + '<div class="sec-h">☀️ تحدي الكلام اليومي</div>' + body;
+    return back("hub", "رجوع") + '<div class="sec-h">' + ic("sun") + ' تحدي الكلام اليومي</div>' + body;
   }
   function dailyStart() {
     var dc = ui().dc = { state: "rec", left: 60, text: "", t0: Date.now() };

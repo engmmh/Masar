@@ -26,6 +26,72 @@
 
 
   /* ---------------- helpers ---------------- */
+  /* ---------------- line icon set ---------------- */
+  // One consistent stroke icon family (24px grid, 2px stroke) used for buttons,
+  // tiles and headings app-wide instead of mixed emoji. Size follows the text
+  // (1.15em) unless a container sets it.
+  var IC = {
+    "gamepad": "<line x1=\"6\" x2=\"10\" y1=\"12\" y2=\"12\"/><line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\"/><line x1=\"15\" x2=\"15.01\" y1=\"13\" y2=\"13\"/><line x1=\"18\" x2=\"18.01\" y1=\"11\" y2=\"11\"/><rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\"/>",
+    "mic": "<path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z\"/><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"/><line x1=\"12\" x2=\"12\" y1=\"19\" y2=\"22\"/>",
+    "chat": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/>",
+    "chats": "<path d=\"M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z\"/><path d=\"M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1\"/>",
+    "target": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><circle cx=\"12\" cy=\"12\" r=\"6\"/><circle cx=\"12\" cy=\"12\" r=\"2\"/>",
+    "pen": "<path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z\"/>",
+    "puzzle": "<path d=\"M19.44 14.3a2 2 0 0 0-2.12-.48 2 2 0 1 1-2.56-2.56 2 2 0 0 0-.48-2.12L12 6.85a2 2 0 0 0-2.12-.48 2 2 0 1 1-2.56-2.56A2 2 0 0 0 6.85 1.7L4 4.56a2 2 0 0 0 0 2.83L16.61 20a2 2 0 0 0 2.83 0l2.85-2.85a2 2 0 0 0 0-2.83z\"/>",
+    "zap": "<polygon points=\"13 2 3 14 12 14 11 22 21 10 12 10 13 2\"/>",
+    "headphones": "<path d=\"M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3\"/>",
+    "type": "<polyline points=\"4 7 4 4 20 4 20 7\"/><line x1=\"9\" x2=\"15\" y1=\"20\" y2=\"20\"/><line x1=\"12\" x2=\"12\" y1=\"4\" y2=\"20\"/>",
+    "flame": "<path d=\"M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z\"/>",
+    "book": "<path d=\"M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z\"/><path d=\"M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z\"/>",
+    "compass": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><polygon points=\"16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76\"/>",
+    "beads": "<circle cx=\"12\" cy=\"4\" r=\"2\"/><circle cx=\"17.5\" cy=\"7\" r=\"2\"/><circle cx=\"17.5\" cy=\"13\" r=\"2\"/><circle cx=\"12\" cy=\"16\" r=\"2\"/><circle cx=\"6.5\" cy=\"13\" r=\"2\"/><circle cx=\"6.5\" cy=\"7\" r=\"2\"/><path d=\"M12 18v4\"/>",
+    "calc": "<rect x=\"4\" y=\"2\" width=\"16\" height=\"20\" rx=\"2\"/><line x1=\"8\" x2=\"16\" y1=\"6\" y2=\"6\"/><line x1=\"8\" x2=\"8.01\" y1=\"14\" y2=\"14\"/><line x1=\"12\" x2=\"12.01\" y1=\"14\" y2=\"14\"/><line x1=\"16\" x2=\"16.01\" y1=\"14\" y2=\"14\"/><line x1=\"8\" x2=\"8.01\" y1=\"18\" y2=\"18\"/><line x1=\"12\" x2=\"12.01\" y1=\"18\" y2=\"18\"/><line x1=\"16\" x2=\"16.01\" y1=\"18\" y2=\"18\"/>",
+    "scale": "<path d=\"m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\"/><path d=\"m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z\"/><path d=\"M7 21h10\"/><path d=\"M12 3v18\"/><path d=\"M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2\"/>",
+    "receipt": "<path d=\"M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z\"/><path d=\"M16 8h-6M16 12h-6M14 16h-4\"/>",
+    "bulb": "<path d=\"M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5\"/><path d=\"M9 18h6M10 22h4\"/>",
+    "trophy": "<path d=\"M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22\"/><path d=\"M18 2H6v7a6 6 0 0 0 12 0V2Z\"/>",
+    "star": "<polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/>",
+    "bell": "<path d=\"M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0\"/>",
+    "bookmark": "<path d=\"m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z\"/>",
+    "copy": "<rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\"/><path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\"/>",
+    "vol": "<polygon points=\"11 5 6 9 2 9 2 15 6 15 11 19 11 5\"/><path d=\"M15.54 8.46a5 5 0 0 1 0 7.07M19.07 4.93a10 10 0 0 1 0 14.14\"/>",
+    "play": "<polygon points=\"6 3 20 12 6 21 6 3\"/>",
+    "pause": "<rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\"/>",
+    "skip": "<polygon points=\"5 4 15 12 5 20 5 4\"/><line x1=\"19\" x2=\"19\" y1=\"5\" y2=\"19\"/>",
+    "repeat": "<path d=\"m17 2 4 4-4 4\"/><path d=\"M3 11v-1a4 4 0 0 1 4-4h14\"/><path d=\"m7 22-4-4 4-4\"/><path d=\"M21 13v1a4 4 0 0 1-4 4H3\"/>",
+    "help": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01\"/>",
+    "brain": "<path d=\"M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 4.44-1.04Z\"/><path d=\"M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-4.44-1.04Z\"/>",
+    "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41\"/>",
+    "sunrise": "<path d=\"M12 2v8M4.93 10.93l1.41 1.41M2 18h2M20 18h2M19.07 10.93l-1.41 1.41M22 22H2M8 6l4-4 4 4M16 18a4 4 0 0 0-8 0\"/>",
+    "moon": "<path d=\"M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z\"/>",
+    "sparkles": "<path d=\"m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z\"/>",
+    "pin": "<path d=\"M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z\"/><circle cx=\"12\" cy=\"10\" r=\"3\"/>",
+    "users": "<path d=\"M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2\"/><circle cx=\"9\" cy=\"7\" r=\"4\"/><path d=\"M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75\"/>",
+    "briefcase": "<rect width=\"20\" height=\"14\" x=\"2\" y=\"7\" rx=\"2\"/><path d=\"M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16\"/>",
+    "laptop": "<path d=\"M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16\"/>",
+    "plane": "<path d=\"M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z\"/>",
+    "coffee": "<path d=\"M17 8h1a4 4 0 1 1 0 8h-1\"/><path d=\"M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z\"/><path d=\"M6 2v2M10 2v2M14 2v2\"/>",
+    "bag": "<path d=\"M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z\"/><path d=\"M3 6h18\"/><path d=\"M16 10a4 4 0 0 1-8 0\"/>",
+    "car": "<path d=\"M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2\"/><circle cx=\"7\" cy=\"17\" r=\"2\"/><path d=\"M9 17h6\"/><circle cx=\"17\" cy=\"17\" r=\"2\"/>",
+    "phone": "<path d=\"M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z\"/>",
+    "health": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/><path d=\"M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27\"/>",
+    "heart": "<path d=\"M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z\"/>",
+    "home": "<path d=\"M3 11l9-8 9 8\"/><path d=\"M5 10v10h14V10\"/>",
+    "smile": "<circle cx=\"12\" cy=\"12\" r=\"10\"/><path d=\"M8 14s1.5 2 4 2 4-2 4-2\"/><line x1=\"9\" x2=\"9.01\" y1=\"9\" y2=\"9\"/><line x1=\"15\" x2=\"15.01\" y1=\"9\" y2=\"9\"/>",
+    "flag": "<path d=\"M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z\"/><line x1=\"4\" x2=\"4\" y1=\"22\" y2=\"15\"/>",
+    "eye": "<path d=\"M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z\"/><circle cx=\"12\" cy=\"12\" r=\"3\"/>",
+    "timer": "<line x1=\"10\" x2=\"14\" y1=\"2\" y2=\"2\"/><line x1=\"12\" x2=\"15\" y1=\"14\" y2=\"11\"/><circle cx=\"12\" cy=\"14\" r=\"8\"/>",
+    "snail": "<path d=\"M2 13a6 6 0 1 0 12 0 4 4 0 1 0-8 0 2 2 0 0 0 4 0\"/><circle cx=\"10\" cy=\"13\" r=\"8\"/><path d=\"M2 21h12c4.4 0 8-3.6 8-8V7a2 2 0 1 0-4 0v6\"/><path d=\"M18 3 19.1 5.2M22 3l-1.1 2.2\"/>",
+    "kaaba": "<path d=\"M4 7l8-4 8 4v11l-8 4-8-4Z\"/><path d=\"M4 7l8 4 8-4M12 11v11\"/><path d=\"M4 10.5l8 4 8-4\"/>",
+    "unlock": "<rect width=\"18\" height=\"11\" x=\"3\" y=\"11\" rx=\"2\"/><path d=\"M7 11V7a5 5 0 0 1 9.9-1\"/>",
+    "wallet": "<path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\"/><path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\"/>",
+    "chart": "<path d=\"M3 3v18h18\"/><path d=\"M18 17V9M13 17V5M8 17v-3\"/>",
+    "download": "<path d=\"M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4\"/><polyline points=\"7 10 12 15 17 10\"/><line x1=\"12\" x2=\"12\" y1=\"15\" y2=\"3\"/>",
+    "backspace": "<path d=\"M20 5H9l-7 7 7 7h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2Z\"/><path d=\"m18 9-6 6M12 9l6 6\"/>"
+    };
+  function ic(name, cls) {
+    return '<svg class="i' + (cls ? " " + cls : "") + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (IC[name] || "") + "</svg>";
+  }
   function $(s) { return document.querySelector(s); }
   function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
   function fmtEn(s) { return esc(s).replace(/\{([^}]+)\}/g, '<span class="en">$1</span>'); }
@@ -226,7 +292,7 @@
   function pushCardHTML() {
     if (!pushSupported()) return "";
     var on = pushLocalFlag();
-    return '<div class="card row between" style="align-items:center"><div><h3 style="margin:0 0 2px">🔔 تذكير يومي</h3><p class="muted" style="font-size:13px">' +
+    return '<div class="card row between" style="align-items:center"><div><h3 style="margin:0 0 2px">' + ic("bell") + ' تذكير يومي</h3><p class="muted" style="font-size:13px">' +
       (on ? "مفعّل — هتوصلك كلمة أو جملة إنجليزي كل فترة." : "فعّله عشان توصلك كلمة أو جملة إنجليزي جديدة بانتظام.") + '</p></div>' +
       (on ? '<button class="btn sm alt" data-act="push-off">إيقاف</button>' : '<button class="btn sm" data-act="push-on">تفعيل</button>') + "</div>";
   }
@@ -795,9 +861,9 @@
   function weeklyChallengeCardHTML(now) {
     var w = currentWeeklyChallenge(now);
     if (w && w.done) {
-      return '<div class="card"><h3>🏆 تحدي الأسبوع</h3><p class="muted" style="margin-block-start:6px">خلّصته بنتيجة <span class="num">' + w.score + '%</span>. تحدي جديد يوم السبت الجاي.</p></div>';
+      return '<div class="card"><h3>' + ic("trophy") + ' تحدي الأسبوع</h3><p class="muted" style="margin-block-start:6px">خلّصته بنتيجة <span class="num">' + w.score + '%</span>. تحدي جديد يوم السبت الجاي.</p></div>';
     }
-    return '<div class="card"><h3>🏆 تحدي الأسبوع</h3><p class="muted" style="margin-block-start:6px">10 أسئلة من كل اللي تعلّمته، بمكافأة نقاط إضافية — متاح لحد ما تحاوله.</p><button class="btn alt" data-act="weekly-challenge-start" style="margin-block-start:8px">ابدأ التحدي</button></div>';
+    return '<div class="card"><h3>' + ic("trophy") + ' تحدي الأسبوع</h3><p class="muted" style="margin-block-start:6px">10 أسئلة من كل اللي تعلّمته، بمكافأة نقاط إضافية — متاح لحد ما تحاوله.</p><button class="btn alt" data-act="weekly-challenge-start" style="margin-block-start:8px">ابدأ التحدي</button></div>';
   }
   function ringSVG(sts) {
     var r = 58, C = 2 * Math.PI * r, gap = 9, seg = C / 5 - gap, s = '<svg viewBox="0 0 140 140" class="ring" aria-hidden="true">';
@@ -1072,7 +1138,15 @@
         var el = $("#p-" + k), st = el.scrollTop; el.innerHTML = views[k]; el.scrollTop = st; panelCache[k] = views[k];
       }
     });
-    if (keepId) { var el2 = document.getElementById(keepId); if (el2 && el2.tagName === "INPUT" && el2.type !== "date") { el2.value = keepVal; el2.focus(); try { el2.setSelectionRange(keepSel, keepSel); } catch (e) { } } }
+    if (keepId) {
+      var el2 = document.getElementById(keepId);
+      if (el2 && el2.tagName === "INPUT" && el2.type !== "date") {
+        el2.focus(); el2.value = keepVal;
+        // Number inputs report no selection; re-setting the value after focus
+        // leaves the caret at the end instead of the start.
+        if (keepSel != null) { try { el2.setSelectionRange(keepSel, keepSel); } catch (e) { } }
+      }
+    }
     var h = hijri(now.key); $("#dates").textContent = greg(now.key) + (h ? " · " + h : "");
     $("#lockbtn").hidden = state.mode !== "supa";
     markTabs();

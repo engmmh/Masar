@@ -6,7 +6,7 @@
   // the stage (hear → build → fill → recall from Arabic → use in a situation)
   // and the next review moves further out, so it ends up in long-term memory.
   var PH_CATS = [
-    { k: "greet", ico: "👋", t: "التحيات والدردشة", l: [
+    { k: "greet", ico: "smile", t: "التحيات والدردشة", l: [
       ["How's it going?", "عامل إيه؟ أخبارك إيه؟", "لما تقابل حد تعرفه", "going"],
       ["Long time no see!", "بقالي كتير مشفتكش!", "لما تقابل حد بعد غياب طويل", "Long"],
       ["What have you been up to?", "كنت بتعمل إيه الفترة اللي فاتت؟", "لما تسأل حد عن أخباره بعد غياب", "up"],
@@ -17,7 +17,7 @@
       ["Say hi to your family for me.", "سلّملي على أهلك.", "وإنت بتودّع صاحبك", "family"],
       ["Sorry, I didn't catch your name.", "آسف، ملحقتش أسمع اسمك.", "لما حد قال اسمه وإنت مسمعتهوش كويس", "catch"],
       ["It was great to see you.", "كان جميل إني شفتك.", "في آخر مقابلة حلوة مع حد", "great"]] },
-    { k: "work", ico: "💼", t: "في الشغل", l: [
+    { k: "work", ico: "briefcase", t: "في الشغل", l: [
       ["I'll get back to you on that.", "هرجعلك في الموضوع ده.", "لما تتسأل سؤال ومحتاج وقت تتأكد", "back"],
       ["Could you send me the details by email?", "ممكن تبعتلي التفاصيل على الإيميل؟", "لما حد يشرحلك حاجة كبيرة بالكلام", "details"],
       ["I'm working on it right now.", "أنا شغال عليها دلوقتي.", "لما مديرك يسأل عن مهمة لسه بتعملها", "working"],
@@ -28,7 +28,7 @@
       ["Could you walk me through it?", "ممكن تشرحهالي خطوة خطوة؟", "لما حاجة جديدة عليك ومحتاج شرح مفصّل", "walk"],
       ["I'm afraid I can't make it to the meeting.", "للأسف مش هقدر أحضر الاجتماع.", "لما تعتذر عن اجتماع بأدب", "afraid"],
       ["Thanks for your help, I really appreciate it.", "شكرًا على مساعدتك، بجد مقدّر ده.", "لما زميل ساعدك في حاجة", "appreciate"]] },
-    { k: "food", ico: "☕", t: "المطعم والكافيه", l: [
+    { k: "food", ico: "coffee", t: "المطعم والكافيه", l: [
       ["Can I see the menu, please?", "ممكن أشوف المنيو لو سمحت؟", "أول ما تقعد في مطعم", "menu"],
       ["I'd like a coffee with milk, please.", "عايز قهوة بلبن لو سمحت.", "وإنت بتطلب في الكافيه", "like"],
       ["What do you recommend?", "ترشّحلي إيه؟", "لما مش عارف تطلب إيه", "recommend"],
@@ -39,7 +39,7 @@
       ["This is delicious!", "ده طعمه تحفة!", "لما الأكل يعجبك", "delicious"],
       ["Excuse me, this isn't what I ordered.", "لو سمحت، ده مش اللي أنا طلبته.", "لما يجيلك طلب غلط", "ordered"],
       ["Can I pay by card?", "ينفع أدفع بالكارت؟", "قبل ما تدفع ومش معاك كاش", "card"]] },
-    { k: "shop", ico: "🛍️", t: "التسوق", l: [
+    { k: "shop", ico: "bag", t: "التسوق", l: [
       ["How much is this?", "ده بكام؟", "لما تسأل عن سعر حاجة", "much"],
       ["Do you have this in a smaller size?", "عندك ده بمقاس أصغر؟", "لما اللبس طلع واسع عليك", "size"],
       ["I'm just looking, thanks.", "بتفرّج بس، شكرًا.", "لما البيّاع يعرض مساعدته وإنت مش محتاج", "looking"],
@@ -50,7 +50,7 @@
       ["Where can I find the milk?", "ألاقي اللبن فين؟", "في السوبر ماركت ومش لاقي حاجة", "find"],
       ["Could I have a receipt, please?", "ممكن الفاتورة لو سمحت؟", "بعد ما تدفع ومحتاج إثبات", "receipt"],
       ["That's a bit too expensive for me.", "ده غالي عليّا شوية.", "لما السعر أعلى من ميزانيتك", "expensive"]] },
-    { k: "move", ico: "🚕", t: "المواصلات والطريق", l: [
+    { k: "move", ico: "car", t: "المواصلات والطريق", l: [
       ["Excuse me, how do I get to the station?", "لو سمحت، أروح المحطة إزاي؟", "لما تكون تايه ومحتاج توصل مكان", "station"],
       ["Is it far from here?", "هو بعيد من هنا؟", "لما حد يوصفلك مكان", "far"],
       ["Can you take me to this address?", "ممكن توصلني العنوان ده؟", "وإنت راكب تاكسي", "address"],
@@ -61,7 +61,7 @@
       ["Which bus goes to downtown?", "أنهي أتوبيس بيروح وسط البلد؟", "في محطة الأتوبيس", "bus"],
       ["It's within walking distance.", "المكان قريب، ينفع تروحه مشي.", "لما تقول لحد إن المكان قريب", "walking"],
       ["I think I'm lost.", "أعتقد إني تهت.", "لما تكتشف إنك ماشي غلط", "lost"]] },
-    { k: "travel", ico: "✈️", t: "السفر والفندق", l: [
+    { k: "travel", ico: "plane", t: "السفر والفندق", l: [
       ["I have a reservation under the name Ahmed.", "عندي حجز باسم أحمد.", "أول ما توصل الفندق", "reservation"],
       ["What time is check-out?", "معاد تسليم الأوضة الساعة كام؟", "لما تحب تعرف لازم تمشي إمتى", "check-out"],
       ["Is breakfast included?", "الفطار ضمن الحجز؟", "لما تسأل عن الفطار في الفندق", "included"],
@@ -72,7 +72,7 @@
       ["Can you recommend a good place to visit?", "ترشّحلي مكان حلو أزوره؟", "لما تسأل موظف الاستقبال عن أماكن", "visit"],
       ["I'm here on business.", "أنا هنا في شغل.", "لما حد يسألك في المطار جاي ليه", "business"],
       ["Could you call me a taxi, please?", "ممكن تطلبلي تاكسي لو سمحت؟", "في الاستقبال قبل ما تخرج", "taxi"]] },
-    { k: "phone", ico: "📞", t: "التليفون والمواعيد", l: [
+    { k: "phone", ico: "phone", t: "التليفون والمواعيد", l: [
       ["Hello, this is Ahmed speaking.", "ألو، معاك أحمد.", "أول ما تتصل في مكالمة رسمية", "speaking"],
       ["Could you speak a little slower, please?", "ممكن تتكلم أبطأ شوية لو سمحت؟", "لما اللي بيكلمك سريع ومش فاهمه", "slower"],
       ["Can I call you back later?", "ممكن أكلمك تاني بعدين؟", "لما حد يتصل وإنت مشغول", "back"],
@@ -83,7 +83,7 @@
       ["I need to reschedule our meeting.", "محتاج أغيّر معاد اجتماعنا.", "لما مش هتقدر تيجي في المعاد المتفق عليه", "reschedule"],
       ["Let me write that down.", "استنى أكتب ده.", "لما حد بيمليك رقم أو عنوان", "write"],
       ["Thanks for calling, have a good day.", "شكرًا على اتصالك، يومك سعيد.", "في آخر مكالمة", "calling"]] },
-    { k: "health", ico: "🩺", t: "الصحة والدكتور", l: [
+    { k: "health", ico: "health", t: "الصحة والدكتور", l: [
       ["I don't feel well today.", "مش حاسس إني كويس النهارده.", "لما تكون تعبان", "feel"],
       ["I have a headache.", "عندي صداع.", "لما راسك وجعاك", "headache"],
       ["I've had a fever since yesterday.", "عندي سخونية من امبارح.", "وإنت بتشرح للدكتور من إمتى تعبان", "fever"],
@@ -94,7 +94,7 @@
       ["I'm feeling much better now.", "أنا أحسن بكتير دلوقتي.", "لما حد يطمن عليك بعد ما تعبت", "better"],
       ["Get well soon!", "ألف سلامة عليك!", "لما تعرف إن حد تعبان", "soon"],
       ["Do I need a prescription for this?", "محتاج روشتة للدوا ده؟", "في الصيدلية قبل ما تشتري دوا", "prescription"]] },
-    { k: "opinion", ico: "💬", t: "الرأي والنقاش", l: [
+    { k: "opinion", ico: "chats", t: "الرأي والنقاش", l: [
       ["In my opinion, we should wait.", "في رأيي، المفروض نستنى.", "لما تقول رأيك في قرار", "opinion"],
       ["I totally agree with you.", "أنا متفق معاك تمامًا.", "لما حد يقول حاجة إنت مقتنع بيها", "agree"],
       ["I see your point, but I think it's risky.", "فاهم وجهة نظرك، بس شايف إنها مخاطرة.", "لما تختلف مع حد بأدب", "point"],
@@ -105,7 +105,7 @@
       ["To be honest, I prefer the first option.", "بصراحة، أنا أفضّل الاختيار الأول.", "لما تختار بين حاجتين بوضوح", "honest"],
       ["That's exactly what I meant.", "ده بالظبط اللي كنت أقصده.", "لما حد يفهم قصدك صح", "exactly"],
       ["Fair enough.", "ماشي، عندك حق.", "لما تقبل وجهة نظر حد حتى لو مش موافق تمامًا", "Fair"]] },
-    { k: "polite", ico: "🙏", t: "الطلبات والاعتذار", l: [
+    { k: "polite", ico: "heart", t: "الطلبات والاعتذار", l: [
       ["Could you do me a favor?", "ممكن تعملّي خدمة؟", "قبل ما تطلب مساعدة من حد", "favor"],
       ["Would you mind closing the window?", "تمانع تقفل الشباك؟", "لما تطلب حاجة بأدب جدًا", "mind"],
       ["Sorry for the delay.", "آسف على التأخير.", "لما ترد متأخر على رسالة أو توصل متأخر", "delay"],
@@ -116,7 +116,7 @@
       ["You're welcome, anytime.", "العفو، في أي وقت.", "لما حد يشكرك", "anytime"],
       ["I didn't mean to interrupt.", "مكنتش أقصد أقاطعك.", "لما تقاطع حد وهو بيتكلم من غير قصد", "interrupt"],
       ["Is it okay if I leave early today?", "ينفع أمشي بدري النهارده؟", "لما تستأذن من مديرك", "early"]] },
-    { k: "home", ico: "🏠", t: "البيت والروتين", l: [
+    { k: "home", ico: "home", t: "البيت والروتين", l: [
       ["I usually wake up at seven.", "عادةً بصحى الساعة سبعة.", "لما تحكي عن روتينك", "usually"],
       ["I'm running late!", "أنا متأخر!", "لما تكون مستعجل الصبح", "late"],
       ["What's for dinner?", "هناكل إيه على العشا؟", "لما ترجع البيت جعان", "dinner"],
@@ -260,14 +260,14 @@
     var cats = PH_CATS.map(function (c) {
       var done = c.l.filter(function (_, i) { return d.c[c.k + i]; }).length, mast = c.l.filter(function (_, i) { var r = d.c[c.k + i]; return r && r.s >= PH_MAX; }).length;
       return '<button class="gtile" data-act="ph-cat" data-k="' + c.k + '"><span class="gtile-ic">' + c.ico + "</span><b>" + esc(c.t) + '</b><span class="cprog" style="width:100%;--c1:var(--teal);--c2:var(--teal-deep)"><span class="bar"><i style="width:' + Math.round(done / c.l.length * 100) + '%"></i></span><span class="num">' + done + "/" + c.l.length + "</span></span>" +
-        (mast ? '<span class="gtile-best">⭐ ' + mast + " محفوظة</span>" : "") + "</button>";
+        (mast ? '<span class="gtile-best">' + ic("star") + ' ' + mast + " محفوظة</span>" : "") + "</button>";
     }).join("");
     return '<button class="linkbtn" data-act="course-open" data-c="en">← الإنجليزي</button>' +
-      '<div class="chero" style="--c1:#0E9F8E;--c2:#0B5F78"><div class="row" style="gap:12px;align-items:center"><span class="feat-ic" style="font-size:28px">💬</span><div><h2>جمل الحياة اليومية</h2><p>' + st.total + " جملة هتحتاجها فعلًا، تسمعها وترتّبها وتقولها لحد ما تبقى على لسانك.</p></div></div>" +
-      '<div class="chero-stats"><div><b class="num">' + st.started + '</b><small>بدأت فيها</small></div><div><b class="num">' + st.mastered + '</b><small>محفوظة</small></div><div><b class="num">🔥 ' + phStreak(now) + '</b><small>يوم متواصل</small></div></div>' +
+      '<div class="chero" style="--c1:#0E9F8E;--c2:#0B5F78"><div class="row" style="gap:12px;align-items:center"><span class="feat-ic" style="font-size:28px">' + ic("chat") + '</span><div><h2>جمل الحياة اليومية</h2><p>' + st.total + " جملة هتحتاجها فعلًا، تسمعها وترتّبها وتقولها لحد ما تبقى على لسانك.</p></div></div>" +
+      '<div class="chero-stats"><div><b class="num">' + st.started + '</b><small>بدأت فيها</small></div><div><b class="num">' + st.mastered + '</b><small>محفوظة</small></div><div><b class="num">' + ic("flame") + ' ' + phStreak(now) + '</b><small>يوم متواصل</small></div></div>' +
       '<span class="bar"><i style="width:' + Math.round(st.started / st.total * 100) + '%"></i></span>' +
-      '<button class="btn chero-cta" data-act="ph-start"' + (todayCount ? "" : " disabled") + ">" + (todayCount ? "▶ جلسة النهارده · " + (st.due ? st.due + " مراجعة" : "") + (st.due && anyNew && newLeft ? " + " : "") + (anyNew && newLeft ? newLeft + " جديدة" : "") : "✓ خلّصت النهارده") + "</button></div>" +
-      '<div class="card ph-how"><b>إزاي بتتحفظ؟</b><div class="ph-steps"><span>🎧 تسمع</span><span>🧩 ترتّب</span><span>✍️ تكمّل</span><span>🎤 تقول</span><span>🎯 تستخدم</span></div>' +
+      '<button class="btn chero-cta" data-act="ph-start"' + (todayCount ? "" : " disabled") + ">" + (todayCount ? "" + ic("play") + " جلسة النهارده · " + (st.due ? st.due + " مراجعة" : "") + (st.due && anyNew && newLeft ? " + " : "") + (anyNew && newLeft ? newLeft + " جديدة" : "") : "✓ خلّصت النهارده") + "</button></div>" +
+      '<div class="card ph-how"><b>إزاي بتتحفظ؟</b><div class="ph-steps"><span>' + ic("headphones") + ' تسمع</span><span>' + ic("puzzle") + ' ترتّب</span><span>' + ic("pen") + ' تكمّل</span><span>' + ic("mic") + ' تقول</span><span>' + ic("target") + ' تستخدم</span></div>' +
       '<p class="muted" style="font-size:13px">كل ما تجاوب صح الجملة بتطلع مرحلة وترجعلك بعد مدة أطول (يوم، يومين، 4، أسبوع، أسبوعين، شهر). اللي بتغلط فيه بيرجعلك أسرع.</p>' +
       '<div class="row wrapr" style="gap:6px;margin-block-start:10px"><small class="muted">جمل جديدة كل يوم:</small>' + [3, 5, 8].map(function (n) {
         return '<button class="chipbtn' + (d.newPerDay === n ? " on" : "") + '" data-act="ph-npd" data-v="' + n + '">' + n + "</button>";
@@ -277,11 +277,11 @@
   function phCatHTML(k) {
     var c = PH_CATS.filter(function (x) { return x.k === k; })[0], d = phData();
     return '<button class="linkbtn" data-act="ph-hub">← جمل يومية</button>' +
-      '<div class="adm-head" style="margin-block:8px 10px"><h2 style="font-size:22px">' + c.ico + " " + esc(c.t) + '</h2><button class="btn sm" data-act="ph-start-cat" data-k="' + k + '">▶ اتدرّب على القسم</button></div>' +
+      '<div class="adm-head" style="margin-block:8px 10px"><h2 style="font-size:22px">' + c.ico + " " + esc(c.t) + '</h2><button class="btn sm" data-act="ph-start-cat" data-k="' + k + '">' + ic("play") + ' اتدرّب على القسم</button></div>' +
       c.l.map(function (_, i) {
         var p = PH[k + i], r = d.c[p.id];
         return '<div class="card ph-item"><div class="row" style="gap:10px;align-items:flex-start"><div class="grow"><p class="ph-en" dir="ltr" lang="en">' + esc(p.en) + "</p>" +
-          '<p class="ph-ar">' + esc(p.ar) + '</p><small class="muted">💡 ' + esc(p.w) + "</small></div>" + spkBtn(p.en) + "</div>" +
+          '<p class="ph-ar">' + esc(p.ar) + '</p><small class="muted">' + ic("bulb") + ' ' + esc(p.w) + "</small></div>" + spkBtn(p.en) + "</div>" +
           '<div class="row between" style="margin-block-start:8px">' + phDots(r ? r.s : 0) + '<small class="muted">' + (r ? PH_STAGE_LBL[r.s] + (r.s < PH_MAX ? " · المراجعة " + (r.due <= nowR().key ? "النهارده" : fmtShortAr(r.due)) : "") : "لسه متعلمتهاش") + "</small></div></div>";
       }).join("");
   }
@@ -290,22 +290,22 @@
     var s = phUi().ses, it = phCur(), p = PH[it.id], cat = PH_CATS.filter(function (c) { return c.k === p.cat; })[0];
     var pct = Math.round(s.i / s.q.length * 100), done = it.res != null;
     var top = '<div class="gtop"><button class="linkbtn" data-act="ph-hub">✕</button><span class="ph-prog"><span class="bar"><i style="width:' + pct + '%"></i></span></span><span class="num">' + (s.i + 1) + "/" + s.q.length + "</span></div>" +
-      '<p class="muted ph-cat">' + cat.ico + " " + esc(cat.t) + "</p>";
+      '<p class="muted ph-cat">' + ic(cat.ico) + " " + esc(cat.t) + "</p>";
     var body = "";
-    var audio = '<div class="row" style="gap:8px;justify-content:center"><button class="lbig sm" data-act="speak" data-txt="' + esc(p.en) + '" aria-label="اسمع">' + ico("vol") + '</button><button class="btn sm alt" data-act="ph-slow">🐢 أبطأ</button></div>';
-    var reveal = '<div class="ph-reveal ' + (it.res || "") + '"><b>' + (it.res === "ok" ? "✓ صح!" : "الصح:") + '</b><p class="ph-en" dir="ltr" lang="en">' + esc(p.en) + '</p><p class="ph-ar">' + esc(p.ar) + "</p><small>💡 " + esc(p.w) + "</small></div>";
+    var audio = '<div class="row" style="gap:8px;justify-content:center"><button class="lbig sm" data-act="speak" data-txt="' + esc(p.en) + '" aria-label="اسمع">' + ico("vol") + '</button><button class="btn sm alt" data-act="ph-slow">' + ic("snail") + ' أبطأ</button></div>';
+    var reveal = '<div class="ph-reveal ' + (it.res || "") + '"><b>' + (it.res === "ok" ? "✓ صح!" : "الصح:") + '</b><p class="ph-en" dir="ltr" lang="en">' + esc(p.en) + '</p><p class="ph-ar">' + esc(p.ar) + "</p><small>" + ic("bulb") + " " + esc(p.w) + "</small></div>";
     if (it.t === "learn") {
-      body = '<div class="card ph-learn"><span class="ph-badge">جملة جديدة ✨</span><p class="ph-en big" dir="ltr" lang="en">' + esc(p.en) + '</p><p class="ph-ar">' + esc(p.ar) + "</p>" +
-        '<p class="ph-when">💡 بتتقال ' + esc(p.w) + "</p>" + audio + '<p class="muted" style="font-size:13px;margin-block-start:10px">اسمعها وكرّرها بصوت عالي مرتين قبل ما تكمّل.</p></div>' +
+      body = '<div class="card ph-learn"><span class="ph-badge">جملة جديدة ' + ic("sparkles") + '</span><p class="ph-en big" dir="ltr" lang="en">' + esc(p.en) + '</p><p class="ph-ar">' + esc(p.ar) + "</p>" +
+        '<p class="ph-when">' + ic("bulb") + ' بتتقال ' + esc(p.w) + "</p>" + audio + '<p class="muted" style="font-size:13px;margin-block-start:10px">اسمعها وكرّرها بصوت عالي مرتين قبل ما تكمّل.</p></div>' +
         '<button class="btn" style="width:100%" data-act="ph-next">فهمتها ←</button>';
     } else if (it.t === "listen") {
-      body = '<div class="card" style="text-align:center"><h3>🎧 اسمع واختار المعنى</h3>' + audio + "</div>" +
+      body = '<div class="card" style="text-align:center"><h3>' + ic("headphones") + ' اسمع واختار المعنى</h3>' + audio + "</div>" +
         '<div class="iopts">' + it.opts.map(function (o) {
           var cls = "gopt" + (done && o === p.ar ? " ok" : "") + (done && o === it.pick && o !== p.ar ? " bad" : "");
           return '<button class="' + cls + '" data-act="ph-pick" data-v="' + esc(o) + '"' + (done ? " disabled" : "") + ">" + esc(o) + "</button>";
         }).join("") + "</div>" + (done ? reveal : "");
     } else if (it.t === "use") {
-      body = '<div class="card"><h3>🎯 الموقف</h3><p style="font-size:17px;font-weight:600;margin-block:6px">' + esc(p.w) + '، تقول إيه؟</p><small class="muted">المعنى اللي عايز توصله: ' + esc(p.ar) + "</small></div>" +
+      body = '<div class="card"><h3>' + ic("target") + ' الموقف</h3><p style="font-size:17px;font-weight:600;margin-block:6px">' + esc(p.w) + '، تقول إيه؟</p><small class="muted">المعنى اللي عايز توصله: ' + esc(p.ar) + "</small></div>" +
         '<div class="iopts">' + it.opts.map(function (o) {
           var cls = "gopt iopt" + (done && o === p.en ? " ok" : "") + (done && o === it.pick && o !== p.en ? " bad" : "");
           return '<button class="' + cls + '" dir="ltr" lang="en" data-act="ph-pick" data-v="' + esc(o) + '"' + (done ? " disabled" : "") + ">" + esc(o) + "</button>";
@@ -316,23 +316,23 @@
         if (!filled && phClean(w) === phClean(p.k)) { filled = true; var tail = w.slice(w.replace(/[.,!?]+$/, "").length); return '<span class="ph-blank">' + (done ? esc(w.replace(/[.,!?]+$/, "")) : "____") + "</span>" + esc(tail); }
         return esc(w);
       }).join(" ");
-      body = '<div class="card" style="text-align:center"><h3>✍️ كمّل الجملة</h3><p class="ph-en big" dir="ltr" lang="en">' + shown + '</p><p class="ph-ar">' + esc(p.ar) + "</p></div>" +
+      body = '<div class="card" style="text-align:center"><h3>' + ic("pen") + ' كمّل الجملة</h3><p class="ph-en big" dir="ltr" lang="en">' + shown + '</p><p class="ph-ar">' + esc(p.ar) + "</p></div>" +
         '<div class="gopts">' + it.opts.map(function (o) {
           var cls = "gopt" + (done && o === p.k.toLowerCase() ? " ok" : "") + (done && o === it.pick && o !== p.k.toLowerCase() ? " bad" : "");
           return '<button class="' + cls + '" dir="ltr" lang="en" data-act="ph-pick" data-v="' + esc(o) + '"' + (done ? " disabled" : "") + ">" + esc(o) + "</button>";
         }).join("") + "</div>" + (done ? reveal : "");
     } else if (it.t === "build" || it.t === "recall") {
       var built = it.typed.map(function (i) { return esc(it.tiles[i].w); }).join(" ");
-      body = '<div class="card" style="text-align:center"><h3>' + (it.t === "build" ? "🧩 رتّب الجملة" : "🧠 كوّنها من ذاكرتك") + "</h3>" +
+      body = '<div class="card" style="text-align:center"><h3>' + (it.t === "build" ? "" + ic("puzzle") + " رتّب الجملة" : "" + ic("brain") + " كوّنها من ذاكرتك") + "</h3>" +
         (it.t === "build" ? audio : "") + '<p class="ph-ar" style="margin-block-start:8px">' + esc(p.ar) + "</p>" +
         '<div class="ph-built ' + (it.res || "") + '" dir="ltr" lang="en">' + (built || '<span class="muted">اضغط على الكلمات بالترتيب…</span>') + "</div></div>" +
         (done ? reveal : '<div class="ph-tiles" dir="ltr">' + it.tiles.map(function (t, i) {
           return '<button class="stile ph-tile" data-act="ph-tile" data-i="' + i + '"' + (it.typed.indexOf(i) >= 0 ? " disabled" : "") + ">" + esc(t.w) + "</button>";
-        }).join("") + '</div><div class="row" style="gap:10px;justify-content:center;margin-block-start:10px"><button class="btn sm alt" data-act="ph-undo">⌫ رجوع</button></div>');
+        }).join("") + '</div><div class="row" style="gap:10px;justify-content:center;margin-block-start:10px"><button class="btn sm alt" data-act="ph-undo">' + ic("backspace") + ' رجوع</button></div>');
     } else if (it.t === "say") {
-      body = '<div class="card" style="text-align:center"><h3>🎤 قولها بالإنجليزي</h3><p class="ph-ar" style="font-size:19px;margin-block:8px">' + esc(p.ar) + '</p><small class="muted">💡 ' + esc(p.w) + "</small>" +
+      body = '<div class="card" style="text-align:center"><h3>' + ic("mic") + ' قولها بالإنجليزي</h3><p class="ph-ar" style="font-size:19px;margin-block:8px">' + esc(p.ar) + '</p><small class="muted">' + ic("bulb") + ' ' + esc(p.w) + "</small>" +
         (it.heard ? '<p class="iheard ' + (it.res === "ok" ? "ok" : "bad") + '" dir="ltr" lang="en">' + esc(it.heard) + "</p>" : "") + "</div>" +
-        (done ? reveal : '<div class="row" style="gap:10px"><button class="btn gbig" data-act="ph-mic"' + (it.listening ? " disabled" : "") + ">" + (it.listening ? "بسمعك…" : "🎤 اتكلم") + '</button><button class="btn alt gbig" data-act="ph-forgot">مش فاكر</button></div>');
+        (done ? reveal : '<div class="row" style="gap:10px"><button class="btn gbig" data-act="ph-mic"' + (it.listening ? " disabled" : "") + ">" + (it.listening ? "بسمعك…" : "" + ic("mic") + " اتكلم") + '</button><button class="btn alt gbig" data-act="ph-forgot">مش فاكر</button></div>');
     }
     return top + body + (done ? '<button class="btn" style="width:100%;margin-block-start:10px" data-act="ph-next">' + (s.i + 1 >= s.q.length ? "النتيجة" : "كمّل ←") + "</button>" : "");
   }
@@ -342,11 +342,11 @@
     return '<div class="card gend"><div class="gend-stars"><span class="on">★</span><span class="' + (acc >= 70 ? "on" : "") + '">★</span><span class="' + (acc >= 90 ? "on" : "") + '">★</span></div>' +
       "<h2>" + (acc >= 90 ? "جلسة ممتازة! 🎉" : acc >= 70 ? "شغل حلو 👍" : "كمّل، التكرار هو السر 💪") + "</h2>" +
       '<div class="chero-stats" style="color:inherit"><div><b class="num">' + s.fresh + '</b><small>جملة جديدة</small></div><div><b class="num">' + acc + '%</b><small>دقة</small></div><div><b class="num">+' + s.xp + '</b><small>XP</small></div></div>' +
-      '<div class="gmissed"><b>🗣️ قول الجمل دي بصوت عالي مرة كمان قبل ما تقفل:</b>' + ids.map(function (id) {
+      '<div class="gmissed"><b>' + ic("mic") + ' قول الجمل دي بصوت عالي مرة كمان قبل ما تقفل:</b>' + ids.map(function (id) {
         var p = PH[id];
         return '<div class="row between" style="gap:8px"><span dir="ltr" lang="en" style="font-weight:600">' + esc(p.en) + "</span>" + spkBtn(p.en) + "</div>";
       }).join("") + "</div>" +
-      '<p class="muted" style="font-size:13px;margin-block-start:10px">🎯 تحدي النهارده: استخدم جملة منهم في كلام حقيقي مع حد.</p>' +
+      '<p class="muted" style="font-size:13px;margin-block-start:10px">' + ic("target") + ' تحدي النهارده: استخدم جملة منهم في كلام حقيقي مع حد.</p>' +
       '<div class="row wrapr" style="justify-content:center;margin-block-start:12px"><button class="btn" data-act="ph-hub">تمام</button></div></div>';
   }
 

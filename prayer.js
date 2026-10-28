@@ -364,8 +364,8 @@
   }
   function azkarEntryCardHTML() {
     return '<div class="card"><h3>الأذكار</h3><p class="muted" style="font-size:14px;margin-block:4px 10px">أذكار الصباح والمساء من حصن المسلم</p><div class="row wrapr">' +
-      '<button class="btn" data-act="azkar-open" data-k="morning">🌅 أذكار الصباح</button>' +
-      '<button class="btn alt" data-act="azkar-open" data-k="evening">🌙 أذكار المساء</button></div></div>';
+      '<button class="btn" data-act="azkar-open" data-k="morning">' + ic("sunrise") + ' أذكار الصباح</button>' +
+      '<button class="btn alt" data-act="azkar-open" data-k="evening">' + ic("moon") + ' أذكار المساء</button></div></div>';
   }
   // Only one not-yet-finished dhikr is shown "open" (full text + note) at a time; the
   // rest sit collapsed to a single line. Finishing the open one auto-advances the focus
@@ -645,8 +645,8 @@
       '<button class="btn sm" data-act="lawh-tap" data-u="' + wholeId + '">' + (whole.status === 0 ? "ابدأ الحفظ" : whole.status === 1 ? "تم الحفظ" : "إعادة ضبط") + "</button>" +
       '<button class="btn sm alt" data-act="lawh-hide" data-u="' + wholeId + '">تسميع (إخفاء النص)</button>' +
       (whole.status === 2 ? '<button class="btn sm alt" data-act="lawh-rev" data-u="' + wholeId + '" data-g="1">تمت المراجعة</button><button class="btn sm alt" data-act="lawh-rev" data-u="' + wholeId + '" data-g="0">نسيتها</button>' : "") +
-      '<button class="btn sm alt" data-act="qa-unit" data-u="' + wholeId + '">🎧 استمع وكرّر</button>' +
-      '<button class="linkbtn" data-act="lawh-goto-mushaf" data-u="' + wholeId + '">📖 افتح في المصحف</button>' +
+      '<button class="btn sm alt" data-act="qa-unit" data-u="' + wholeId + '">' + ic("headphones") + ' استمع وكرّر</button>' +
+      '<button class="linkbtn" data-act="lawh-goto-mushaf" data-u="' + wholeId + '">' + ic("book") + ' افتح في المصحف</button>' +
       "</div></div>";
 
     var rangesHTML = "";
@@ -658,7 +658,7 @@
           '<button class="linkbtn" data-act="lawh-tap" data-u="' + id + '" style="font-weight:600">آية ' + arNum(u.from) + "-" + arNum(u.to) + " — " + lawhStatusLabel(c.status) + "</button>" +
           '<button class="linkbtn" style="color:var(--bad)" data-act="lawh-remove" data-u="' + id + '">حذف</button></div>' +
           '<div class="row wrapr" style="margin-block-start:6px">' +
-          '<button class="btn sm alt" data-act="lawh-hide" data-u="' + id + '">تسميع</button><button class="btn sm alt" data-act="qa-unit" data-u="' + id + '">🎧</button>' +
+          '<button class="btn sm alt" data-act="lawh-hide" data-u="' + id + '">تسميع</button><button class="btn sm alt" data-act="qa-unit" data-u="' + id + '">' + ic("headphones") + '</button>' +
           (c.status === 2 ? '<button class="btn sm alt" data-act="lawh-rev" data-u="' + id + '" data-g="1">تمت المراجعة</button><button class="btn sm alt" data-act="lawh-rev" data-u="' + id + '" data-g="0">نسيتها</button>' : "") +
           "</div></div>";
       }).join("");

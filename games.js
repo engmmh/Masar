@@ -5,10 +5,10 @@
   // spelling with letter tiles. Best scores live in state.learn.games keyed
   // "<cid>:<kind>"; misses are fed into نقاط ضعفي like quiz mistakes are.
   var GAMES = [
-    { k: "match", ico: "🧩", t: "مطابقة", d: "وصّل كل كلمة بمعناها بأسرع وقت" },
-    { k: "sprint", ico: "⚡", t: "سباق 60 ثانية", d: "صح ولا غلط؟ اجمع كومبو ونقاط" },
-    { k: "listen", ico: "🎧", t: "اسمع واختار", d: "اسمع الكلمة واختار معناها", en: true },
-    { k: "spell", ico: "🔤", t: "تهجئة", d: "رتّب الحروف وكوّن الكلمة", en: true }
+    { k: "match", ico: "puzzle", t: "مطابقة", d: "وصّل كل كلمة بمعناها بأسرع وقت" },
+    { k: "sprint", ico: "zap", t: "سباق 60 ثانية", d: "صح ولا غلط؟ اجمع كومبو ونقاط" },
+    { k: "listen", ico: "headphones", t: "اسمع واختار", d: "اسمع الكلمة واختار معناها", en: true },
+    { k: "spell", ico: "type", t: "تهجئة", d: "رتّب الحروف وكوّن الكلمة", en: true }
   ];
   var gameTimer = null;
   // Each game has 4 levels; 3 stars on a level unlocks the next one. Levels change
@@ -37,13 +37,13 @@
     var c = COURSES[cid]; if (!c) return "";
     var list = GAMES.filter(function (g) { return gameAvailable(g, cid); });
     return '<button class="linkbtn" data-act="course-open" data-c="' + cid + '">← ' + esc(c.title) + "</button>" +
-      '<div class="sec-h">🎮 العب واتعلم</div><p class="muted" style="font-size:14px;margin-block:-4px 12px">كل لعبة بتديك نقاط، والكلمات اللي بتغلط فيها بتتضاف لنقاط ضعفك عشان تراجعها.</p>' +
-      (cid === "en" ? '<button class="card ph-promo" data-act="ph-open"><span style="font-size:30px">💬</span><span class="grow"><b>جمل الحياة اليومية</b><small class="muted">110 جملة هتحتاجها فعلًا، بتتحفظ بالتكرار الذكي</small></span><span class="chip">جديد</span></button>' : "") +
+      '<div class="sec-h">' + ic("gamepad") + ' العب واتعلم</div><p class="muted" style="font-size:14px;margin-block:-4px 12px">كل لعبة بتديك نقاط، والكلمات اللي بتغلط فيها بتتضاف لنقاط ضعفك عشان تراجعها.</p>' +
+      (cid === "en" ? '<button class="card ph-promo" data-act="ph-open"><span class="tile-ic">' + ic("chats") + '</span><span class="grow"><b>جمل الحياة اليومية</b><small class="muted">110 جملة هتحتاجها فعلًا، بتتحفظ بالتكرار الذكي</small></span><span class="chip">جديد</span></button>' : "") +
       '<div class="gtiles">' + list.map(function (g) {
         var r = gameRec(cid, g.k);
         return '<button class="gtile" data-act="game-start" data-c="' + cid + '" data-k="' + g.k + '"><span class="gtile-ic">' + g.ico + "</span><b>" + esc(g.t) + "</b><small>" + esc(g.d) + "</small>" +
           '<span class="gtile-lvl">' + [0, 1, 2, 3].map(function (n) { return '<i class="' + (n <= gameLvl(cid, g.k) ? "on" : "") + '"></i>'; }).join("") + " " + LVL_NAMES[gameLvl(cid, g.k)] + "</span>" +
-          '<span class="gtile-best">' + (r ? "🏆 أفضل نتيجة <span class=\"num\">" + r.best + "</span>" : "جديدة") + "</span></button>";
+          '<span class="gtile-best">' + (r ? "" + ic("trophy") + " أفضل نتيجة <span class=\"num\">" + r.best + "</span>" : "جديدة") + "</span></button>";
       }).join("") + "</div>";
   }
 
@@ -159,7 +159,7 @@
   }
   function sprintHTML(g) {
     var mult = 1 + Math.floor(g.combo / 5);
-    return gameTopHTML(g, '⏱ <span class="num" id="gLeft">' + g.left + "</span> ث") +
+    return gameTopHTML(g, '' + ic("timer") + ' <span class="num" id="gLeft">' + g.left + "</span> ث") +
       '<div class="sprint ' + (g.flash || "") + '"><div class="sprint-en" dir="ltr" lang="en">' + esc(g.cur.en) + '</div><div class="sprint-eq">=</div><div class="sprint-ar">' + esc(g.shown) + "</div></div>" +
       '<p class="muted" style="text-align:center">كومبو <span class="num">' + g.combo + "</span>" + (mult > 1 ? ' · <b style="color:var(--amber-deep)">×' + mult + "</b>" : "") + "</p>" +
       '<div class="row" style="gap:12px"><button class="btn gbig no" data-act="sprint-ans" data-v="0">✗ غلط</button><button class="btn gbig" data-act="sprint-ans" data-v="1">✓ صح</button></div>';
@@ -182,8 +182,8 @@
     var answered = g.pick != null;
     return gameTopHTML(g, '<span class="num">' + (g.i + 1) + "/" + g.words.length + "</span>") +
       '<div style="text-align:center;margin-block:8px 16px"><button class="lbig" data-act="speak" data-txt="' + esc(g.cur.en) + '" aria-label="اسمع تاني">' + ico("vol") + "</button>" +
-      '<div class="row" style="gap:8px;justify-content:center;margin-block:10px 4px"><button class="btn sm alt" data-act="listen-slow">🐢 أبطأ</button>' +
-      (answered || g.peek ? "" : '<button class="btn sm alt" data-act="listen-peek">👁 وريني الكلمة</button>') + "</div>" +
+      '<div class="row" style="gap:8px;justify-content:center;margin-block:10px 4px"><button class="btn sm alt" data-act="listen-slow">' + ic("snail") + ' أبطأ</button>' +
+      (answered || g.peek ? "" : '<button class="btn sm alt" data-act="listen-peek">' + ic("eye") + ' وريني الكلمة</button>') + "</div>" +
       (answered || g.peek ? '<p dir="ltr" lang="en" style="font-size:22px;font-weight:700;margin:6px 0">' + esc(g.cur.en) + "</p>" : "") + "</div>" +
       '<div class="gopts">' + g.opts.map(function (o) {
         var cls = "gopt" + (answered && o === g.cur.ar ? " ok" : "") + (answered && o === g.pick && o !== g.cur.ar ? " bad" : "");
@@ -246,7 +246,7 @@
         : '<div class="stiles" dir="ltr">' + g.tiles.map(function (t, i) {
           return '<button class="stile" data-act="spell-tap" data-i="' + i + '"' + (g.typed.indexOf(i) >= 0 ? " disabled" : "") + ">" + esc(t.ch) + "</button>";
         }).join("") + "</div>" +
-        '<div class="row" style="gap:10px;justify-content:center;margin-block-start:12px"><button class="btn sm alt" data-act="spell-undo">⌫ مسح</button><button class="btn sm alt" data-act="spell-hint">💡 مساعدة</button></div>');
+        '<div class="row" style="gap:10px;justify-content:center;margin-block-start:12px"><button class="btn sm alt" data-act="spell-undo">' + ic("backspace") + ' مسح</button><button class="btn sm alt" data-act="spell-hint">' + ic("bulb") + ' مساعدة</button></div>');
   }
 
   /* shared */
@@ -258,7 +258,7 @@
   function gameTopHTML(g, mid) {
     var meta = GAMES.filter(function (x) { return x.k === g.kind; })[0];
     return '<div class="gtop"><button class="linkbtn" data-act="game-quit">✕</button><b>' + meta.ico + " " + esc(meta.t) + ' <span class="glvl">' + LVL_NAMES[g.lvl] + "</span></b><span>" + mid + "</span></div>" +
-      '<div class="gscore"><span>⭐ <span class="num">' + g.score + '</span></span><span style="color:var(--miss)">✗ <span class="num">' + g.miss + "</span></span></div>";
+      '<div class="gscore"><span>' + ic("star") + ' <span class="num">' + g.score + '</span></span><span style="color:var(--miss)">✗ <span class="num">' + g.miss + "</span></span></div>";
   }
   function endGame() {
     var g = state.game; if (!g || g.over) return;
@@ -285,9 +285,9 @@
     var meta = GAMES.filter(function (x) { return x.k === g.kind; })[0];
     var missedWords = g.missed.map(function (id) { return VOCAB_INDEX[id]; }).filter(Boolean);
     return '<div class="card gend"><div class="gend-stars">' + [1, 2, 3].map(function (n) { return '<span class="' + (n <= g.stars ? "on" : "") + '">★</span>'; }).join("") + "</div>" +
-      "<h2>" + (g.newBest ? "🏆 رقم قياسي جديد!" : g.stars === 3 ? "ممتاز! 👏" : g.stars === 2 ? "شغل حلو 👍" : "كمّل وهتتحسن 💪") + "</h2>" +
+      "<h2>" + (g.newBest ? "" + ic("trophy") + " رقم قياسي جديد!" : g.stars === 3 ? "ممتاز! 👏" : g.stars === 2 ? "شغل حلو 👍" : "كمّل وهتتحسن 💪") + "</h2>" +
       (g.levelUp ? '<p class="glvlup">⬆️ فتحت مستوى «' + LVL_NAMES[g.lvl + 1] + "» — اللعبة الجاية أصعب وفيها كلمات جديدة</p>"
-        : g.lvl < 3 ? '<p class="muted" style="font-size:13px">جيب 3 نجوم عشان تفتح مستوى «' + LVL_NAMES[g.lvl + 1] + "»</p>" : '<p class="muted" style="font-size:13px">أنت في أعلى مستوى 🔥</p>') +
+        : g.lvl < 3 ? '<p class="muted" style="font-size:13px">جيب 3 نجوم عشان تفتح مستوى «' + LVL_NAMES[g.lvl + 1] + "»</p>" : '<p class="muted" style="font-size:13px">أنت في أعلى مستوى ' + ic("flame") + '</p>') +
       '<p class="muted">' + esc(meta.t) + "</p>" +
       '<div class="chero-stats" style="color:inherit"><div><b class="num">' + g.score + '</b><small>النقاط</small></div><div><b class="num">+' + g.xp + '</b><small>XP</small></div><div><b class="num">' + g.secs + '</b><small>ثانية</small></div></div>' +
       (missedWords.length ? '<div class="gmissed"><b>كلمات تراجعها (اتضافت لنقاط ضعفي):</b>' + missedWords.map(function (v) {
