@@ -31,6 +31,7 @@
   // tiles and headings app-wide instead of mixed emoji. Size follows the text
   // (1.15em) unless a container sets it.
   var IC = {
+    "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>",
     "gamepad": "<line x1=\"6\" x2=\"10\" y1=\"12\" y2=\"12\"/><line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\"/><line x1=\"15\" x2=\"15.01\" y1=\"13\" y2=\"13\"/><line x1=\"18\" x2=\"18.01\" y1=\"11\" y2=\"11\"/><rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\"/>",
     "mic": "<path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z\"/><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"/><line x1=\"12\" x2=\"12\" y1=\"19\" y2=\"22\"/>",
     "chat": "<path d=\"M7.9 20A9 9 0 1 0 4 16.1L2 22Z\"/>",
@@ -611,6 +612,7 @@
   }
   var NOTES_SEED_VERSION = 8;
   function ensureNotesSeed() {
+    if (migrateSplit22002()) saveMeta("learn", 0);
     var v = state.learn.notesSeeded || 0;
     if (v >= NOTES_SEED_VERSION) return;
     if (v < 1) seedNotesCourse("en", NOTES_SEED_EN);
@@ -1074,7 +1076,7 @@
   var TOGGLEABLE_SECTIONS = ["prayer", "quran", "learn", "exp"];
   function applyPermissions(acc) {
     ALLOWED_COURSES = (Array.isArray(acc && acc.courses) && acc.courses.length)
-      ? COURSE_ORDER.filter(function (c) { return acc.courses.indexOf(c) >= 0; })
+      ? withComplements(COURSE_ORDER.filter(function (c) { return acc.courses.indexOf(c) >= 0; }))
       : COURSE_ORDER.slice();
     var allowedSections = (Array.isArray(acc && acc.sections) && acc.sections.length) ? acc.sections : null;
     // Kept on state (not just applied to the DOM below) so view code — the "خطة اليوم"

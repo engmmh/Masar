@@ -1,7 +1,50 @@
 "use strict";
   /* ---------------- learning content ---------------- */
   var COURSES = {};
-  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso17025", "micro", "nutrition"];
+  var COURSE_ORDER = ["en", "iso", "iso14001", "iso45001", "iso22000", "iso22002100", "iso22002", "iso17025", "micro", "nutrition"];
+  // Courses that complement a main one: an account allowed the main course also gets these.
+  var COURSE_COMPLEMENTS = { iso22000: ["iso22002100", "iso22002"] };
+  function withComplements(list) {
+    var set = list.slice();
+    list.forEach(function (c) { (COURSE_COMPLEMENTS[c] || []).forEach(function (x) { if (set.indexOf(x) < 0) set.push(x); }); });
+    return COURSE_ORDER.filter(function (c) { return set.indexOf(c) >= 0; });
+  }
+  // The two ISO 22002 parts used to live inside the ISO 22000 course as "p100-*" /
+  // "p1-*" units (+ sc2/sc3); they are now their own courses. One-time move of any
+  // progress, mistakes and weak points recorded under the old keys.
+  var SPLIT_22002 = [["p100-", "iso22002100", "sc2"], ["p1-", "iso22002", "sc3"]];
+  function migrateSplit22002() {
+    var L = state.learn; if (!L || L.split22002) return false;
+    function mapUnit(uid) {
+      for (var i = 0; i < SPLIT_22002.length; i++) {
+        var m = SPLIT_22002[i];
+        if (uid.indexOf(m[0]) === 0) return [m[1], uid.slice(m[0].length)];
+        if (uid === m[2]) return [m[1], "sc1"];
+      }
+      return null;
+    }
+    Object.keys(L.units || {}).forEach(function (k) {
+      if (k.indexOf("iso22000:") !== 0) return;
+      var t = mapUnit(k.slice(9)); if (!t) return;
+      if (!L.units[t[0] + ":" + t[1]]) L.units[t[0] + ":" + t[1]] = L.units[k];
+      delete L.units[k];
+    });
+    function mapQ(id) {
+      var m = /^iso22000-(p100-c\d+b?|p1-c\d+b?|sc2|sc3)-(q\d+)$/.exec(id); if (!m) return null;
+      var t = mapUnit(m[1]); return t ? t[0] + "-" + t[1] + "-" + m[2] : null;
+    }
+    ["mistakes", "weak"].forEach(function (f) {
+      var o = L[f] || {};
+      Object.keys(o).forEach(function (id) {
+        var n = mapQ(id); if (!n) return;
+        if (!o[n]) { o[n] = o[id]; if (f === "weak" && o[n] && typeof o[n] === "object") o[n].cid = n.split("-")[0]; }
+        delete o[id];
+      });
+    });
+    if (L.resume && L.resume.c === "iso22000") { var r = mapUnit(L.resume.u || ""); if (r) { L.resume.c = r[0]; L.resume.u = r[1]; } }
+    L.split22002 = 1;
+    return true;
+  }
   // ALLOWED_COURSES is what the logged-in account is permitted to see — a derived,
   // per-session subset of COURSE_ORDER (never COURSE_ORDER itself, which must stay
   // the full master list: it's still used to load/index every course's data so admin
@@ -420,7 +463,7 @@
 
 
   /* learn */
-  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso17025: "flask", micro: "flask", nutrition: "flame" };
+  var COURSE_ICO = { en: "cap", iso: "cert", iso14001: "leaf", iso45001: "shield", iso22000: "food", iso22002100: "food", iso22002: "food", iso17025: "flask", micro: "flask", nutrition: "flame" };
   function courseDone(cid) { var c = COURSES[cid]; return c.units.filter(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }).length; }
   function finalExamPool(cid) {
     var c = COURSES[cid]; if (!c) return [];
@@ -434,10 +477,10 @@
   // one short of the very last unit so the milestone never collides with the
   // final exam's own "all units done" gate.
   // Phase 12 — a course can override the uniform "every 5" rule with its own
-  // named-phase boundaries (ISO 22000's "النظام · PRPs · HACCP · 22002"), each
+  // named-phase boundaries (ISO 22000's "النظام · PRPs وHACCP"), each
   // boundary labeled with the phase that just finished.
   var COURSE_PHASE_BOUNDS = {
-    iso22000: { bounds: [5, 6, 11], labels: { 5: "النظام", 6: "PRPs", 11: "HACCP" } }
+    iso22000: { bounds: [4, 8], labels: { 4: "النظام", 8: "PRPs وHACCP" } }
   };
   function milestoneBoundaries(cid) {
     var c = COURSES[cid]; if (!c || !c.units) return [];
@@ -519,7 +562,7 @@
   // its own, then every other allowed course as a cover card, and badges last.
   var COURSE_THEME = {
     en: ["#3B6FED", "#1E3FA8"], iso: ["#0DA66B", "#087A4F"], iso14001: ["#22A35A", "#136B3A"], iso45001: ["#F59E0B", "#B86E00"],
-    iso22000: ["#E8664A", "#B23E25"], iso17025: ["#7B5CE0", "#4E32A8"], micro: ["#14A3B8", "#0B6E7D"], nutrition: ["#E2477A", "#A6234F"]
+    iso22000: ["#E8664A", "#B23E25"], iso22002100: ["#D9822B", "#9C5414"], iso22002: ["#C2593F", "#86321E"], iso17025: ["#7B5CE0", "#4E32A8"], micro: ["#14A3B8", "#0B6E7D"], nutrition: ["#E2477A", "#A6234F"]
   };
   function courseStyle(cid) { var t = COURSE_THEME[cid] || COURSE_THEME.iso; return ' style="--c1:' + t[0] + ";--c2:" + t[1] + '"'; }
   function courseStats(cid) {
@@ -535,7 +578,7 @@
     var c = COURSES[cid], st = courseStats(cid);
     return '<button class="ccard" data-act="course-open" data-c="' + cid + '"' + courseStyle(cid) + '>' +
       '<span class="ccover">' + ico(COURSE_ICO[cid]) + (st.pct === 100 ? '<span class="ctag">✓ مكتمل</span>' : "") + "</span>" +
-      '<span class="cbody"><b>' + esc(c.title) + '</b><small class="muted">' + esc(c.desc) + "</small>" +
+      '<span class="cbody">' + (c.complement && COURSES[c.complement] ? '<span class="c-comp">' + ic("link") + " مكمّل لـ " + esc(plainTitle(COURSES[c.complement].title).split(" —")[0]) + "</span>" : "") + '<b>' + esc(c.title) + '</b><small class="muted">' + esc(c.desc) + "</small>" +
       '<span class="cmeta"><span class="num">' + st.total + '</span> وحدة · <span class="num">' + st.words + '</span> كلمة · ~<span class="num">' + st.hours + "</span> س</span>" +
       '<span class="cprog"><span class="bar"><i style="width:' + st.pct + '%"></i></span><span class="num">' + st.pct + "%</span></span></span></button>";
   }
@@ -691,6 +734,14 @@
       "<ul>" + c.outcomes.map(function (o) { return "<li>" + fmtEn(o) + "</li>"; }).join("") + "</ul>" +
       (c.audience ? '<p class="muted" style="font-size:13px"><b>مناسب لـ:</b> ' + esc(c.audience) + "</p>" : "") + "</details>";
   }
+  // Main course → "كمّل بالكورسات المكمّلة" cards; complement → link back to the main course.
+  function complementsHTML(c, cid) {
+    var list = (COURSE_COMPLEMENTS[cid] || []).filter(function (x) { return COURSES[x] && ALLOWED_COURSES.indexOf(x) >= 0; });
+    if (list.length) return '<div class="sec-h">كورسات مكمّلة</div><p class="muted" style="font-size:13px;margin:-4px 0 8px">تفاصيل البرامج التمهيدية (PRPs) اللي 22000 بيطلبها — خدهم بعد الكورس ده أو بالتوازي معاه.</p><div class="cgrid">' + list.map(courseCardHTML).join("") + "</div>";
+    if (c.complement && COURSES[c.complement] && ALLOWED_COURSES.indexOf(c.complement) >= 0)
+      return '<button class="card c-back" data-act="course-open" data-c="' + c.complement + '">' + ic("link") + "<span>الكورس ده مكمّل لـ <b>" + esc(COURSES[c.complement].title) + "</b> — افتحه</span></button>";
+    return "";
+  }
   function courseDoneAny(c, cid) { return c.units.some(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }); }
   function courseHomeHTML(cid, now) {
     var c = COURSES[cid], lvl = state.cardLvl || 0, due = dueCards(now, cid, lvl).length, ms = weakList("all").filter(function (w) { return w.cid === cid; }).length, done = courseDone(cid);
@@ -710,7 +761,7 @@
       '<div class="chero"' + courseStyle(cid) + '><div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico(COURSE_ICO[cid]) + '</span><div><h2>' + esc(c.title) + "</h2><p>" + esc(c.desc) + "</p></div></div>" +
       '<div class="chero-stats"><div><b class="num">' + st.done + "/" + st.total + '</b><small>وحدة</small></div><div><b class="num">' + st.started + '</b><small>كلمة اتعلمتها</small></div><div><b class="num">' + st.pct + '%</b><small>إنجاز</small></div></div>' +
       '<span class="bar"><i style="width:' + st.pct + '%"></i></span>' + cta + "</div>" +
-      courseAboutHTML(c, cid) +
+      courseAboutHTML(c, cid) + (c.complement ? complementsHTML(c, cid) : "") +
       '<div class="sec-h">المراجعة والتدريب</div><div class="tiles">' +
       tile("cards", ico("refresh"), "كروت المراجعة", due, due ? "" : " disabled") +
       (cid === "en" ? tile("ph-open", "" + ic("chat") + "", "جمل يومية", null) : "") +
@@ -725,7 +776,7 @@
       "</div>" + lvlChips +
       '<div class="row between" style="margin-block:18px 4px"><h2>خريطة الكورس</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
       pathHTML(cid, c.units, done) +
-      finalExamCardHTML(cid, c, done);
+      finalExamCardHTML(cid, c, done) + (c.complement ? "" : complementsHTML(c, cid));
   }
   // Phase 11 — خريطة الكورس gets a 🏁 milestone node interleaved every 5 units,
   // on top of the regular unit nodes; a separate rowN counter keeps the l/r zigzag

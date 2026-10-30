@@ -43,7 +43,7 @@
     return Math.round((b - a) / 86400000);
   }
   function admAllowedCourses(acc) {
-    return (Array.isArray(acc.courses) && acc.courses.length) ? COURSE_ORDER.filter(function (c) { return acc.courses.indexOf(c) >= 0; }) : COURSE_ORDER.slice();
+    return (Array.isArray(acc.courses) && acc.courses.length) ? withComplements(COURSE_ORDER.filter(function (c) { return acc.courses.indexOf(c) >= 0; })) : COURSE_ORDER.slice();
   }
   function admAllowedSections(acc) {
     return (Array.isArray(acc.sections) && acc.sections.length) ? acc.sections.slice() : TOGGLEABLE_SECTIONS.slice();

@@ -4990,10 +4990,10 @@
   {
    "id": "bk5",
    "icon": "📅",
-   "title": "جلسة 5: التاريخ والوقت (Date & Time)",
+   "title": "جلسة 5: التاريخ والوقت (كتاب + كلاس حقيقي)",
    "pts": [
     {
-     "fact": "من كتاب الأكاديمية — Session 5: Date & Time. هنتعلم إزاي نقول التاريخ، أيام الأسبوع، شهور السنة، وأدوات السؤال.",
+     "fact": "جلسة 5 الكاملة عن التاريخ والوقت (Date & Time) — من كتاب الأكاديمية ومن ملخص كلاسك الحقيقي (Level 1, Session 5) مع المدرّس.",
      "icon": "📖"
     },
     {
@@ -5061,6 +5061,190 @@
        ]
       }
      ]
+    },
+    {
+     "title": "قاعدة الكلاس: حروف الجر مع الوقت (in / on / at)",
+     "cols": [
+      {
+       "title": "in",
+       "items": [
+        "in + شهر: in August",
+        "in + سنة: in 2001",
+        "in the morning",
+        "in the afternoon",
+        "in the evening"
+       ]
+      },
+      {
+       "title": "on",
+       "items": [
+        "on + يوم: on Friday",
+        "on + تاريخ: on the 11th of August",
+        "on school days",
+        "on weekends (أمريكي)"
+       ]
+      },
+      {
+       "title": "at",
+       "items": [
+        "at + ساعة: at 7 o'clock",
+        "at night",
+        "at midday / at noon",
+        "at midnight",
+        "at dawn",
+        "at weekends (بريطاني)"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "اتكلم عن تاريخ ميلادك (I was born…)",
+     "steps": [
+      "I was born in August. (شهر ← in)",
+      "I was born on the 11th of August. (تاريخ كامل ← on)",
+      "أو بالطريقة الأمريكية: I was born on August 11th.",
+      "was born دايمًا بالماضي — مش I born ولا I am born"
+     ]
+    },
+    {
+     "title": "الأرقام الترتيبية من الكلاس",
+     "cols": [
+      {
+       "title": "الأول",
+       "items": [
+        "1 → first (1st)",
+        "2 → second (2nd)",
+        "3 → third (3rd)",
+        "4 → fourth (4th)",
+        "5 → fifth (5th) — مش fiveth"
+       ]
+      },
+      {
+       "title": "التاني",
+       "items": [
+        "15 → fifteenth (15th)",
+        "21 → twenty-first (21st)",
+        "22 → twenty-second (22nd)",
+        "23 → twenty-third (23rd)"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "أسئلة الوقت من الكلاس",
+     "icons": [
+      {
+       "e": "⏰",
+       "en": "What time…? = When…?",
+       "ar": "إمتى / الساعة كام؟",
+       "note": "What time do you get up? = When do you get up?"
+      },
+      {
+       "e": "👜",
+       "en": "Whose bag is this?",
+       "ar": "الشنطة دي بتاعة مين؟",
+       "note": "Whose للملكية"
+      },
+      {
+       "e": "🕰️",
+       "en": "Have you got the time, please?",
+       "ar": "معاك الساعة كام لو سمحت؟",
+       "note": "مش معناها «عندك وقت؟» — دي سؤال عن الساعة!"
+      }
+     ]
+    },
+    {
+     "title": "جمل الكلاس بالمضارع البسيط",
+     "icons": [
+      {
+       "e": "🏫",
+       "en": "My school day ends at 1.30 in the afternoon.",
+       "ar": "يومي الدراسي بيخلص 1:30 الضهر.",
+       "note": "day مفرد ← ends بـ s"
+      },
+      {
+       "e": "👨‍👧",
+       "en": "I help my kids do the homework.",
+       "ar": "بساعد ولادي يعملوا الواجب.",
+       "note": "help + شخص + فعل أصلي"
+      }
+     ]
+    },
+    {
+     "title": "مفردات جديدة من الكلاس",
+     "cols": [
+      {
+       "title": "يومك",
+       "items": [
+        "get up = wake up = يصحى",
+        "leave – left = يمشي/يسيب (ماضيها left)",
+        "get to = arrive at = يوصل",
+        "get home = يوصل البيت",
+        "walk home = يروّح مشي",
+        "except for = ما عدا",
+        "band = فرقة موسيقية"
+       ]
+      },
+      {
+       "title": "وصف",
+       "items": [
+        "awful = وحش جدًا",
+        "friendly = kind = ودود/لطيف",
+        "comfortable = مريح",
+        "cheap ✗ expensive = رخيص ✗ غالي",
+        "poor ✗ rich = فقير ✗ غني",
+        "rain and fog = مطر وشبورة",
+        "wet = مبلول"
+       ]
+      },
+      {
+       "title": "فصول وكلمات عامة",
+       "items": [
+        "summer / winter / spring",
+        "fall = autumn = الخريف",
+        "thing / person / place / reason = حاجة / شخص / مكان / سبب"
+       ]
+      }
+     ]
+    },
+    {
+     "title": "ملاحظات نطق (Pronunciation) من الكلاس",
+     "icons": [
+      {
+       "e": "🗣️",
+       "en": "February",
+       "note": "فِبرواري — والـ r الأولى بتتنطق خفيفة (Feb-ru-ary)"
+      },
+      {
+       "e": "🗣️",
+       "en": "Wednesday",
+       "note": "وِنزداي — الـ d الأولى صامتة!"
+      },
+      {
+       "e": "🗣️",
+       "en": "Hour",
+       "note": "آور — الـ h صامتة، وعشان كده an hour"
+      },
+      {
+       "e": "🗣️",
+       "en": "January / June / July",
+       "note": "جانيواري / جون / جولاي — الضغط في July على المقطع التاني"
+      },
+      {
+       "e": "🗣️",
+       "en": "August",
+       "note": "أوجست"
+      },
+      {
+       "e": "🗣️",
+       "en": "Which",
+       "note": "ويتش — من غير h ظاهرة"
+      }
+     ]
+    },
+    {
+     "fact": "مهمة المدرّس (Task): سجّل نفسك وانت بتتكلم عن وقتك المفضل في اليوم أو الأسبوع وإزاي بتقضيه (Talk about your favorite time and how you spend it) — استخدم in/on/at وكلمات الجلسة.",
+     "icon": "🎙️"
     }
    ],
    "qs": [
@@ -5150,26 +5334,188 @@
      "wrong": {
       "in / at": "in للشهور والسنين، مش للأيام."
      }
+    },
+    {
+     "t": "mcq",
+     "q": "I get up ___ the morning and go to bed ___ night.",
+     "o": [
+      "in / at",
+      "at / in",
+      "on / at",
+      "in / in"
+     ],
+     "a": "in / at",
+     "why": "in the morning لكن at night — حافظهم كده.",
+     "wrong": {
+      "in / in": "«in night» غلط؛ الصح at night."
+     },
+     "pt": 1
+    },
+    {
+     "t": "mcq",
+     "q": "I was born ___ August.",
+     "o": [
+      "in",
+      "on",
+      "at"
+     ],
+     "a": "in",
+     "why": "مع الشهر لوحده بنستخدم in.",
+     "wrong": {
+      "on": "on مع التاريخ الكامل (on the 11th of August)."
+     },
+     "pt": 1
+    },
+    {
+     "t": "mcq",
+     "q": "I was born ___ the 11th of August.",
+     "o": [
+      "on",
+      "in",
+      "at"
+     ],
+     "a": "on",
+     "why": "مع التاريخ (يوم محدد) بنستخدم on.",
+     "pt": 1
+    },
+    {
+     "t": "mcq",
+     "q": "إزاي تكتب الرقم الترتيبي من 5؟",
+     "o": [
+      "fifth",
+      "fiveth",
+      "fivth",
+      "fifeth"
+     ],
+     "a": "fifth",
+     "why": "5 → fifth (حرف f بدل ve)، زي 12 → twelfth.",
+     "wrong": {
+      "fiveth": "غلطة مشهورة؛ الـ ve بتتحول f."
+     }
+    },
+    {
+     "t": "mcq",
+     "q": "واحد في الشارع قالك: Have you got the time, please? يقصد:",
+     "o": [
+      "الساعة كام؟",
+      "عندك وقت فاضي؟",
+      "معاك فلوس؟",
+      "فين المحطة؟"
+     ],
+     "a": "الساعة كام؟",
+     "why": "the time هنا يعني الساعة؛ لو قصده وقت فاضي هيقول Have you got time?",
+     "wrong": {
+      "عندك وقت فاضي؟": "الفرق في the: «the time» = الساعة، و«time» من غير the = وقت فاضي."
+     }
+    },
+    {
+     "t": "mcq",
+     "q": "Wednesday بتتنطق إزاي؟",
+     "o": [
+      "وِنزداي",
+      "وِدنِسداي",
+      "وِدنزداي"
+     ],
+     "a": "وِنزداي",
+     "why": "الـ d الأولى صامتة.",
+     "pt": 2
+    },
+    {
+     "t": "fill",
+     "q": "I ___ home at 8 am and get home at 5 pm. (leave — ماضي)",
+     "a": [
+      "left"
+     ],
+     "why": "leave → left في الماضي."
+    },
+    {
+     "t": "mcq",
+     "q": "عكس expensive:",
+     "o": [
+      "cheap",
+      "poor",
+      "awful",
+      "wet"
+     ],
+     "a": "cheap",
+     "why": "cheap ✗ expensive (رخيص ✗ غالي)، أما poor ✗ rich.",
+     "wrong": {
+      "poor": "poor عكس rich (فقير ✗ غني) — للناس مش للأسعار."
+     }
+    },
+    {
+     "t": "mcq",
+     "q": "أنهي جملة صح؟",
+     "o": [
+      "My school day ends at 1.30.",
+      "My school day end at 1.30.",
+      "My school day is end at 1.30.",
+      "My school day ending at 1.30."
+     ],
+     "a": "My school day ends at 1.30.",
+     "why": "My school day مفرد غائب ← ends.",
+     "wrong": {
+      "My school day end at 1.30.": "ناقصة s مع الفاعل المفرد."
+     }
+    },
+    {
+     "t": "mcq",
+     "q": "I help my kids ___ their homework.",
+     "o": [
+      "do",
+      "doing",
+      "does",
+      "to doing"
+     ],
+     "a": "do",
+     "why": "help + شخص + فعل أصلي (أو to + فعل).",
+     "pt": 2
+    },
+    {
+     "t": "order",
+     "q": "رتّب الكلمات لتكوين جملة صحيحة",
+     "words": [
+      "born",
+      "I",
+      "on",
+      "was",
+      "August",
+      "11th"
+     ],
+     "a": [
+      "I",
+      "was",
+      "born",
+      "on",
+      "August",
+      "11th"
+     ],
+     "why": "I + was born + on + التاريخ."
     }
    ],
    "hook": "المواعيد والتواريخ في كل حاجة: حجز، اجتماع، دكتور. وحروف الجر on/in/at هي اللي بيغلط فيها الكل.",
    "goals": [
-    "تقول التاريخ بالأعداد الترتيبية",
-    "تستخدم on/in/at مع الوقت",
-    "تختار أداة السؤال المناسبة"
+    "تقول التاريخ وتاريخ ميلادك بالأعداد الترتيبية",
+    "تستخدم in/on/at مع كل أنواع الوقت",
+    "تتكلم عن يومك ومواعيدك بمفردات الكلاس",
+    "تنطق الشهور والأيام الصعبة صح"
    ],
    "summary": [
-    "the first of March / March 1st",
-    "at + ساعة (at 5 pm)",
-    "on + يوم أو تاريخ (on Monday)",
-    "in + شهر أو سنة (in May, in 2025)",
-    "Why سبب، Whose ملكية، How طريقة"
+    "the first of March / March 1st — 5th = fifth",
+    "in + شهر/سنة، in the morning/afternoon/evening",
+    "on + يوم/تاريخ، on school days",
+    "at + ساعة، at night/noon/midnight/dawn",
+    "I was born in August / on the 11th of August",
+    "What time = When، Have you got the time? = الساعة كام؟"
    ],
    "mistakes": [
     "«in Monday» — الصح on Monday",
-    "«at 2025» — الصح in 2025"
+    "«in night» — الصح at night",
+    "«I born in 1999» — الصح I was born in 1999",
+    "«fiveth» — الصح fifth",
+    "نطق الـ d في Wednesday"
    ],
-   "task": "قول تاريخ ميلادك وتاريخ النهارده، و3 مواعيد عندك الأسبوع ده بـ on/at."
+   "task": "سجّل دقيقة عن وقتك المفضل وإزاي بتقضيه (Talk about your favorite time and how you spend it): استخدم in/on/at، وقول تاريخ ميلادك بـ I was born on…"
   },
   {
    "id": "bk6",
@@ -8069,6 +8415,123 @@
    "lvl": 1,
    "exAr": "باغفى حوالي الساعة عشرة بالليل.",
    "emoji": "😴"
+  },
+  {
+   "id": "en-v281",
+   "en": "leave",
+   "ar": "يمشي/يغادر",
+   "ex": "I leave home at 7.",
+   "lvl": 1,
+   "exAr": "بمشي من البيت الساعة 7.",
+   "emoji": "🚪"
+  },
+  {
+   "id": "en-v282",
+   "en": "arrive at",
+   "ar": "يوصل",
+   "ex": "I arrive at work at 8.",
+   "lvl": 1,
+   "exAr": "بوصل الشغل الساعة 8.",
+   "emoji": "📍"
+  },
+  {
+   "id": "en-v283",
+   "en": "awful",
+   "ar": "وحش جدًا",
+   "ex": "The weather is awful today.",
+   "lvl": 1,
+   "exAr": "الجو وحش جدًا النهارده.",
+   "emoji": "😖"
+  },
+  {
+   "id": "en-v284",
+   "en": "friendly",
+   "ar": "ودود",
+   "ex": "My neighbours are very friendly.",
+   "lvl": 1,
+   "exAr": "جيراني ودودين جدًا.",
+   "emoji": "😊"
+  },
+  {
+   "id": "en-v285",
+   "en": "comfortable",
+   "ar": "مريح",
+   "ex": "This chair is comfortable.",
+   "lvl": 1,
+   "exAr": "الكرسي ده مريح.",
+   "emoji": "🛋️"
+  },
+  {
+   "id": "en-v286",
+   "en": "cheap",
+   "ar": "رخيص",
+   "ex": "This phone is cheap.",
+   "lvl": 1,
+   "exAr": "التليفون ده رخيص.",
+   "emoji": "🏷️"
+  },
+  {
+   "id": "en-v287",
+   "en": "expensive",
+   "ar": "غالي",
+   "ex": "The hotel is expensive.",
+   "lvl": 1,
+   "exAr": "الفندق غالي.",
+   "emoji": "💰"
+  },
+  {
+   "id": "en-v288",
+   "en": "wet",
+   "ar": "مبلول",
+   "ex": "My clothes are wet.",
+   "lvl": 1,
+   "exAr": "هدومي مبلولة.",
+   "emoji": "💧"
+  },
+  {
+   "id": "en-v289",
+   "en": "fog",
+   "ar": "شبورة",
+   "ex": "There is fog in the morning.",
+   "lvl": 1,
+   "exAr": "فيه شبورة الصبح.",
+   "emoji": "🌫️"
+  },
+  {
+   "id": "en-v290",
+   "en": "except for",
+   "ar": "ما عدا",
+   "ex": "I work every day except for Friday.",
+   "lvl": 1,
+   "exAr": "بشتغل كل يوم ما عدا الجمعة.",
+   "emoji": "➖"
+  },
+  {
+   "id": "en-v291",
+   "en": "midnight",
+   "ar": "نص الليل",
+   "ex": "I go to bed at midnight.",
+   "lvl": 1,
+   "exAr": "بنام نص الليل.",
+   "emoji": "🌙"
+  },
+  {
+   "id": "en-v292",
+   "en": "dawn",
+   "ar": "الفجر",
+   "ex": "I pray at dawn.",
+   "lvl": 1,
+   "exAr": "بصلي الفجر.",
+   "emoji": "🌅"
+  },
+  {
+   "id": "en-v293",
+   "en": "autumn",
+   "ar": "الخريف",
+   "ex": "Autumn is my favourite season.",
+   "lvl": 1,
+   "exAr": "الخريف فصلي المفضل.",
+   "emoji": "🍂"
   }
  ],
  "about": "كورس إنجليزي للمبتدئين مبني على كلاسك الحقيقي وكتاب الأكاديمية: كل وحدة فيها قاعدة واحدة واضحة، وأمثلة من الحياة اليومية، وأخطاء العرب الشائعة، ومهمة كلام بصوتك. الهدف إنك تخرج قادر تعرّف نفسك وتتكلم عن شغلك وعيلتك ويومك وهواياتك بجمل صحيحة — مش بس تحفظ قواعد.",
