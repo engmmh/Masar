@@ -244,12 +244,12 @@
   }
   // Lazy, once-only trigger: the 1.4MB quran.json used to load on every boot
   // (even before the PIN screen, even for accounts without Quran access) — now
-  // it's fetched only the first time the person actually opens the Mushaf or
-  // the تسميع (hide-text) view, and re-renders the current Quran sub-view once it lands.
+  // it's fetched only the first time the person actually opens a Quran view that needs
+  // the text (Mushaf, today's hifz plan, محفوظي), and re-renders the current Quran sub-view once it lands.
   function ensureQuranLoaded() {
     if (QURAN || quranLoadPromise) return quranLoadPromise;
     quranLoadPromise = loadQuran().then(function () {
-      if (state.tab === "quran" && state.qv && (state.qv.mode === "mushaf" || state.qv.mode === "hide" || state.qv.mode === "lawh")) render();
+      if (state.tab === "quran" && state.qv && state.qv.mode !== "wird") render();
     });
     return quranLoadPromise;
   }
@@ -267,81 +267,6 @@
   function totalPages() { var t = 0; for (var k in state.days) t += (state.days[k].q || 0); return t; }
   function juzOf(p) { return Math.min(30, p <= 21 ? 1 : Math.floor((p - 2) / 20) + 1); }
 
-  /* ---------------- لوح الحفظ (lawh) — SRS memorization board ---------------- */
-  // Reuses the exact spaced-repetition interval table and stage semantics already
-  // proven for vocabulary review (SRS_STAGE_DAYS / SRS_MAX_STAGE / cardStage in
-  // learn.js), applied to Quran pages instead of vocab cards. Persisted under
-  // state.learn.lawh so it rides the existing "learn" meta sync bucket — no change
-  // to the storage/sync plumbing in app.js was needed.
-  // Phase: اللوح moved from page-keyed cells to surah/ayah-range units (L.units,
-  // keyed by unitId() — see above). L.pages is the old page-keyed shape; it's kept
-  // read-only and migrated into L.units the first time QURAN data is available
-  // (can't map a page to a surah before then), so nobody's existing progress is
-  // lost by this change. Migration takes each marked page's status and applies it
-  // to that page's starting surah as a whole-surah unit, keeping the best (highest)
-  // status if more than one of that surah's old pages disagreed.
-  function lawhData() {
-    if (!state.learn.lawh) state.learn.lawh = { pages: {}, log: {} };
-    var L = state.learn.lawh;
-    if (!L.units) L.units = {};
-    if (!L.migratedUnits && QURAN) {
-      var pageKeys = L.pages ? Object.keys(L.pages) : [];
-      pageKeys.forEach(function (pStr) {
-        var c = L.pages[pStr]; if (!c || !c.status) return;
-        var ayahs = pageAyahs(Number(pStr)); if (!ayahs.length) return;
-        var id = unitId(ayahs[0].surah), existing = L.units[id];
-        if (!existing || c.status > existing.status) {
-          L.units[id] = { status: c.status, stage: c.stage, due: c.due, learnedAt: c.learnedAt };
-        }
-      });
-      L.migratedUnits = 1;
-      if (pageKeys.length) saveMeta("learn", 0);
-    }
-    return L;
-  }
-  function lawhCycle(id) {
-    var L = lawhData(), key = nowR().key, cur = L.units[id] || { status: 0 };
-    if (cur.status === 0) { cur.status = 1; }
-    else if (cur.status === 1) {
-      cur.status = 2; cur.stage = 1; cur.due = addDays(key, SRS_STAGE_DAYS[1]); cur.learnedAt = key;
-      if (!L.log[key]) L.log[key] = { memorized: [], reviewed: [] };
-      L.log[key].memorized.push(id);
-    } else { cur = { status: 0 }; }
-    L.units[id] = cur; saveMeta("learn", 500); render();
-  }
-  function lawhReview(id, good) {
-    var L = lawhData(), key = nowR().key, cur = L.units[id]; if (!cur || cur.status !== 2) return;
-    cur.stage = cardStage(cur);
-    if (good) { cur.stage = Math.min(SRS_MAX_STAGE, cur.stage + 1); cur.due = addDays(key, SRS_STAGE_DAYS[cur.stage]); }
-    else { cur.stage = 0; cur.due = addDays(key, 1); }
-    if (!L.log[key]) L.log[key] = { memorized: [], reviewed: [] };
-    L.log[key].reviewed.push(id);
-    saveMeta("learn", 500); render();
-  }
-  // Only for a "large" surah (see isLargeSurah): a checkpoint covering part of
-  // it, tracked and reviewed exactly like a whole-surah unit from here on.
-  function lawhAddRange(s, from, to) {
-    var surah = QURAN && QURAN.surahs[s - 1]; if (!surah) return;
-    from = Math.max(1, Math.min(surah.ayahCount, Math.round(Number(from)) || 1));
-    to = Math.max(from, Math.min(surah.ayahCount, Math.round(Number(to)) || from));
-    var L = lawhData(), id = unitId(s, from, to);
-    if (!L.units[id]) L.units[id] = { status: 0 };
-    saveMeta("learn", 0); render();
-  }
-  function lawhRemoveRange(id) {
-    var L = lawhData(); delete L.units[id]; saveMeta("learn", 0); render();
-  }
-  // Most recent تسميع result logged for this unit (any day), for the "آخر مرة"
-  // trend line — lets a repeat session show whether fewer ayahs needed revealing
-  // than last time, instead of the one-off finish toast being the only feedback.
-  function lastSelfCheckFor(id) {
-    var L = lawhData(), keys = Object.keys(L.log || {}).sort().reverse();
-    for (var i = 0; i < keys.length; i++) {
-      var checks = L.log[keys[i]].selfChecks || [];
-      for (var j = checks.length - 1; j >= 0; j--) { if (checks[j].unit === id) return checks[j]; }
-    }
-    return null;
-  }
   function addPages(n) {
     var key = nowR().key, d = state.days[key] || (state.days[key] = {});
     d.q = Math.max(0, (d.q || 0) + n);
@@ -490,59 +415,24 @@
     }
     return candidate;
   }
-  // A surah "spans more than one Mushaf page" — the natural, data-driven cutoff
-  // for offering ayah-range splitting in اللوح: a surah that fits on one page is
-  // a fine single memorization unit, one that doesn't benefits from checkpoints.
-  // Math.max guards the handful of short surahs that *start* mid-page sharing it
-  // with the next surah (pageForSurah(s+1) would otherwise read as "before s").
-  function lastPageOfSurah(s) {
-    var next = s < 114 ? pageForSurah(s + 1) - 1 : 604;
-    return Math.max(pageForSurah(s), next);
-  }
-  function isLargeSurah(s) { return lastPageOfSurah(s) > pageForSurah(s); }
-
-  /* ---------------- لوح unit ids: "s12" = whole surah 12, "s2:1-50" = ayahs
-     1-50 of surah 2. Parsed/built here once so lawhData/lawhView/hideView all
-     agree on the same shape instead of re-deriving it in three places. ---- */
-  function unitId(s, from, to) { return (from == null) ? ("s" + s) : ("s" + s + ":" + from + "-" + to); }
-  function parseUnitId(id) {
-    var m = /^s(\d+)(?::(\d+)-(\d+))?$/.exec(String(id || ""));
-    if (!m) return null;
-    var s = Number(m[1]), surah = QURAN && QURAN.surahs[s - 1];
-    var ayahCount = surah ? surah.ayahCount : 0;
-    var whole = !m[2];
-    return { s: s, from: whole ? 1 : Number(m[2]), to: whole ? ayahCount : Number(m[3]), whole: whole };
-  }
-  function unitAyahs(u) {
-    if (!QURAN) return [];
-    var surah = QURAN.surahs[u.s - 1]; if (!surah) return [];
-    var out = [];
-    for (var a = u.from; a <= u.to; a++) out.push({ surah: u.s, surahName: surah.name, ayah: a, text: surah.verses[a - 1].text });
-    return out;
-  }
-  function unitLabel(u) {
-    var surah = QURAN && QURAN.surahs[u.s - 1], name = surah ? surah.name : ("سورة " + arNum(u.s));
-    return u.whole ? name : (name + " (آية " + arNum(u.from) + "-" + arNum(u.to) + ")");
-  }
-  function pageForUnit(u) { return pageForAyah(u.s, u.from); }
-
   /* ---------------- quran tab sub-navigation ---------------- */
   // Mirrors the state.lv sub-view pattern used throughout the Learn tab: a small
   // mode object drives which sub-screen renders inside the same tab panel.
   function quranSubNavHTML() {
-    var m = (state.qv && state.qv.mode) || "wird";
-    return '<div class="seg2" style="margin-block-end:14px">' +
-      '<button data-act="qv" data-m="wird" aria-pressed="' + (m === "wird") + '">وردي</button>' +
-      '<button data-act="qv" data-m="mushaf" aria-pressed="' + (m === "mushaf") + '">المصحف</button>' +
-      '<button data-act="qv" data-m="lawh" aria-pressed="' + (m === "lawh") + '">اللوح</button></div>';
+    var m = (state.qv && state.qv.mode) || "today";
+    function b(k, t) { return '<button data-act="qv" data-m="' + k + '" aria-pressed="' + (m === k) + '">' + t + "</button>"; }
+    return '<div class="seg2 q-nav" style="margin-block-end:14px">' + b("today", "خطة اليوم") + b("mushaf", "المصحف") + b("wird", "الورد") + b("mem", "محفوظي") + "</div>";
   }
+  // Four sub-screens: today's plan (new memorization + review of what's memorized +
+  // wird — hifz.js), the Mushaf reader, wird/khatma stats, and "محفوظي" (what's memorized).
   function quranView(now) {
-    if (!state.qv) state.qv = { mode: "wird" };
+    if (!state.qv || ["today", "mushaf", "wird", "mem"].indexOf(state.qv.mode) < 0) state.qv = { mode: "today" };
     var m = state.qv.mode;
+    if (m !== "wird") ensureQuranLoaded();
     if (m === "mushaf") return quranSubNavHTML() + mushafView(now);
-    if (m === "lawh") return quranSubNavHTML() + lawhView(now);
-    if (m === "hide") return hideView(now);
-    return quranSubNavHTML() + wirdView(now);
+    if (m === "mem") return quranSubNavHTML() + hzMemView(now);
+    if (m === "wird") return quranSubNavHTML() + wirdView(now);
+    return quranSubNavHTML() + hzTodayView(now);
   }
 
   function wirdView(now) {
@@ -587,237 +477,16 @@
     return state.qv.page ? mushafPageHTML(now, state.qv.page) : mushafHomeHTML(now);
   }
 
-  /* ---------------- لوح الحفظ (lawh) view ---------------- */
-  function lawhStatusLabel(st) { return st === 2 ? "محفوظة" : (st === 1 ? "قيد الحفظ" : "غير محفوظة"); }
-  function lawhView(now) {
-    if (!QURAN) {
-      return head(now) + '<div class="card"><h3 style="margin:0 0 6px">اللوح — متابعة الحفظ</h3>' +
-        '<p class="muted" style="font-size:14px">جاري تحميل نص القرآن…</p></div>';
-    }
-    if (state.qv.lawhSurah) return lawhSurahView(now, state.qv.lawhSurah);
-
-    var L = lawhData(), key = now.key, memorizedSurahs = 0, memorizing = 0, dueToday = [];
-    Object.keys(L.units).forEach(function (id) {
-      var c = L.units[id], u = parseUnitId(id); if (!u) return;
-      if (c.status === 2) { memorizedSurahs++; if (c.due <= key) dueToday.push({ id: id, u: u, due: c.due }); }
-      else if (c.status === 1) memorizing++;
-    });
-    dueToday.sort(function (a, b) { return a.due < b.due ? -1 : (a.due > b.due ? 1 : 0); });
-    var dueHTML = dueToday.length
-      ? dueToday.map(function (d) {
-        return '<div class="azcard" style="padding:12px 16px"><div class="row between"><b>' + esc(unitLabel(d.u)) + '</b></div>' +
-          '<div class="row wrapr" style="margin-block-start:8px"><button class="btn sm alt" data-act="lawh-hide" data-u="' + d.id + '">تسميع (إخفاء النص)</button>' +
-          '<button class="btn sm" data-act="lawh-rev" data-u="' + d.id + '" data-g="1">تمت المراجعة</button>' +
-          '<button class="btn sm alt" data-act="lawh-rev" data-u="' + d.id + '" data-g="0">نسيتها</button></div></div>';
-      }).join("")
-      : '<p class="muted" style="font-size:14px">لا توجد مراجعات مستحقة اليوم، الحمد لله.</p>';
-
-    var rows = QURAN.surahs.map(function (s, i) {
-      var num = i + 1, id = unitId(num), c = L.units[id], st = c ? c.status : 0;
-      var large = isLargeSurah(num);
-      return '<button class="surah-row" data-act="lawh-open" data-s="' + num + '">' +
-        '<span class="surah-num">' + arNum(num) + '</span>' +
-        '<span class="surah-name">' + esc(s.name) + (large ? ' <span class="muted" style="font-size:11px">(طويلة)</span>' : "") + "</span>" +
-        '<span class="chip ' + (st === 2 ? "on" : "") + '" style="font-size:11px">' + lawhStatusLabel(st) + "</span></button>";
-    }).join("");
-
-    return head(now) +
-      '<div class="card"><h3 style="margin:0 0 10px">اللوح — متابعة الحفظ</h3>' +
-      '<p class="muted" style="font-size:13px">' + arNum(memorizedSurahs) + ' وحدة محفوظة · ' + arNum(memorizing) + " قيد الحفظ</p></div>" +
-      '<div class="card"><div class="row between"><h3 style="margin:0">مراجعات اليوم</h3><span class="chip">' + arNum(dueToday.length) + "</span></div>" +
-      '<div style="margin-block-start:10px">' + dueHTML + "</div></div>" +
-      '<p class="muted" style="font-size:13px;margin-block-end:8px">اضغط على أي سورة لتفتح حالتها: غير محفوظة ← قيد الحفظ ← محفوظة. السور الطويلة (أكتر من صفحة مصحف) تقدر كمان تقسّمها لنطاقات آيات تحفظها على مراحل.</p>' +
-      '<div class="card surah-list" style="padding:6px">' + rows + "</div>";
-  }
-
-  // Opened by tapping any surah in the list above. Always shows the whole-surah
-  // unit (works standalone for short surahs); a "large" surah additionally gets
-  // an ayah-range picker so it can be memorized in checkpoints instead of one
-  // all-or-nothing block.
-  function lawhSurahView(now, s) {
-    var surah = QURAN.surahs[s - 1];
-    if (!surah) { state.qv.lawhSurah = null; return lawhView(now); }
-    var L = lawhData(), wholeId = unitId(s), whole = L.units[wholeId] || { status: 0 };
-    var last = lastSelfCheckFor(wholeId);
-    var wholeCard = '<div class="azcard"><div class="row between"><b>السورة كاملة</b><span class="chip' + (whole.status === 2 ? " on" : "") + '">' + lawhStatusLabel(whole.status) + "</span></div>" +
-      (last ? '<p class="muted" style="font-size:12px;margin-block-start:6px">آخر تسميع: احتجت تكشف ' + arNum(last.revealed) + " من " + arNum(last.total) + " آية</p>" : "") +
-      '<div class="row wrapr" style="margin-block-start:10px">' +
-      '<button class="btn sm" data-act="lawh-tap" data-u="' + wholeId + '">' + (whole.status === 0 ? "ابدأ الحفظ" : whole.status === 1 ? "تم الحفظ" : "إعادة ضبط") + "</button>" +
-      '<button class="btn sm alt" data-act="lawh-hide" data-u="' + wholeId + '">تسميع (إخفاء النص)</button>' +
-      (whole.status === 2 ? '<button class="btn sm alt" data-act="lawh-rev" data-u="' + wholeId + '" data-g="1">تمت المراجعة</button><button class="btn sm alt" data-act="lawh-rev" data-u="' + wholeId + '" data-g="0">نسيتها</button>' : "") +
-      '<button class="btn sm alt" data-act="qa-unit" data-u="' + wholeId + '">' + ic("headphones") + ' استمع وكرّر</button>' +
-      '<button class="linkbtn" data-act="lawh-goto-mushaf" data-u="' + wholeId + '">' + ic("book") + ' افتح في المصحف</button>' +
-      "</div></div>";
-
-    var rangesHTML = "";
-    if (isLargeSurah(s)) {
-      var rangeIds = Object.keys(L.units).filter(function (id) { var u = parseUnitId(id); return u && u.s === s && !u.whole; });
-      var rangeCells = rangeIds.map(function (id) {
-        var u = parseUnitId(id), c = L.units[id];
-        return '<div class="azcard" style="padding:10px 14px"><div class="row between">' +
-          '<button class="linkbtn" data-act="lawh-tap" data-u="' + id + '" style="font-weight:600">آية ' + arNum(u.from) + "-" + arNum(u.to) + " — " + lawhStatusLabel(c.status) + "</button>" +
-          '<button class="linkbtn" style="color:var(--bad)" data-act="lawh-remove" data-u="' + id + '">حذف</button></div>' +
-          '<div class="row wrapr" style="margin-block-start:6px">' +
-          '<button class="btn sm alt" data-act="lawh-hide" data-u="' + id + '">تسميع</button><button class="btn sm alt" data-act="qa-unit" data-u="' + id + '">' + ic("headphones") + '</button>' +
-          (c.status === 2 ? '<button class="btn sm alt" data-act="lawh-rev" data-u="' + id + '" data-g="1">تمت المراجعة</button><button class="btn sm alt" data-act="lawh-rev" data-u="' + id + '" data-g="0">نسيتها</button>' : "") +
-          "</div></div>";
-      }).join("");
-      rangesHTML = '<div class="card"><h3 style="margin:0 0 8px">نطاقات (اختياري)</h3>' +
-        '<p class="muted" style="font-size:13px">السورة دي ' + arNum(surah.ayahCount) + ' آية — تقدر تحفظها على أجزاء بدل ما تستنى تخلّصها كلها.</p>' +
-        (rangeCells || "") +
-        '<div class="row wrapr" style="margin-block-start:10px;align-items:end">' +
-        '<label class="field" style="flex:1;min-width:90px">من آية<input type="number" id="lawhFrom" min="1" max="' + surah.ayahCount + '" placeholder="1"></label>' +
-        '<label class="field" style="flex:1;min-width:90px">إلى آية<input type="number" id="lawhTo" min="1" max="' + surah.ayahCount + '" placeholder="' + arNum(surah.ayahCount) + '"></label>' +
-        '<button class="btn sm" data-act="lawh-add-range" data-s="' + s + '">إضافة نطاق</button>' +
-        "</div></div>";
-    }
-
-    return '<button class="linkbtn" data-act="lawh-close">← كل السور</button>' +
-      '<div class="card"><h3 style="margin:0 0 4px">' + esc(surah.name) + '</h3><p class="muted" style="font-size:12px">' + arNum(surah.ayahCount) + " آية</p></div>" +
-      wholeCard + rangesHTML + qaBarHTML();
-  }
-
-  /* ---------------- استماع ذكي (Beta) — word-matching mistake detector ---------------- */
-  // Compares what the browser's speech recognizer heard against the verified ayah
-  // text, word by word, after stripping tashkeel/punctuation. This is NOT tajweed
-  // judgment and Arabic speech recognition accuracy varies a lot by device/accent —
-  // the UI must say so plainly (see the Beta note rendered in hideView below).
-  var smartRec = null;
-  function smartListenSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
+  // Folds Quranic orthography to plain letters for search (dagger alif and alef wasla
+  // become a plain alef, tashkeel and waqf marks are dropped, hamza seats and teh
+  // marbuta are unified) so a typed query matches the verified text.
   function normalizeAr(s) {
     return String(s)
-      // Dagger alif (ٰ, U+0670) is how Quranic orthography often spells a long
-      // "ا" sound inside a word (e.g. the alif in كَٰفِرُونَ, يَـٰٰأَيُّها) without
-      // writing an actual alef letter -- it falls inside the diacritic range stripped
-      // just below, so without this fold it was being silently DELETED from the
-      // target text while recognized speech comes back with a real alef letter in
-      // that spot, breaking the word match (target الكفرون vs heard الكافرون).
-      // Fold it to a plain alef first, before the generic diacritic strip below.
       .replace(/ٰ/g, "ا")
       .replace(/[ً-ٟؐ-ؚۖ-ٰۭـ]/g, "")
-      // ٱ (Alef Wasla) is how the Quran text spells a plain connecting alef
-      // at the start of words like اللّه (Allah) -- it falls outside the letter
-      // range kept just below, so without this fold it was being silently
-      // DELETED from the target ayah text while recognized speech comes back
-      // with an ordinary alef. That one missing letter broke the word match
-      // on almost every ayah (Alef Wasla is extremely common in Quranic
-      // spelling), which is why reciting correctly never registered.
       .replace(/ٱ/g, "ا")
-      // Hamza-bearing alef forms (آ/أ/إ) and teh marbuta (ة) are also
-      // spelled one way in careful Quranic orthography and often another way (or
-      // dropped) in a speech-recognized transcript -- folding them the same way
-      // on both sides keeps the comparison about the WORDS, not the exact hamza
-      // seat, which this beta aid was never meant to judge (see the UI disclaimer).
       .replace(/[آأإ]/g, "ا")
       .replace(/ة/g, "ه")
       .replace(/[^ء-ي\s]/g, "")
       .replace(/\s+/g, " ").trim();
-  }
-  function wordMatchRatio(target, heard) {
-    var tW = normalizeAr(target).split(" ").filter(Boolean), hW = normalizeAr(heard).split(" ").filter(Boolean);
-    if (!tW.length) return 0;
-    var hi = 0, matched = 0;
-    for (var i = 0; i < tW.length; i++) {
-      var found = -1;
-      for (var j = hi; j < hW.length; j++) { if (hW[j] === tW[i]) { found = j; break; } }
-      if (found >= 0) { matched++; hi = found + 1; }
-    }
-    return matched / tW.length;
-  }
-  function onSmartHeard(transcript) {
-    var u = parseUnitId(state.qv.hideUnit); if (!u) return;
-    var ayahs = unitAyahs(u), idx = state.qv.listenIdx || 0;
-    // Shown live in hideView regardless of match, so a mismatch is visible and
-    // diagnosable (is the mic hearing the words at all? the right ones? garbled?)
-    // instead of looking like total silence when nothing reveals.
-    state.qv.lastHeard = transcript;
-    if (idx >= ayahs.length) { render(); return; }
-    // Check a small window ahead of the ayah we're waiting on, not just that one
-    // ayah in isolation. Without this, a single ayah the recognizer ever missed
-    // (dropped the result, or just never matched it) permanently desyncs the
-    // whole session: everything recited correctly afterward keeps getting
-    // compared against that same stale, already-passed target and always scores
-    // near 0% — which is exactly what a stuck session looks like. Matching the
-    // best candidate in the next few ayahs instead lets a missed one be caught
-    // up on automatically, and reveals the ones skipped over along with it since
-    // they were presumably recited too, just not individually confirmed.
-    var WINDOW = 3, best = idx, bestRatio = 0;
-    for (var k = idx; k < Math.min(ayahs.length, idx + WINDOW); k++) {
-      var r = wordMatchRatio(ayahs[k].text, transcript);
-      if (r > bestRatio) { bestRatio = r; best = k; }
-    }
-    state.qv.lastRatio = bestRatio;
-    if (bestRatio >= 0.6) {
-      for (var m = idx; m <= best; m++) state.qv.revealed[m] = true;
-      state.qv.listenIdx = best + 1;
-    }
-    render();
-  }
-  function startSmartListen() {
-    if (!smartListenSupported()) { toast("الاستماع الذكي غير متاح في هذا المتصفح"); return; }
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    try {
-      smartRec = new SR();
-      smartRec.lang = "ar-SA"; smartRec.continuous = true; smartRec.interimResults = true;
-      smartRec.onresult = function (e) {
-        var transcript = ""; for (var i = e.resultIndex; i < e.results.length; i++) transcript += e.results[i][0].transcript + " ";
-        onSmartHeard(transcript);
-      };
-      smartRec.onerror = function (e) { toast("تعذر الاستماع: " + (e && e.error || "")); stopSmartListen(); };
-      smartRec.onend = function () { if (state.qv.listening) { try { smartRec.start(); } catch (e2) { } } };
-      smartRec.start();
-      state.qv.listening = true; state.qv.listenIdx = state.qv.listenIdx || 0; render();
-    } catch (e) { toast("تعذر بدء الاستماع"); }
-  }
-  function stopSmartListen() {
-    state.qv.listening = false;
-    if (smartRec) { try { smartRec.onend = null; smartRec.stop(); } catch (e) { } smartRec = null; }
-  }
-
-  /* ---------------- تسميع — hide-text self-check ---------------- */
-  // Text per ayah comes from pageAyahs(), sliced from the same verified source as
-  // the Mushaf reader — nothing here is retyped. Each ayah starts hidden; the
-  // person recites from memory and taps only the ones they needed to check, so
-  // the reveal count is an honest signal of how solid that page really is.
-  function hideView(now) {
-    var id = state.qv.hideUnit, u = id && parseUnitId(id);
-    if (!QURAN || !u) {
-      return head(now) + '<button class="linkbtn" data-act="hide-close">← رجوع للوح</button>' +
-        '<div class="card"><h3 style="margin:0 0 6px">تسميع</h3>' +
-        '<p class="muted" style="font-size:14px">جاري تحميل نص القرآن…</p></div>';
-    }
-    var ayahs = unitAyahs(u);
-    if (!state.qv.revealed) state.qv.revealed = {};
-    // "revealed" only controls whether an ayah's text is showing (by hand, or because
-    // the smart listener just heard it recited correctly). "mistaken" is the strictly
-    // smaller set revealed BY HAND — a correct recitation isn't a mistake, so it must
-    // not inflate the count below (see onSmartHeard, which only ever sets "revealed").
-    if (!state.qv.mistaken) state.qv.mistaken = {};
-    var rows = ayahs.map(function (v, i) {
-      if (state.qv.revealed[i]) {
-        return '<div class="hide-row"><span class="ayah">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">﴿' + arNum(v.ayah) + "﴾</span></span></div>";
-      }
-      return '<button class="hide-row hidden" data-act="hide-reveal" data-i="' + i + '">— اضغط لإظهار الآية ' + arNum(v.ayah) + " من " + esc(v.surahName) + " —</button>";
-    }).join("");
-    // "Mistake" = an ayah you had to check by hand because you couldn't recite it —
-    // one count per ayah no matter how many times you re-checked it. An ayah the
-    // smart listener revealed because you said it correctly is not a mistake.
-    var mistakes = Object.keys(state.qv.mistaken).length;
-    var listenRow = state.qv.listening
-      ? '<button class="btn sm alt" data-act="listen-stop">إيقاف الاستماع</button><span class="chip on">يستمع الآن…</span>'
-      : '<button class="btn sm" data-act="listen-start">تشغيل الاستماع الذكي (تجريبي)</button>';
-    // Shows exactly what the recognizer heard (and the match score against the
-    // current ayah) live, instead of silence when it doesn't reveal — makes it
-    // possible to tell "it isn't hearing me" from "it heard me wrong" from
-    // "it heard me right but something else is off".
-    var heardRow = state.qv.lastHeard
-      ? '<p class="muted" style="font-size:12px;margin-block-start:8px">سمعت: «' + esc(state.qv.lastHeard.trim()) + '» — تطابق ' + arNum(Math.round((state.qv.lastRatio || 0) * 100)) + "%</p>"
-      : "";
-    return head(now) + '<button class="linkbtn" data-act="hide-close">← رجوع للوح</button>' +
-      '<div class="card"><div class="row between"><h2 style="margin:0">تسميع ' + esc(unitLabel(u)) + '</h2><span class="chip' + (mistakes ? "" : " on") + '">' + arNum(mistakes) + " غلطة من " + arNum(ayahs.length) + '</span></div>' +
-      '<p class="muted" style="font-size:13px;margin-block-start:6px">اقرأ غيبًا، واضغط فقط عند الحاجة للتأكد من آية — كل آية تلمسها بإيدك تتحسب غلطة. مع الاستماع الذكي، الآية اللي تقرأها صح بتتكشف لوحدها من غير ما تتحسب غلطة.</p>' +
-      '<div class="row wrapr" style="margin-block-start:10px">' + listenRow + "</div>" + heardRow +
-      '<p class="muted" style="font-size:11px;margin-block-start:8px">ميزة تجريبية (Beta): تطابق فقط الكلمات المسموعة بالكلمات المكتوبة، ولا تحكم على التجويد أو الضبط، ودقة التعرف على الصوت العربي محدودة وتختلف حسب الجهاز — استخدمها كمساعد لا كحَكَم نهائي.</p></div>' +
-      '<div class="card" style="display:flex;flex-direction:column;gap:8px">' + rows + "</div>" +
-      '<button class="btn" style="width:100%;margin-block-start:10px" data-act="hide-finish">انتهيت من التسميع</button>';
   }

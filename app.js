@@ -31,6 +31,9 @@
   // tiles and headings app-wide instead of mixed emoji. Size follows the text
   // (1.15em) unless a container sets it.
   var IC = {
+    "plus": "<path d=\"M12 5v14\"/><path d=\"M5 12h14\"/>",
+    "refresh": "<path d=\"M3 12a9 9 0 0 1 15-6.7L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-15 6.7L3 16\"/><path d=\"M3 21v-5h5\"/>",
+    "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/>",
     "link": "<path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\"/><path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\"/>",
     "gamepad": "<line x1=\"6\" x2=\"10\" y1=\"12\" y2=\"12\"/><line x1=\"8\" x2=\"8\" y1=\"10\" y2=\"14\"/><line x1=\"15\" x2=\"15.01\" y1=\"13\" y2=\"13\"/><line x1=\"18\" x2=\"18.01\" y1=\"11\" y2=\"11\"/><rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\"/>",
     "mic": "<path d=\"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z\"/><path d=\"M19 10v2a7 7 0 0 1-14 0v-2\"/><line x1=\"12\" x2=\"12\" y1=\"19\" y2=\"22\"/>",
@@ -637,7 +640,7 @@
     exp: { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} },
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
     expKind: "expense", expEditId: null, expBudgetEditCat: null, expRecurAdd: false, expSwipeId: null,
-    tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, qv: { mode: "wird" }, quiz: null, card: null, spk: null,
+    tab: "home", hv: "dashboard", pv: "today", archiveN: 30, lv: { mode: "courses" }, qv: { mode: "today" }, quiz: null, card: null, spk: null,
     wd: null, weakTab: "all",
     az: null, azProgress: {}, azOpen: {}, settingsOpen: false,
     // Default to every section allowed until an account's real permissions are known
@@ -973,6 +976,8 @@
     if (allow.indexOf("quran") >= 0) {
       var t = target(), n = pagesOn(now.key);
       lines.push({ key: "quran", ic: "book", text: n + "/" + t + " صفحة", frac: t ? Math.min(1, n / t) : 1 });
+      var hzs = hifzPlanStatus(now);
+      if (hzs) lines.push({ key: "hifz", ic: "mushaf", text: "حفظ ومراجعة " + hzs.done + "/" + hzs.total, frac: hzs.done / hzs.total });
     }
     if (allow.indexOf("learn") >= 0) {
       var due = dueCards(now).length;
@@ -1009,6 +1014,8 @@
     }
     if (allow.indexOf("quran") >= 0) {
       var t2 = target(), n2 = pagesOn(now.key);
+      var hz2 = hifzPlanStatus(now);
+      if (hz2 && hz2.done < hz2.total) return { label: "كمّل من مكانك", sub: "حفظ ومراجعة النهارده (" + hz2.done + "/" + hz2.total + ")", act: "resume-quran" };
       if (n2 < t2) return { label: "كمّل من مكانك", sub: "كمّل وِردك (" + (t2 - n2) + " صفحة باقية)", act: "resume-quran" };
     }
     return null;
@@ -1260,50 +1267,6 @@
       case "mushaf-close": state.qv.page = null; render(); break;
       case "mushaf-next": state.qv.page = Math.min(604, Number(el.getAttribute("data-p")) + 1); $("#p-quran").scrollTop = 0; render(); break;
       case "mushaf-prev": state.qv.page = Math.max(1, Number(el.getAttribute("data-p")) - 1); $("#p-quran").scrollTop = 0; render(); break;
-      case "lawh-goto-mushaf": {
-        var lgU = parseUnitId(el.getAttribute("data-u"));
-        if (lgU) { state.qv = { mode: "mushaf", page: pageForUnit(lgU) }; $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded(); }
-        break;
-      }
-      case "lawh-tap": lawhCycle(el.getAttribute("data-u")); break;
-      case "lawh-rev": lawhReview(el.getAttribute("data-u"), el.getAttribute("data-g") === "1"); break;
-      case "lawh-open": state.qv.lawhSurah = Number(el.getAttribute("data-s")); $("#p-quran").scrollTop = 0; render(); break;
-      case "lawh-close": state.qv.lawhSurah = null; render(); break;
-      case "lawh-add-range": {
-        var larS = Number(el.getAttribute("data-s")), larFrom = $("#lawhFrom"), larTo = $("#lawhTo");
-        lawhAddRange(larS, larFrom ? larFrom.value : 1, larTo ? larTo.value : "");
-        break;
-      }
-      case "lawh-remove": lawhRemoveRange(el.getAttribute("data-u")); break;
-      case "lawh-hide": {
-        var lhU = parseUnitId(el.getAttribute("data-u"));
-        if (lhU) {
-          state.qv = { mode: "hide", hideUnit: el.getAttribute("data-u"), revealed: {}, lawhSurah: lhU.s };
-          $("#p-quran").scrollTop = 0; render(); ensureQuranLoaded();
-        }
-        break;
-      }
-      case "hide-reveal": {
-        var hrI = el.getAttribute("data-i");
-        state.qv.revealed[hrI] = true;
-        if (!state.qv.mistaken) state.qv.mistaken = {};
-        state.qv.mistaken[hrI] = true; // checked by hand = a mistake, unlike a correct smart-listen auto-reveal
-        render(); break;
-      }
-      case "hide-close": stopSmartListen(); state.qv = { mode: "lawh", lawhSurah: state.qv.lawhSurah }; render(); break;
-      case "listen-start": startSmartListen(); break;
-      case "listen-stop": stopSmartListen(); render(); break;
-      case "hide-finish": {
-        stopSmartListen();
-        var hfL = lawhData(), hfKey = nowR().key, hfUnit = state.qv.hideUnit, hfU = parseUnitId(hfUnit);
-        var hfTotal = hfU ? unitAyahs(hfU).length : 0, hfRevealed = Object.keys(state.qv.mistaken || {}).length;
-        if (!hfL.log[hfKey]) hfL.log[hfKey] = { memorized: [], reviewed: [] };
-        if (!hfL.log[hfKey].selfChecks) hfL.log[hfKey].selfChecks = [];
-        hfL.log[hfKey].selfChecks.push({ unit: hfUnit, revealed: hfRevealed, total: hfTotal });
-        saveMeta("learn", 0);
-        toast(hfRevealed === 0 ? "ما شاء الله، تسميع كامل بدون غلطة" : "تمام، " + hfRevealed + " غلطة من " + hfTotal);
-        state.qv = { mode: "lawh", lawhSurah: state.qv.lawhSurah }; render(); break;
-      }
       case "unit": state.settings.unit = el.getAttribute("data-u"); saveMeta("settings", 400); render(); break;
       case "amt": state.settings.amount = Math.max(1, Math.min(60, state.settings.amount + Number(el.getAttribute("data-n")))); saveMeta("settings", 400); render(); break;
       case "weekly-open": state.hv = "weekly"; $("#p-home").scrollTop = 0; render(); break;
@@ -1315,7 +1278,7 @@
         state.lv = { mode: rsUnit.kind === "dialogue" ? "dialogue" : "lesson", c: rsC, u: rsU, step: 0 }; goTab("learn"); render(); break;
       case "resume-review": state.card = { q: buildReviewQueue(now, null, 0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "resume-prayer": goTab("prayer"); render(); break;
-      case "resume-quran": goTab("quran"); render(); break;
+      case "resume-quran": state.qv = { mode: "today" }; goTab("quran"); render(); break;
       case "azkar-open": state.az = el.getAttribute("data-k"); $("#p-prayer").scrollTop = 0; render(); break;
       case "azkar-close": state.az = null; render(); break;
       case "azkar-tap": var azK = el.getAttribute("data-k"), azI = Number(el.getAttribute("data-i"));

@@ -165,14 +165,15 @@
   function mushafPageHTML(now, p) {
     var S = qSet(); p = Math.max(1, Math.min(604, p));
     if (S.qLast !== p) { S.qLast = p; saveMeta("settings", 3000); }
-    var ayahs = pageAyahs(p), last = null, body = "", cur = qaCur(), sel = state.qv.sel, hl = state.qv.hl, names = [];
+    var ayahs = pageAyahs(p), last = null, body = "", cur = qaCur(), sel = state.qv.sel, hl = state.qv.hl, rg = state.qv.range, names = [];
+    if (rg) gaInit();
     ayahs.forEach(function (v) {
       if (v.surah !== last) {
         names.push(v.surahName);
         if (v.ayah === 1) body += '<div class="q-surah-head">' + esc(v.surahName) + "</div>" + (v.surah !== 1 && v.surah !== 9 ? '<div class="q-basmala">' + esc(quranDisplayText(QURAN.surahs[0].verses[0].text)) + "</div>" : "");
         last = v.surah;
       }
-      var cls = "ayah" + (cur && cur.s === v.surah && cur.a === v.ayah ? " playing" : "") + (sel && sel.s === v.surah && sel.a === v.ayah ? " sel" : "") + (hl && hl.s === v.surah && hl.a === v.ayah ? " hl" : "");
+      var cls = "ayah" + (cur && cur.s === v.surah && cur.a === v.ayah ? " playing" : "") + (sel && sel.s === v.surah && sel.a === v.ayah ? " sel" : "") + (hl && hl.s === v.surah && hl.a === v.ayah ? " hl" : "") + (rg && GA && (function (g) { return rg.some(function (r) { return g >= r[0] && g <= r[1]; }); })(gOf(v.surah, v.ayah)) ? " hz" : "");
       var marked = S.qMarks.some(function (m) { return m.s === v.surah && m.a === v.ayah; });
       body += '<span class="' + cls + '" data-act="q-ayah" data-s="' + v.surah + '" data-a="' + v.ayah + '">' + esc(quranDisplayText(v.text)) + ' <span class="ayah-n">' + (marked ? "" + ic("bookmark") + "" : "") + "﴿" + arNum(v.ayah) + "﴾</span></span> ";
     });
@@ -180,7 +181,7 @@
     var selBar = sel ? '<div class="q-selbar"><b>' + esc(surahName(sel.s)) + " · آية " + arNum(sel.a) + "</b>" +
       '<button class="btn sm" data-act="qa-from">' + ic("play") + ' من هنا</button><button class="btn sm alt" data-act="q-mark" data-s="' + sel.s + '" data-a="' + sel.a + '">' + ic("bookmark") + '</button>' +
       '<button class="btn sm alt" data-act="q-copy">' + ic("copy") + '</button><button class="btn sm alt" data-act="q-sel-x">✕</button></div>' : "";
-    return '<div class="row between" style="margin-block-end:8px"><button class="linkbtn" data-act="mushaf-close">← الفهرس</button><span class="muted" style="font-size:13px">' + esc(names.join(" · ")) + "</span></div>" +
+    return '<div class="row between" style="margin-block-end:8px">' + (state.qv.back === "today" ? '<button class="linkbtn" data-act="qv" data-m="today">← خطة اليوم</button>' : '<button class="linkbtn" data-act="mushaf-close">← الفهرس</button>') + '<span class="muted" style="font-size:13px">' + esc(names.join(" · ")) + "</span></div>" +
       '<div class="q-tools"><button class="btn sm' + (QA.on && QA.mode === "page" ? "" : " alt") + '" data-act="qa-page">' + (QA.on ? "" + ic("vol") + " شغّال" : "" + ic("play") + " استمع") + "</button>" +
       '<select class="inp q-rec" id="qRec" aria-label="القارئ">' + RECITERS.map(function (r) { return '<option value="' + r.k + '"' + (S.qRec === r.k ? " selected" : "") + ">" + esc(r.n) + "</option>"; }).join("") + "</select>" +
       '<button class="btn sm alt" data-act="q-font" data-v="-2" aria-label="تصغير الخط">A−</button><button class="btn sm alt" data-act="q-font" data-v="2" aria-label="تكبير الخط">A+</button>' +
@@ -194,11 +195,6 @@
       '<button class="btn sm alt" data-act="mushaf-prev" data-p="' + p + '"' + (p <= 1 ? " disabled" : "") + ">→ السابقة</button></div>" +
       selBar + qaBarHTML();
   }
-  function unitQueue(id) {
-    var u = parseUnitId(id); if (!u) return [];
-    return unitAyahs(u).map(function (v) { return { s: v.surah, a: v.ayah }; });
-  }
-
   /* events */
   document.addEventListener("change", function (e) {
     if (e.target && e.target.id === "qRec") {
@@ -248,7 +244,6 @@
         q.forEach(function (x, i) { if (x.s === sl.s && x.a === sl.a) idx = i; });
         state.qv.sel = null; qaPlay(q, idx, "page"); break;
       }
-      case "qa-unit": { var uq = unitQueue(el.getAttribute("data-u")); if (!uq.length) break; if (qSet().qRep < 3) qSet().qRep = 3; qaPlay(uq, 0, "unit"); toast("كل آية هتتكرر " + qSet().qRep + " مرات للحفظ"); break; }
       case "qa-toggle": qaToggle(); break;
       case "qa-next": if (QA.on) { QA.repLeft = 1; qaEnded(); } break;
       case "qa-stop": qaStop(); break;
