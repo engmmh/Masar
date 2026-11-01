@@ -554,6 +554,7 @@
     if (v.mode === "games") return top + gamesHubHTML(v.c);
     if (v.mode === "intro") return top + introHTML();
     if (v.mode === "phrases") return top + dailyPhrasesHTML();
+    if (v.mode === "talk") return top + talkHTML();
     if (v.mode === "game") return top + gameHTML();
     return top + catalogHTML(now);
   }
@@ -588,6 +589,7 @@
     return '<div class="feat"' + courseStyle("en") + '><span class="feat-tag">' + ic("star") + ' ننصحك تبدأ بيه</span>' +
       '<div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico("cap") + '</span><div><h2>' + esc(COURSES.en.title) + "</h2>" +
       '<p>' + esc(COURSES.en.desc) + "</p></div></div>" +
+      '<button class="feat-talk" data-act="tk-open"><span class="feat-talk-ic">' + ic("mic") + '</span><span class="grow"><b>اتكلم: محادثات من شغلك ويومك</b><small>ترد بكلامك انت، وتتعلم الطريقة الطبيعية</small></span><span>←</span></button>' +
       '<ul class="feat-list"><li>' + ic("vol") + ' كل كلمة بالنطق ومثال وترجمة</li><li>' + ic("gamepad") + ' ألعاب: مطابقة، سباق، استماع، تهجئة</li><li>' + ic("mic") + ' تحدي نطق بالمايك ومحادثات حقيقية</li><li>' + ic("brain") + ' مراجعة ذكية (SRS) عشان متنساش</li></ul>' +
       '<div class="feat-prog"><span class="bar"><i style="width:' + st.pct + '%"></i></span><span><span class="num">' + st.done + "/" + st.total + "</span> وحدة</span></div>" +
       '<div class="row wrapr"><button class="btn" data-act="course-open" data-c="en">' + (st.done ? "كمّل الكورس" : "ابدأ الكورس") + "</button>" +
@@ -764,6 +766,7 @@
       courseAboutHTML(c, cid) + (c.complement ? complementsHTML(c, cid) : "") +
       '<div class="sec-h">المراجعة والتدريب</div><div class="tiles">' +
       tile("cards", ico("refresh"), "كروت المراجعة", due, due ? "" : " disabled") +
+      (cid === "en" ? tile("tk-open", "" + ic("mic") + "", "اتكلم", null) : "") +
       (cid === "en" ? tile("ph-open", "" + ic("chat") + "", "جمل يومية", null) : "") +
       (cid === "en" ? tile("intro-open", "" + ic("mic") + "", "قدّم نفسك", null) : "") +
       (hasVocab && c.vocab.length >= 8 ? tile("games-open", "" + ic("gamepad") + "", "ألعاب", null) : "") +
