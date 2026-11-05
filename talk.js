@@ -54,7 +54,7 @@
       st.stars = tot / max >= 0.85 ? 3 : tot / max >= 0.55 ? 2 : 1; st.done = true;
       var D = tkData(), rec = D.sc[st.k] || { best: 0, plays: 0 };
       rec.best = Math.max(rec.best, st.stars); rec.plays++; D.sc[st.k] = rec;
-      addXp(st.xp + 3, nowR()); saveMeta("learn", 0); render(); return;
+      addXp(st.xp + 3, nowR()); if (typeof coachTalkDone === "function") coachTalkDone(); saveMeta("learn", 0); render(); return;
     }
     saveMeta("learn", 800); $("#p-learn").scrollTop = 0; render();
     var q = f.sc.turns[st.i][0];
@@ -125,7 +125,8 @@
         '<p class="muted">' + esc(sc.t) + " · +" + (st.xp + 3) + " نقطة</p>" +
         '<div class="row wrapr" style="justify-content:center;margin-block:12px"><button class="btn" data-act="tk-start" data-k="' + sc.k + '">' + ic("repeat") + " اتكلم تاني</button>" +
         (nx ? '<button class="btn alt" data-act="tk-start" data-k="' + nx.k + '">الموقف الجاي ←</button>' : '<button class="btn alt" data-act="tk-set" data-k="' + f.set.k + '">كل المواقف</button>') + "</div>" +
-        '<button class="btn alt sm" data-act="tk-save">' + ic("pen") + " احفظ الجمل الطبيعية في «جملي»</button></div>" +
+        '<button class="btn alt sm" data-act="tk-save">' + ic("pen") + " احفظ الجمل الطبيعية في «جملي»</button>" +
+        (state.co && state.co.tkBack ? '<button class="btn" style="width:100%;margin-block-start:10px" data-act="co-hub">' + ic("check") + " رجوع لجرعة اليوم</button>" : "") + "</div>" +
         '<div class="sec-h">المحادثة كاملة</div><div class="card">' + sum + "</div>";
     }
     var t = sc.turns[st.i];
