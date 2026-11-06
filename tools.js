@@ -4,11 +4,7 @@
   var TASBIH_PRESETS = ["سبحان الله", "الحمد لله", "الله أكبر", "لا إله إلا الله", "أستغفر الله", "اللهم صلِّ على محمد"];
   var TASBIH_TARGETS = [33, 100, 1000, 0];
 
-  function toolsEntryCardHTML() {
-    return '<div class="card"><h3>أدوات</h3><p class="muted" style="font-size:14px;margin-block:4px 10px">السبحة الإلكترونية واتجاه القبلة</p><div class="row wrapr">' +
-      '<button class="btn" data-act="tool-open" data-k="tasbih">' + ic("beads") + ' السبحة</button>' +
-      '<button class="btn alt" data-act="tool-open" data-k="qibla">' + ic("compass") + ' القبلة</button></div></div>';
-  }
+
 
   function tasbihState() {
     var t = state.settings.tasbih;

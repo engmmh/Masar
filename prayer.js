@@ -283,15 +283,23 @@
     // The streak banner and the prayer-times ring used to also sit on the home screen —
     // they now live only here, as this section's own header, since the home "خطة اليوم"
     // card already summarizes today's prayer count in one line.
-    var top = pv === "today" ? streakBannerHTML(now) + heroHTML(now) : "";
+    // Today: the times ring and the five prayers first, then missed prayers, then one
+    // compact row for adhkar and tools; the streak is a single line, not a card.
+    var top = pv === "today" ? heroHTML(now) + streakLineHTML(now) : "";
     return top + '<div class="seg2 two" style="margin-block:6px 12px"><button data-act="pv" data-v="today" aria-pressed="' + (pv === "today") + '">اليوم</button><button data-act="pv" data-v="archive" aria-pressed="' + (pv === "archive") + '">الأرشيف والفائت</button></div>' +
-      (pv === "archive" ? archiveView(now) : alertHTML(now) + azkarEntryCardHTML() + toolsEntryCardHTML() + prayersHTML(now));
+      (pv === "archive" ? streakBannerHTML(now) + archiveView(now) : prayersHTML(now) + alertHTML(now) + prayerQuickRowHTML());
   }
-  function azkarEntryCardHTML() {
-    return '<div class="card"><h3>الأذكار</h3><p class="muted" style="font-size:14px;margin-block:4px 10px">أذكار الصباح والمساء من حصن المسلم</p><div class="row wrapr">' +
-      '<button class="btn" data-act="azkar-open" data-k="morning">' + ic("sunrise") + ' أذكار الصباح</button>' +
-      '<button class="btn alt" data-act="azkar-open" data-k="evening">' + ic("moon") + ' أذكار المساء</button></div></div>';
+  function streakLineHTML(now) {
+    var st = streak(now), stOT = streakOnTime(now), next = STREAK_MILESTONES.filter(function (m) { return m.d > st; })[0];
+    if (!st && !stOT) return "";
+    return '<p class="p-streak">' + ic("flame") + " <b class=\"num\">" + st + "</b> " + (st === 1 ? "يوم كامل" : "أيام كاملة") + " · <b class=\"num\">" + stOT + "</b> في الوقت" +
+      (next ? ' <span class="muted">· كمان ' + fmtDaysAr(next.d - st) + " لـ" + next.label + "</span>" : "") + "</p>";
   }
+  function prayerQuickRowHTML() {
+    function b(act, k, icon, t) { return '<button class="p-quick" data-act="' + act + '" data-k="' + k + '">' + ic(icon) + "<span>" + t + "</span></button>"; }
+    return '<div class="p-quickrow">' + b("azkar-open", "morning", "sunrise", "أذكار الصباح") + b("azkar-open", "evening", "moon", "أذكار المساء") + b("tool-open", "tasbih", "beads", "السبحة") + b("tool-open", "qibla", "compass", "القبلة") + "</div>";
+  }
+
   // Only one not-yet-finished dhikr is shown "open" (full text + note) at a time; the
   // rest sit collapsed to a single line. Finishing the open one auto-advances the focus
   // to the next not-done item — reading one thing at a time instead of scanning a long
