@@ -571,11 +571,8 @@
   function catalogHTML(now) {
     var L = level(), wc = weakCount(), streak = studyStreak(now);
     var others = ALLOWED_COURSES.filter(function (cid) { return COURSES[cid] && !(cid === "en" && featuredCourseHTML()); });
-    return '<div class="lstats">' +
-      '<div><b class="num">' + L.lv + '</b><small>المستوى</small><span class="bar amber"><i style="width:' + L.pct + '%"></i></span></div>' +
-      '<div><b class="num">' + L.xp + '</b><small>نقطة</small></div>' +
-      '<div><b class="num">' + ic("flame") + ' ' + streak + '</b><small>يوم متواصل</small></div>' +
-      '<button data-act="weak-open"><b class="num" style="color:var(--weak)">' + ic("target") + ' ' + wc + '</b><small>نقاط ضعفي</small></button></div>' +
+    return '<div class="lstrip"><span>المستوى <b class="num">' + L.lv + '</b></span><span><b class="num">' + L.xp + '</b> نقطة</span><span>' + ic("flame") + ' <b class="num">' + streak + "</b> يوم</span>" +
+      (wc ? '<button class="linkbtn" data-act="weak-open">' + ic("target") + ' <b class="num">' + wc + "</b> نقطة ضعف</button>" : "") + "</div>" +
       continueCardHTML() + featuredCourseHTML() +
       (others.length ? '<div class="sec-h">' + (featuredCourseHTML() ? "كورسات تانية" : "اختر الكورس") + '</div><div class="cgrid">' + others.map(courseCardHTML).join("") + "</div>" : "") +
       badgesHTML();
@@ -586,7 +583,7 @@
       var on = !!state.learn.badges[b.id];
       return '<button class="badge' + (on ? " on" : "") + '" data-act="badge-info" data-b="' + b.id + '" aria-label="' + esc(b.title) + '"><span class="ic">' + ico(on ? b.icon : "lock") + "</span><small>" + esc(b.title) + "</small></button>";
     }).join("");
-    return '<div class="sec-h">الإنجازات · <span class="num">' + earned + "/" + ACHIEVEMENTS.length + '</span></div><div class="badgerow">' + row + "</div>";
+    return '<details class="c-badges"><summary class="sec-h">الإنجازات · <span class="num">' + earned + "/" + ACHIEVEMENTS.length + '</span></summary><div class="badgerow">' + row + "</div></details>";
   }
   // Phase 10 — "جملي" (my sentences): a plain, append-only place to keep every
   // self-produced English sentence, fed from the lesson's production step, the
@@ -707,13 +704,17 @@
   }
   function courseDoneAny(c, cid) { return c.units.some(function (u) { return (state.learn.units[cid + ":" + u.id] || {}).done; }); }
   function courseHomeHTML(cid, now) {
-    var c = COURSES[cid], lvl = state.cardLvl || 0, due = dueCards(now, cid, lvl).length, ms = weakList("all").filter(function (w) { return w.cid === cid; }).length, done = courseDone(cid);
+    var c = COURSES[cid], due = dueCards(now, cid, 0).length, ms = weakList("all").filter(function (w) { return w.cid === cid; }).length, done = courseDone(cid);
     var notesCount = (state.learn.notes[cid] || []).length;
     var mySentCount = (state.learn.mySentences || []).filter(function (s) { return s.cid === cid; }).length;
     var st = courseStats(cid), nu = nextUnit(cid), hasVocab = !!(c.vocab && c.vocab.length);
-    var lvlChips = hasVocab ? '<div class="row wrapr" style="margin-block-start:10px">' + [0, 1, 2, 3].map(function (l) {
-      return '<button class="chipbtn' + (lvl === l ? " on" : "") + '" data-act="cardlvl" data-lvl="' + l + '">' + LVL_LBL[l] + "</button>";
-    }).join("") + "</div>" : "";
+    // Four main tools; the rest are small links so the page stays about the course itself.
+    function link(act, icon, label, n) { return '<button class="linkbtn c-link" data-act="' + act + '" data-c="' + cid + '">' + icon + " " + label + (n != null ? ' <span class="num muted">' + n + "</span>" : "") + "</button>"; }
+    var links = [
+      hasVocab ? link("bank-open", ic("book"), "بنك الكلمات", c.vocab.length) : "",
+      hasVocab && c.vocab.length >= 8 && cid !== "en" ? link("games-open", ic("gamepad"), "ألعاب الكلمات") : "",
+      mySentCount ? link("mysent-open", ic("pen"), "جملي", mySentCount) : ""
+    ].filter(Boolean).join("");
     var cta = nu
       ? '<button class="btn chero-cta" data-act="unit-open" data-c="' + cid + '" data-u="' + nu.id + '">' + ic("play") + ' ' + (done ? "كمّل: " : "ابدأ: ") + esc(plainTitle(nu.title)) + "</button>"
       : '<button class="btn chero-cta" data-act="final-exam" data-c="' + cid + '">' + ic("trophy") + ' الامتحان النهائي</button>';
@@ -724,17 +725,14 @@
       '<div class="chero"' + courseStyle(cid) + '><div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico(COURSE_ICO[cid]) + '</span><div><h2>' + esc(c.title) + "</h2><p>" + esc(c.desc) + "</p></div></div>" +
       '<div class="chero-stats"><div><b class="num">' + st.done + "/" + st.total + '</b><small>وحدة</small></div><div><b class="num">' + st.started + '</b><small>كلمة اتعلمتها</small></div><div><b class="num">' + st.pct + '%</b><small>إنجاز</small></div></div>' +
       '<span class="bar"><i style="width:' + st.pct + '%"></i></span>' + cta + "</div>" +
-      courseAboutHTML(c, cid) + (c.complement ? complementsHTML(c, cid) : "") +
-      '<div class="sec-h">المراجعة والتدريب</div><div class="tiles">' +
+      (cid === "en" ? '<button class="card co-nudge" data-act="co-open"><span class="co-ic">' + ic("target") + '</span><span class="grow"><b>الكورس ده مرجع القواعد</b><small class="muted">التدريب اليومي والكلام والاستماع في «مساري».</small></span><span>←</span></button>' : "") +
+      '<div class="tiles c-tiles">' +
       tile("cards", ico("refresh"), "كروت المراجعة", due, due ? "" : " disabled") +
-      (cid === "en" ? tile("co-open", "" + ic("target") + "", "مساري", null) : "") +
-      (hasVocab && c.vocab.length >= 8 ? tile("games-open", "" + ic("gamepad") + "", "ألعاب", null) : "") +
-      tile("weak-open", "" + ic("target") + "", "نقاط ضعفي", ms) +
-      (hasVocab ? tile("bank-open", ico("book"), "بنك الكلمات", c.vocab.length) : "") +
-      tile("notes-open", ico("pin"), "المهم", notesCount) +
-      tile("mysent-open", "" + ic("pen") + "", "جملي", mySentCount) +
       (c.examBank && c.examBank.length ? tile("exambank", ico("cap"), "بنك الأسئلة", c.examBank.length) : "") +
-      "</div>" + lvlChips +
+      tile("weak-open", "" + ic("target") + "", "نقاط ضعفي", ms) +
+      tile("notes-open", ico("pin"), "المهم", notesCount) +
+      "</div>" + (links ? '<div class="c-links">' + links + "</div>" : "") +
+      courseAboutHTML(c, cid) + (c.complement ? complementsHTML(c, cid) : "") +
       '<div class="row between" style="margin-block:18px 4px"><h2>خريطة الكورس</h2><span class="chip num">' + done + "/" + c.units.length + "</span></div>" +
       pathHTML(cid, c.units, done) +
       finalExamCardHTML(cid, c, done) + (c.complement ? "" : complementsHTML(c, cid));

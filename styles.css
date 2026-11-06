@@ -1347,3 +1347,16 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .co-can-ic .i { width: 14px; height: 14px; }
 .co-bank-h { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; margin: 10px 0 6px; }
 .co-bank-h .i { width: 15px; height: 15px; }
+
+/* course page / catalog declutter */
+.lstrip { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 13px; color: var(--muted); margin-block: 4px 12px; }
+.lstrip b { color: var(--ink, inherit); }
+.lstrip .i { width: 14px; height: 14px; color: var(--amber); vertical-align: -2px; }
+.lstrip .linkbtn .i { color: var(--weak); }
+.c-tiles { margin-block: 12px 4px; }
+.c-links { display: flex; flex-wrap: wrap; gap: 4px 16px; margin-block: 6px 12px; font-size: 13px; }
+.c-link .i { width: 14px; height: 14px; vertical-align: -2px; }
+.c-badges { margin-block-start: 8px; }
+.c-badges > summary { cursor: pointer; list-style: none; }
+.c-badges > summary::after { content: " ▾"; color: var(--muted); }
+.c-badges[open] > summary::after { content: " ▴"; }

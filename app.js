@@ -1332,7 +1332,6 @@
       case "match-l": answerMatchL(Number(el.getAttribute("data-i"))); break;
       case "match-r": answerMatchR(Number(el.getAttribute("data-i"))); break;
       case "qnext": state.quiz.i++; state.quiz.ans = null; state.quiz.pick = []; state.quiz.matchR = null; state.quiz.matchDone = null; state.quiz.matchSel = null; if (state.quiz.i >= state.quiz.qs.length) finishQuiz(); render(); break;
-      case "cardlvl": state.cardLvl = Number(el.getAttribute("data-lvl")) || 0; render(); break;
       case "cards": var cc = el.getAttribute("data-c"); state.lv.c = cc; state.card = { q: buildReviewQueue(now, cc, state.cardLvl || 0, 15), i: 0, flip: false, known: 0 }; state.lv = { mode: "cards", c: cc }; render(); break;
       case "daily-review": state.card = { q: buildReviewQueue(now, null, 0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "exambank": var ebC = el.getAttribute("data-c"), ebCourse = COURSES[ebC]; if (!ebCourse || !ebCourse.examBank || !ebCourse.examBank.length) break;
