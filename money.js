@@ -1,5 +1,5 @@
 "use strict";
-  /* ---------------- expenses (الحاسبة) ---------------- */
+  /* ---------------- expenses (فلوسي) ---------------- */
   function monthKey(key) { return key.slice(0, 7); }
   function monthLabel(mk) { var p = mk.split("-"); return AR_MONTHS[Number(p[1]) - 1] + " " + p[0]; }
   function curExpMonth(now) { return state.expMonth || monthKey(now.key); }

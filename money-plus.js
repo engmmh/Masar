@@ -1,5 +1,5 @@
 "use strict";
-  /* ---------------- الحاسبة: reports, savings goals, tools ---------------- */
+  /* ---------------- فلوسي: reports, savings goals, tools ---------------- */
   // expView routes between four sub-screens; the original expenses screen lives
   // on as expMainView in money.js. Everything here reads/writes state.exp, so it
   // syncs through the same "exp" meta row as before.
@@ -158,7 +158,7 @@
     s = s.replace(/(\d+(?:\.\d+)?)([+\-])(\d+(?:\.\d+)?)%/g, "$1$2($1*$3/100)").replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
     try { var v = Function('"use strict";return (' + s + ")")(); return isFinite(v) ? Math.round(v * 1e8) / 1e8 : null; } catch (e) { return null; }
   }
-  var CALC_KEYS = ["C", "(", ")", "÷", "7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "%", "0", ".", "" + ic("backspace") + ""];
+  var CALC_KEYS = ["C", "(", ")", "÷", "7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "%", "0", ".", "⌫"];
   function expToolsView(now) {
     var t = state.expTool || "calc", seg = '<div class="seg2" style="margin-block-end:12px">' + [["calc", "" + ic("calc") + " آلة حاسبة"], ["zakat", "" + ic("scale") + " الزكاة"], ["split", "" + ic("receipt") + " تقسيم"]].map(function (x) {
       return '<button data-act="exp-tool" data-v="' + x[0] + '" aria-pressed="' + (t === x[0]) + '">' + x[1] + "</button>";
@@ -169,7 +169,7 @@
     return seg + '<div class="card mx-calc"><div class="mx-calc-scr"><small dir="ltr">' + esc(ex || "0") + '</small><b class="num" dir="ltr">' + (val == null ? (ex ? "…" : "0") : fmtMoney(val)) + "</b></div>" +
       '<div class="mx-keys">' + CALC_KEYS.map(function (k) {
         var cls = /[÷×−+]/.test(k) ? " op" : k === "C" ? " clr" : "";
-        return '<button class="mx-key' + cls + '" data-act="calc-key" data-v="' + k + '">' + k + "</button>";
+        return '<button class="mx-key' + cls + '" data-act="calc-key" data-v="' + k + '"' + (k === "⌫" ? ' aria-label="مسح آخر رقم">' + ic("backspace") : ">" + k) + "</button>";
       }).join("") + '<button class="mx-key eq" data-act="calc-key" data-v="=">=</button></div>' +
       '<button class="btn alt" style="width:100%;margin-block-start:12px" data-act="calc-to-exp"' + (val ? "" : " disabled") + ">سجّل الناتج كمصروف</button></div>";
   }

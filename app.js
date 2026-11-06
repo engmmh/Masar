@@ -1062,7 +1062,6 @@
   function settingsHTML(now) {
     return '<button class="linkbtn" data-act="settings-close">← رجوع</button><div class="sec-h">الإعدادات</div>' + pushCardHTML() +
       locationCardHTML() + backupCardHTML() +
-      '<div class="card"><h3 style="margin:0 0 6px">المظهر</h3><p class="muted" style="font-size:13px;margin-block-end:10px">النهاري / الليلي / حسب الجهاز</p><button class="btn sm alt" data-act="theme">' + esc(THEME_LBL[getTheme()]) + "</button></div>" +
       '<div class="card"><h3 style="margin:0 0 6px">سرعة النطق</h3><p class="muted" style="font-size:13px;margin-block-end:10px">سرعة زرار 🔊 العادي — الضغطة الطويلة على 🔊 دايمًا بتنطق ببطء زيادة عن كده.</p>' +
       '<div class="row wrapr">' + SPEECH_RATES.map(function (r) {
         return '<button class="chipbtn' + ((state.settings.speechRate || 0.92) === r.v ? " on" : "") + '" data-act="speech-rate" data-v="' + r.v + '">' + r.lbl + "</button>";
@@ -1071,12 +1070,12 @@
       '<div class="row wrapr">' + [5, 10, 15, 20].map(function (m) {
         return '<button class="chipbtn' + ((state.settings.personalGoalMin || 0) === m ? " on" : "") + '" data-act="goal-min-set" data-v="' + m + '">' + m + " د</button>";
       }).join("") + '<button class="chipbtn' + (!state.settings.personalGoalMin ? " on" : "") + '" data-act="goal-min-set" data-v="0">بدون</button></div></div>' +
-      '<div class="card"><h3 style="margin:0 0 6px">حدود المراجعة اليومية</h3>' +
+      '<details class="card set-adv"><summary><b>' + ic("gear") + ' إعدادات متقدمة: حدود مراجعة كروت الكلمات</b></summary>' +
       '<p class="muted" style="font-size:13px;margin-block-end:10px">' + (state.dailyNewWordLimit > 0 ? "حدّ الكلمات الجديدة اللي ضبطه المسؤول: " + state.dailyNewWordLimit + "/يوم — تقدر تقلّله هنا لكن متزودّه عليه." : "تقدر تتحكم في عدد الكلمات الجديدة والمراجعات اللي تظهر لك كل يوم.") + "</p>" +
       '<div class="row wrapr" style="gap:14px">' +
       '<label class="field" style="max-width:150px">كلمات جديدة/يوم<input class="inp" type="number" min="0" id="setNewLimit" value="' + (state.settings.dailyNewWordLimit || "") + '" placeholder="' + srsNewLimit() + '"></label>' +
       '<label class="field" style="max-width:150px">مراجعات/يوم<input class="inp" type="number" min="0" id="setReviewLimit" value="' + (state.settings.dailyReviewLimit || "") + '" placeholder="30"></label>' +
-      "</div></div>";
+      "</div></details>";
   }
 
   /* ---------------- render ---------------- */
