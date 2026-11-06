@@ -36,9 +36,8 @@
   function gamesHubHTML(cid) {
     var c = COURSES[cid]; if (!c) return "";
     var list = GAMES.filter(function (g) { return gameAvailable(g, cid); });
-    return '<button class="linkbtn" data-act="course-open" data-c="' + cid + '">← ' + esc(c.title) + "</button>" +
+    return (cid === "en" ? '<button class="linkbtn" data-act="co-open">← مساري</button>' : '<button class="linkbtn" data-act="course-open" data-c="' + cid + '">← ' + esc(c.title) + "</button>") +
       '<div class="sec-h">' + ic("gamepad") + ' العب واتعلم</div><p class="muted" style="font-size:14px;margin-block:-4px 12px">كل لعبة بتديك نقاط، والكلمات اللي بتغلط فيها بتتضاف لنقاط ضعفك عشان تراجعها.</p>' +
-      (cid === "en" ? '<button class="card ph-promo" data-act="ph-open"><span class="tile-ic">' + ic("chats") + '</span><span class="grow"><b>جمل الحياة اليومية</b><small class="muted">110 جملة هتحتاجها فعلًا، بتتحفظ بالتكرار الذكي</small></span><span class="chip">جديد</span></button>' : "") +
       '<div class="gtiles">' + list.map(function (g) {
         var r = gameRec(cid, g.k);
         return '<button class="gtile" data-act="game-start" data-c="' + cid + '" data-k="' + g.k + '"><span class="gtile-ic">' + g.ico + "</span><b>" + esc(g.t) + "</b><small>" + esc(g.d) + "</small>" +

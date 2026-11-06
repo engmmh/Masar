@@ -335,8 +335,6 @@
       check: function (s, now) { return studyStreak(now) >= 7; } },
     { id: "course1", icon: "cert", title: "شهادة إتمام كورس", desc: "أنهيت كل وحدات كورس كامل.",
       check: function (s) { return ALLOWED_COURSES.some(function (cid) { var c = COURSES[cid]; if (!c) return false; var done = c.units.filter(function (u) { var p = s.learn.units[cid + ":" + u.id]; return p && p.done; }).length; return done >= c.units.length; }); } },
-    { id: "speaker", icon: "vol", title: "متكلم واثق", desc: "خلصت تحدي نطق كامل بدقة 100%.",
-      check: function (s) { return (s.learn.speakBest || 0) >= 100; } },
     // Phase 11 — 10 شارات جديدة
     { id: "weakhunter", icon: "shield", title: "صياد الضعف", desc: "ثبّتت 10 نقاط ضعف بالكامل.",
       check: function (s) { return (s.learn.weakGraduated || 0) >= 10; } },
@@ -423,42 +421,7 @@
 
   /* ---------------- speaking challenge ---------------- */
   function speechOK() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
-  function startSpeakChallenge(cid) {
-    var words = shuffle(COURSES[cid].vocab.slice()).slice(0, 8);
-    if (!words.length) return;
-    state.spk = { c: cid, q: words, i: 0, ok: 0, result: null, listening: false };
-    state.lv = { mode: "speak", c: cid }; render();
-  }
-  function spkListen() {
-    var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-    var s = state.spk; if (!s || !SR) return;
-    s.result = null; s.listening = true; render();
-    try {
-      var r = new SR(); r.lang = "en-US"; r.maxAlternatives = 1;
-      r.onresult = function (e) {
-        var heard = e.results[0][0].transcript;
-        var target = s.q[s.i].en;
-        var ok = norm(heard) === norm(target) || norm(heard).indexOf(norm(target)) !== -1;
-        if (ok) s.ok++;
-        s.result = { heard: heard, ok: ok }; s.listening = false; render();
-      };
-      r.onerror = function () { s.listening = false; s.result = { heard: "", ok: false, err: true }; render(); };
-      r.onend = function () { if (s.listening) { s.listening = false; render(); } };
-      r.start();
-    } catch (e) { s.listening = false; render(); }
-  }
-  function spkNext(now) {
-    var s = state.spk; if (!s) return;
-    s.i++; s.result = null;
-    if (s.i >= s.q.length) {
-      var pct = Math.round(s.ok / s.q.length * 100);
-      addXp(s.ok * 4, now);
-      state.learn.speakBest = Math.max(state.learn.speakBest || 0, pct);
-      saveMeta("learn", 0);
-      checkAchievements(now);
-    }
-    render();
-  }
+
 
 
 
@@ -539,7 +502,6 @@
     }
     if (v.mode === "quiz") return top + quizHTML();
     if (v.mode === "cards") return top + cardsHTML();
-    if (v.mode === "speak") return top + speakHTML();
     if (v.mode === "notes") return top + notesHTML(v.c);
     if (v.mode === "mysent") return top + mySentencesHTML(v.c);
     if (v.mode === "bank") return top + bankHTML(v.c);
@@ -553,7 +515,6 @@
     if (v.mode === "weakdrill") return top + weakDrillHTML();
     if (v.mode === "games") return top + gamesHubHTML(v.c);
     if (v.mode === "intro") return top + introHTML();
-    if (v.mode === "phrases") return top + dailyPhrasesHTML();
     if (v.mode === "talk") return top + talkHTML();
     if (v.mode === "coach") return top + coachHTML(now);
     if (v.mode === "game") return top + gameHTML();
@@ -584,22 +545,19 @@
       '<span class="cmeta"><span class="num">' + st.total + '</span> وحدة · <span class="num">' + st.words + '</span> كلمة · ~<span class="num">' + st.hours + "</span> س</span>" +
       '<span class="cprog"><span class="bar"><i style="width:' + st.pct + '%"></i></span><span class="num">' + st.pct + "%</span></span></span></button>";
   }
+  // The English card has exactly two doors: today's 10-minute dose, and «مساري» (every
+  // tool — speaking, listening, work English, phrases, games, the grammar course — lives there).
   function featuredCourseHTML() {
     if (ALLOWED_COURSES.indexOf("en") < 0 || !COURSES.en) return "";
-    var st = courseStats("en"), nu = nextUnit("en");
-    return '<div class="feat"' + courseStyle("en") + '><span class="feat-tag">' + ic("star") + ' ننصحك تبدأ بيه</span>' +
-      '<div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico("cap") + '</span><div><h2>' + esc(COURSES.en.title) + "</h2>" +
-      '<p>' + esc(COURSES.en.desc) + "</p></div></div>" +
-      '<div class="row wrapr" style="margin-block-start:10px"><button class="btn" data-act="co-step" data-s="' + (function () { var d = (coD().days[nowR().key]) || {}; var n = DOSE_STEPS.filter(function (s) { return !d[s[0]]; })[0]; return n ? n[0] : "ck"; })() + '">' + ic("zap") + " جرعة اليوم (١٠ دقايق)</button>" +
-      '<button class="btn alt" data-act="co-open">' + ic("target") + " مساري</button></div>" +
-      '<button class="feat-talk" data-act="tk-open"><span class="feat-talk-ic">' + ic("mic") + '</span><span class="grow"><b>اتكلم: محادثات من شغلك ويومك</b><small>ترد بكلامك انت، وتتعلم الطريقة الطبيعية</small></span><span>←</span></button>' +
-      '<ul class="feat-list"><li>' + ic("vol") + ' كل كلمة بالنطق ومثال وترجمة</li><li>' + ic("gamepad") + ' ألعاب: مطابقة، سباق، استماع، تهجئة</li><li>' + ic("mic") + ' تحدي نطق بالمايك ومحادثات حقيقية</li><li>' + ic("brain") + ' مراجعة ذكية (SRS) عشان متنساش</li></ul>' +
-      '<div class="feat-prog"><span class="bar"><i style="width:' + st.pct + '%"></i></span><span><span class="num">' + st.done + "/" + st.total + "</span> وحدة</span></div>" +
-      '<div class="row wrapr"><button class="btn" data-act="course-open" data-c="en">' + (st.done ? "كمّل الكورس" : "ابدأ الكورس") + "</button>" +
-      '<button class="btn alt" data-act="games-open" data-c="en">' + ic("gamepad") + ' العب واتعلم</button>' +
-      '<button class="btn alt" data-act="intro-open">' + ic("mic") + ' قدّم نفسك</button>' +
-      '<button class="btn alt" data-act="ph-open">' + ic("chat") + ' جمل يومية</button></div>' +
-      (nu && st.done ? '<p class="feat-next">الوحدة الجاية: ' + esc(plainTitle(nu.title)) + "</p>" : "") + "</div>";
+    var now = nowR(), d = coD().days[now.key] || {}, done = DOSE_STEPS.filter(function (s) { return d[s[0]]; }).length;
+    var next = DOSE_STEPS.filter(function (s) { return !d[s[0]]; })[0], lv = plLevel();
+    return '<div class="feat"' + courseStyle("en") + '><div class="row" style="gap:12px;align-items:center"><span class="feat-ic">' + ico("cap") + '</span><div class="grow"><h2>الإنجليزي</h2>' +
+      "<p>" + (lv ? "مستواك " + lv + " · " : "") + ic("flame") + " " + doseStreak(now) + " يوم متواصل · الأسبوع ده " + weekDone(now) + "/" + coD().goal + "</p></div></div>" +
+      '<div class="feat-prog"><span class="bar"><i style="width:' + done * 25 + '%"></i></span><span>جرعة اليوم <span class="num">' + done + "/4</span></span></div>" +
+      '<div class="row wrapr" style="margin-block-start:10px">' + (next
+        ? '<button class="btn" data-act="co-step" data-s="' + next[0] + '">' + ic("zap") + " " + (done ? "كمّل جرعة اليوم" : "ابدأ جرعة اليوم") + "</button>"
+        : '<span class="chip on">' + ic("check") + " خلصت جرعة النهارده</span>") +
+      '<button class="btn alt" data-act="co-open">' + ic("target") + " مساري</button></div></div>";
   }
   function continueCardHTML() {
     var r = state.learn.resume;
@@ -770,12 +728,8 @@
       '<div class="sec-h">المراجعة والتدريب</div><div class="tiles">' +
       tile("cards", ico("refresh"), "كروت المراجعة", due, due ? "" : " disabled") +
       (cid === "en" ? tile("co-open", "" + ic("target") + "", "مساري", null) : "") +
-      (cid === "en" ? tile("tk-open", "" + ic("mic") + "", "اتكلم", null) : "") +
-      (cid === "en" ? tile("ph-open", "" + ic("chat") + "", "جمل يومية", null) : "") +
-      (cid === "en" ? tile("intro-open", "" + ic("mic") + "", "قدّم نفسك", null) : "") +
       (hasVocab && c.vocab.length >= 8 ? tile("games-open", "" + ic("gamepad") + "", "ألعاب", null) : "") +
       tile("weak-open", "" + ic("target") + "", "نقاط ضعفي", ms) +
-      (hasVocab ? tile("speak-start", ico("vol"), "تحدي النطق", null) : "") +
       (hasVocab ? tile("bank-open", ico("book"), "بنك الكلمات", c.vocab.length) : "") +
       tile("notes-open", ico("pin"), "المهم", notesCount) +
       tile("mysent-open", "" + ic("pen") + "", "جملي", mySentCount) +
@@ -1516,20 +1470,5 @@
       '<div class="opts"><input class="inp" id="weakAns" dir="ltr" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="اكتب الإجابة">' +
       '<button class="btn" data-act="weak-submit">تحقق</button></div>';
   }
-  function speakHTML() {
-    var s = state.spk; if (!s) return "";
-    if (!speechOK()) return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><h2>مش متاح على المتصفح ده</h2><p class="muted" style="margin-block:6px 0">تحدي النطق محتاج متصفح بيدعم التعرف على الصوت، زي Chrome على أندرويد. جرّب تفتح الموقع من Chrome.</p><button class="btn" data-act="lhome">رجوع</button></div>';
-    if (s.i >= s.q.length) {
-      var pct = Math.round(s.ok / s.q.length * 100);
-      return '<div class="card"><h2>' + (pct >= 80 ? "نطق ممتاز" : (pct >= 50 ? "نطق جيد" : "محتاج تمرين أكتر")) + '</h2><p style="font-size:20px" class="num">' + s.ok + " / " + s.q.length + " (" + pct + '%)</p><button class="btn" data-act="lhome">رجوع</button></div>';
-    }
-    var w = s.q[s.i];
-    var masked = w.ex ? esc(w.ex).replace(new RegExp(w.en.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), "．．．") : "";
-    var fb = !s.result ? "" : '<div class="fb ' + (s.result.ok ? "ok" : "bad") + '">' + (s.result.err ? "✕ معرفناش نسمعك، جرّب تاني" : (s.result.ok ? "✓ صح! سمعنا: " + esc(s.result.heard) : "✕ سمعنا: " + esc(s.result.heard) + " — الصح: <span class=\"en\">" + esc(w.en) + "</span>" + spkBtn(w.en))) + "</div>";
-    return '<button class="linkbtn" data-act="lhome">← إنهاء</button><div class="card"><div class="crumb">تحدي النطق · ' + (s.i + 1) + " من " + s.q.length + '</div><div class="bar"><i style="width:' + Math.round(s.i / s.q.length * 100) + '%"></i></div>' +
-      '<div class="spkword"><div class="w" style="direction:rtl;font-size:28px">' + esc(w.ar) + "</div>" + (masked ? '<div class="muted en" style="margin-block-start:6px">' + masked + "</div>" : "") + "</div>" +
-      (s.result ? "" : '<button class="miccal' + (s.listening ? " on" : "") + '" data-act="speak-listen">' + ico("vol") + "<span>" + (s.listening ? "باسمع..." : "اضغط واتكلم") + "</span></button>") +
-      fb +
-      (s.result ? '<button class="btn" data-act="speak-next">' + (s.i + 1 >= s.q.length ? "النتيجة" : "التالي") + "</button>" : "") + "</div>";
-  }
+
 

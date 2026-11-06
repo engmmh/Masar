@@ -10,8 +10,21 @@
     var C = state.learn.coach;
     ["ck", "days", "dl", "tp", "tpv"].forEach(function (k) { if (!C[k]) C[k] = {}; });
     if (!C.wk) C.wk = [];
+    if (!C.phMig) { migratePhrases(C); C.phMig = 1; }
     return C;
   }
+  // «جمل يومية» was merged into the phrase bank: carry each phrase's stage and due date
+  // over (old id "greet3" → bank id "p-greet-3"), so no progress is lost.
+  function migratePhrases(C) {
+    var old = state.learn.ph && state.learn.ph.c; if (!old) return;
+    Object.keys(old).forEach(function (id) {
+      var m = /^([a-z]+)(\d+)$/.exec(id), r = old[id]; if (!m || !r) return;
+      var nid = "p-" + m[1] + "-" + m[2];
+      if (!C.ck[nid]) C.ck[nid] = { st: Math.min(CK_DAYS.length, r.s || 0), due: r.due || nowR().key };
+    });
+    saveMeta("learn", 0);
+  }
+  function fmtShortAr(k) { var p = k.split("-"); return Number(p[2]) + "/" + Number(p[1]); }
   function coUi() { if (!state.co) state.co = { view: "hub" }; return state.co; }
   function coGo(view, extra) { var u = coUi(); u.view = view; if (extra) Object.keys(extra).forEach(function (k) { u[k] = extra[k]; }); state.lv = { mode: "coach", c: "en" }; goTab("learn"); $("#p-learn").scrollTop = 0; render(); }
   function coDay(key) { var C = coD(); return C.days[key] || (C.days[key] = {}); }
@@ -30,7 +43,7 @@
   function ckAll() {
     if (CK_INDEX) return CK_INDEX;
     CK_INDEX = [];
-    CHUNK_CATS.forEach(function (c) { c.l.forEach(function (x, i) { CK_INDEX.push({ id: c.k + "-" + i, cat: c.k, en: x[0], ar: x[1] }); }); });
+    CHUNK_CATS.forEach(function (c) { c.l.forEach(function (x, i) { CK_INDEX.push({ id: c.k + "-" + i, cat: c.k, en: x[0], ar: x[1], w: x[2] || "" }); }); });
     return CK_INDEX;
   }
   function ckById(id) { return ckAll().filter(function (x) { return x.id === id; })[0] || null; }
@@ -147,11 +160,13 @@
     return '<button class="linkbtn" data-act="lcourses">← الكورسات</button>' + head + place + dose + wkNudge +
       '<div class="sec-h">كل الأدوات</div><div class="tiles">' +
       tile("tk-open", "", "mic", "اتكلم", null) +
+      tile("intro-open", "", "pen", "ابني تقديمك", null) +
       tile("co-go", "dls", "headphones", "استماع", dlDone + "/" + DIALOGS.length) +
       tile("co-go", "work", "briefcase", "إنجليزي الشغل", null) +
       tile("co-go", "bank", "chat", "بنك العبارات", ckLearnedCount() + "/" + ckAll().length) +
       tile("co-go", "wk", "chart", "صوتي كل أسبوع", C.wk.length || null) +
       tile("co-go", "cando", "trophy", "أقدر أعمل إيه", cdDone + "/" + CANDO.length) +
+      tile("games-open", "", "gamepad", "ألعاب الكلمات", null).replace('data-act="games-open"', 'data-act="games-open" data-c="en"') +
       tile("co-place", "", "target", lv ? "أعد اختبار المستوى" : "اختبار المستوى", lv) +
       tile("course-open", "", "book", "القواعد (الكورس)", null).replace('data-act="course-open"', 'data-act="course-open" data-c="en"') +
       "</div>";
@@ -239,7 +254,7 @@
     var x = ckById(S.ids[S.i]), cat = CHUNK_CATS.filter(function (c) { return c.k === x.cat; })[0];
     var said = S.said[x.id];
     return '<div class="gtop"><button class="linkbtn" data-act="co-hub">✕</button><b>عبارات جديدة</b><span class="num">' + (S.i + 1) + "/" + S.ids.length + "</span></div>" +
-      '<div class="card co-ck"><span class="chip">' + esc(cat.t) + '</span><p class="co-ck-en" dir="ltr" lang="en">' + esc(x.en) + '</p><p class="co-ck-ar">' + esc(x.ar) + "</p>" +
+      '<div class="card co-ck"><span class="chip">' + esc(cat.t) + '</span><p class="co-ck-en" dir="ltr" lang="en">' + esc(x.en) + '</p><p class="co-ck-ar">' + esc(x.ar) + "</p>" + (x.w ? '<p class="muted" style="font-size:12px;margin:-6px 0 12px">' + ic("pin") + " " + esc(x.w) + "</p>" : "") +
       '<div class="row" style="gap:10px;justify-content:center">' + spkBtn(x.en) + (speechOK() ? '<button class="btn sm' + (said === true ? "" : " alt") + '" data-act="co-ck-mic"' + (S.listening ? " disabled" : "") + ">" + ic("mic") + (S.listening ? " بسمعك…" : said === true ? " ✓ ممتاز" : " قولها") + "</button>" : "") + "</div>" +
       (said === false ? '<p class="muted" style="font-size:12px;text-align:center">قرّبت. اسمعها بالبطيء (اضغط ضغطة طويلة على السماعة) وجرب تاني.</p>' : "") +
       '<p class="muted co-ck-tip">' + ic("bulb") + " قولها بصوت عالي ٣ مرات، وتخيّل نفسك بتقولها في الشغل.</p></div>" +
@@ -344,7 +359,7 @@
       '<div class="card" style="padding:6px">' + TEMPLATES.map(function (t) {
         return '<button class="tk-scene" data-act="co-tp" data-k="' + t.k + '"><span class="tk-n">' + ic(t.ico) + '</span><span class="grow"><b>' + esc(t.t) + "</b></span>" + (C.tp[t.k] ? '<span class="chip on">✓</span>' : "") + "</button>";
       }).join("") + "</div>" +
-      '<button class="card co-nudge" data-act="co-go" data-v="bank"><span class="co-ic">' + ic("chat") + '</span><span class="grow"><b>بنك العبارات (٢٠٠ عبارة)</b><small class="muted">اجتماعات، خط، تقارير، موردين، تدقيق، إيميلات، تليفون، وكلام يومي.</small></span><span>←</span></button>';
+      '<button class="card co-nudge" data-act="co-go" data-v="bank"><span class="co-ic">' + ic("chat") + '</span><span class="grow"><b>بنك العبارات (' + ckAll().length + ' عبارة)</b><small class="muted">الشغل: اجتماعات، خط، تقارير، موردين، تدقيق، إيميلات، تليفون. والحياة: مطعم، تسوق، مواصلات، سفر، صحة، وأكتر.</small></span><span>←</span></button>';
   }
   function tpByK(k) { return TEMPLATES.filter(function (t) { return t.k === k; })[0]; }
   function tpVals(t) { var C = coD(), v = C.tpv[t.k] || {}, out = {}; t.f.forEach(function (f) { out[f[0]] = v[f[0]] != null && v[f[0]] !== "" ? v[f[0]] : ""; }); return out; }
@@ -363,16 +378,19 @@
   }
   function bankCkHTML() {
     var C = coD(), f = coUi().bankCat || CHUNK_CATS[0].k, cat = CHUNK_CATS.filter(function (c) { return c.k === f; })[0];
-    var chips = CHUNK_CATS.map(function (c) {
-      var n = c.l.filter(function (x, i) { return C.ck[c.k + "-" + i]; }).length;
-      return '<button class="chipbtn' + (c.k === f ? " on" : "") + '" data-act="co-bank-cat" data-k="' + c.k + '">' + esc(c.t) + ' <small class="muted">' + n + "/" + c.l.length + "</small></button>";
-    }).join("");
+    function chipsOf(life) {
+      return CHUNK_CATS.filter(function (c) { return !!c.life === life; }).map(function (c) {
+        var n = c.l.filter(function (x, i) { return C.ck[c.k + "-" + i]; }).length;
+        return '<button class="chipbtn' + (c.k === f ? " on" : "") + '" data-act="co-bank-cat" data-k="' + c.k + '">' + esc(c.t) + ' <small class="muted">' + n + "/" + c.l.length + "</small></button>";
+      }).join("");
+    }
+    var chips = '<p class="co-bank-h">' + ic("briefcase") + ' الشغل</p><div class="row wrapr" style="gap:6px">' + chipsOf(false) + '</div><p class="co-bank-h">' + ic("chat") + ' الحياة اليومية</p><div class="row wrapr" style="gap:6px">' + chipsOf(true) + "</div>";
     return '<button class="linkbtn" data-act="co-go" data-v="work">← إنجليزي الشغل</button>' +
       '<div class="card"><h3 style="margin:0 0 4px">بنك العبارات</h3><p class="muted" style="font-size:13px;margin:0">العبارات بتدخل جرعتك اليومية لوحدها (٥ كل يوم) وتتراجع على فترات لحد ما تثبت. ✓ = ثابتة عندك.</p></div>' +
-      '<div class="row wrapr" style="gap:6px;margin-block-end:10px">' + chips + "</div>" +
+      '<div style="margin-block-end:10px">' + chips + "</div>" +
       '<div class="card tk-chunks">' + cat.l.map(function (x, i) {
         var r = C.ck[cat.k + "-" + i], st = r ? r.st || 0 : -1;
-        return '<div class="tk-chunk"><span><span dir="ltr" lang="en" style="display:block;font-weight:600">' + esc(x[0]) + '</span><small class="muted">' + esc(x[1]) + "</small></span><span class=\"row\" style=\"gap:6px\">" + (st >= 3 ? '<span class="chip on">✓</span>' : st >= 0 ? '<span class="chip">' + st + "</span>" : "") + spkBtn(x[0]) + "</span></div>";
+        return '<div class="tk-chunk"><span><span dir="ltr" lang="en" style="display:block;font-weight:600">' + esc(x[0]) + '</span><small class="muted">' + esc(x[1]) + (x[2] ? " · " + esc(x[2]) : "") + "</small></span><span class=\"row\" style=\"gap:6px\">" + (st >= 3 ? '<span class="chip on">✓</span>' : st >= 0 ? '<span class="chip">' + st + "</span>" : "") + spkBtn(x[0]) + "</span></div>";
       }).join("") + "</div>";
   }
 

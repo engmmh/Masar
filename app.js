@@ -1412,9 +1412,6 @@
         saveMeta("exp", 0); render(); toast("تم إضافة " + dueNow.length + " بند ثابت"); break;
       case "exp-undo": if (undoPending) { var fn = undoPending; undoPending = null; clearTimeout(undoT); $("#toast").classList.remove("on"); fn(); } break;
       case "daily-start": startDailyChallenge(now); break;
-      case "speak-start": startSpeakChallenge(el.getAttribute("data-c")); break;
-      case "speak-listen": spkListen(); break;
-      case "speak-next": spkNext(now); break;
       case "badge-info": var bi = ACHIEVEMENTS.filter(function (x) { return x.id === el.getAttribute("data-b"); })[0]; if (bi) toast((state.learn.badges[bi.id] ? "🏆 " : "🔒 ") + bi.title + " — " + bi.desc); break;
       case "notes-open": state.lv = { mode: "notes", c: el.getAttribute("data-c") }; state.ndraft = freshDraft(); $("#p-learn").scrollTop = 0; render(); break;
       case "mysent-open": state.lv = { mode: "mysent", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;

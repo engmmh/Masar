@@ -1345,3 +1345,5 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .co-can-ic { width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; flex: none; }
 .co-can.ok .co-can-ic { background: var(--done); border-color: var(--done); color: #fff; }
 .co-can-ic .i { width: 14px; height: 14px; }
+.co-bank-h { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; margin: 10px 0 6px; }
+.co-bank-h .i { width: 15px; height: 15px; }
