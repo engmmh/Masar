@@ -118,17 +118,37 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000);
     toast("تم تصدير النسخة الاحتياطية.");
   }
+  // A backup file is untrusted input: size-capped, prototype keys stripped at every
+  // depth, and each part type-checked before anything is merged into the app's state.
+  var BACKUP_MAX_BYTES = 10 * 1024 * 1024;
+  function isPlainObj(v) { return !!v && typeof v === "object" && !Array.isArray(v); }
+  function cleanBackup(v, depth) {
+    if (depth > 12) return undefined;
+    if (Array.isArray(v)) return v.slice(0, 5000).map(function (x) { return cleanBackup(x, depth + 1); });
+    if (isPlainObj(v)) {
+      var out = {};
+      Object.keys(v).forEach(function (k) { if (k === "__proto__" || k === "constructor" || k === "prototype") return; var c = cleanBackup(v[k], depth + 1); if (c !== undefined) out[k] = c; });
+      return out;
+    }
+    if (typeof v === "string") return v.slice(0, 20000);
+    if (typeof v === "number") return isFinite(v) ? v : 0;
+    if (typeof v === "boolean" || v === null) return v;
+    return undefined;
+  }
   function importBackup(file) {
+    if (file.size > BACKUP_MAX_BYTES) { toast("الملف كبير أوي — ده مش نسخة احتياطية من مسار."); return; }
     var reader = new FileReader();
     reader.onload = function () {
       var o;
-      try { o = JSON.parse(reader.result); } catch (e) { toast("الملف ده مش نسخة احتياطية صالحة."); return; }
-      if (!o || o.app !== "masar" || typeof o.days !== "object") { toast("الملف ده مش نسخة احتياطية من مسار."); return; }
+      try { o = cleanBackup(JSON.parse(reader.result), 0); } catch (e) { toast("الملف ده مش نسخة احتياطية صالحة."); return; }
+      if (!isPlainObj(o) || o.app !== "masar" || !isPlainObj(o.days)) { toast("الملف ده مش نسخة احتياطية من مسار."); return; }
+      var days = {};
+      Object.keys(o.days).forEach(function (k) { if (/^\d{4}-\d{2}-\d{2}$/.test(k) && isPlainObj(o.days[k])) days[k] = o.days[k]; });
       if (!confirm("الاستيراد هيستبدل بياناتك الحالية بالنسخة اللي في الملف. متأكد؟")) return;
-      if (o.settings) state.settings = Object.assign(state.settings, o.settings);
-      if (o.learn) state.learn = Object.assign(state.learn, o.learn);
-      if (o.exp) state.exp = Object.assign(state.exp, o.exp);
-      state.days = o.days || {};
+      if (isPlainObj(o.settings)) state.settings = Object.assign(state.settings, o.settings);
+      if (isPlainObj(o.learn)) state.learn = Object.assign(state.learn, o.learn);
+      if (isPlainObj(o.exp)) state.exp = Object.assign(state.exp, o.exp);
+      state.days = days;
       Object.keys(state.days).forEach(function (k) { saveDay(k, 0); });
       saveMeta("settings", 0); saveMeta("learn", 0); saveMeta("exp", 0);
       render(); toast("تم استيراد النسخة الاحتياطية.");

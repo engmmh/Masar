@@ -104,7 +104,11 @@
   }
   function expCsv(now) {
     var mk = curExpMonth(now), rows = expAllItemsOf(mk).slice().reverse();
-    var q = function (v) { v = String(v == null ? "" : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var q = function (v) {
+      v = String(v == null ? "" : v);
+      if (/^[=+\-@\t\r]/.test(v) && !/^-?\d+(\.\d+)?$/.test(v)) v = "'" + v; // no spreadsheet formulas
+      return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    };
     var kindLbl = { income: "دخل", advance: "سلفة" };
     var lines = ["التاريخ,النوع,البند,المبلغ,ملاحظة"].concat(rows.map(function (it) { return [it.date, kindLbl[it.kind] || "مصروف", it.cat, it.amount, it.note || ""].map(q).join(","); }));
     var a = document.createElement("a");
@@ -140,10 +144,10 @@
       return '<div class="card mx-goal"><div class="row" style="gap:12px;align-items:center">' + goalRing(pct, color) +
         '<div class="grow"><b>' + esc(g.emoji || "🎯") + " " + esc(g.name) + '</b><p class="muted" style="font-size:13px"><span class="num">' + fmtMoney(g.saved || 0) + "</span> من <span class=\"num\">" + fmtMoney(g.target) + "</span>" + (left ? " · فاضل " + fmtMoney(left) : " · ✓ اتحقق!") + "</p>" +
         (plan ? '<p class="mx-plan">' + esc(plan) + "</p>" : "") + "</div>" +
-        '<button class="btn sm alt" data-act="goal-open" data-id="' + g.id + '">' + (open ? "✕" : "＋") + "</button></div>" +
+        '<button class="btn sm alt" data-act="goal-open" data-id="' + esc(g.id) + '">' + (open ? "✕" : "＋") + "</button></div>" +
         (open ? '<div class="row" style="gap:8px;margin-block-start:12px"><input class="inp" id="goalAmt" type="number" inputmode="decimal" min="0" placeholder="المبلغ" style="flex:1">' +
-          '<button class="btn sm" data-act="goal-dep" data-id="' + g.id + '">إيداع</button><button class="btn sm alt" data-act="goal-wd" data-id="' + g.id + '">سحب</button></div>' +
-          '<button class="linkbtn" style="color:var(--bad);font-size:13px;margin-block-start:8px" data-act="goal-del" data-id="' + g.id + '">حذف الهدف</button>' : "") + "</div>";
+          '<button class="btn sm" data-act="goal-dep" data-id="' + esc(g.id) + '">إيداع</button><button class="btn sm alt" data-act="goal-wd" data-id="' + esc(g.id) + '">سحب</button></div>' +
+          '<button class="linkbtn" style="color:var(--bad);font-size:13px;margin-block-start:8px" data-act="goal-del" data-id="' + esc(g.id) + '">حذف الهدف</button>' : "") + "</div>";
     }).join("");
     return '<div class="card mx-goal-sum"><div><small>إجمالي المدّخر</small><b class="num">' + fmtMoney(totalSaved) + '</b></div><div><small>من أهداف بقيمة</small><b class="num">' + fmtMoney(totalTarget) + "</b></div></div>" +
       form + (goals.length ? list : (state.expGoalAdd ? "" : '<div class="card" style="text-align:center"><div style="font-size:40px">' + ic("target") + '</div><p class="muted">حط هدف تحوّش له، وتابع تقدّمك خطوة بخطوة.</p></div>')) +
@@ -156,7 +160,25 @@
     if (!/^[0-9+\-*/.() %]*$/.test(s) || !s.trim()) return null;
     // "a + b%" / "a - b%" means b percent OF a, like a phone calculator.
     s = s.replace(/(\d+(?:\.\d+)?)([+\-])(\d+(?:\.\d+)?)%/g, "$1$2($1*$3/100)").replace(/(\d+(?:\.\d+)?)%/g, "($1/100)");
-    try { var v = Function('"use strict";return (' + s + ")")(); return isFinite(v) ? Math.round(v * 1e8) / 1e8 : null; } catch (e) { return null; }
+    try { var v = calcParse(s); return isFinite(v) ? Math.round(v * 1e8) / 1e8 : null; } catch (e) { return null; }
+  }
+  // Small recursive-descent parser for + − × ÷ and parentheses (no eval/Function, which
+  // the page's Content-Security-Policy blocks anyway).
+  function calcParse(src) {
+    var t = src.replace(/\s+/g, ""), i = 0;
+    function num() {
+      var m = /^\d*\.?\d+|^\d+\.?/.exec(t.slice(i)); if (!m) throw 0;
+      i += m[0].length; return parseFloat(m[0]);
+    }
+    function factor() {
+      if (t[i] === "-") { i++; return -factor(); }
+      if (t[i] === "+") { i++; return factor(); }
+      if (t[i] === "(") { i++; var v = expr(); if (t[i] !== ")") throw 0; i++; return v; }
+      return num();
+    }
+    function term() { var v = factor(); while (t[i] === "*" || t[i] === "/") { var op = t[i++], r = factor(); v = op === "*" ? v * r : v / r; } return v; }
+    function expr() { var v = term(); while (t[i] === "+" || t[i] === "-") { var op = t[i++], r = term(); v = op === "+" ? v + r : v - r; } return v; }
+    var out = expr(); if (i !== t.length) throw 0; return out;
   }
   var CALC_KEYS = ["C", "(", ")", "÷", "7", "8", "9", "×", "4", "5", "6", "−", "1", "2", "3", "+", "%", "0", ".", "⌫"];
   function expToolsView(now) {

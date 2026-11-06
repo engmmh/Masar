@@ -596,7 +596,7 @@
     var rows = n.rows.map(function (r) {
       return '<div class="nrow"><b>' + fmtEn(r.label) + "</b><span>" + fmtEn(r.ex) + "</span></div>";
     }).join("");
-    return '<div class="card notecard"><div class="row between"><h3>' + esc(n.title) + '</h3><button class="del" data-act="note-del" data-c="' + cid + '" data-id="' + n.id + '" aria-label="حذف">' + ico("trash") + "</button></div>" +
+    return '<div class="card notecard"><div class="row between"><h3>' + esc(n.title) + '</h3><button class="del" data-act="note-del" data-c="' + cid + '" data-id="' + esc(n.id) + '" aria-label="حذف">' + ico("trash") + "</button></div>" +
       '<div class="ntable">' + rows + "</div></div>";
   }
   function notesHTML(cid) {
@@ -1392,7 +1392,7 @@
         '<button class="btn grade-good" data-act="grade" data-r="good">عرفتها</button>' +
         '<button class="btn grade-easy" data-act="grade" data-r="easy">سهلة جدًا</button>' +
         "</div>" : "") +
-      (revealed && !state.learn.weak[w.id] ? '<button class="linkbtn" style="margin-block-start:8px" data-act="weak-add" data-id="' + w.id + '" data-kind="word" data-cid="' + (w.c || "") + '">' + ic("target") + ' ضيفها لنقاط ضعفي</button>' : "") + "</div>";
+      (revealed && !state.learn.weak[w.id] ? '<button class="linkbtn" style="margin-block-start:8px" data-act="weak-add" data-id="' + esc(w.id) + '" data-kind="word" data-cid="' + (w.c || "") + '">' + ic("target") + ' ضيفها لنقاط ضعفي</button>' : "") + "</div>";
   }
   var WEAK_SRC_ICON = { class: "👋", forget: "🔁", exam: "📝", manual: "🎯" };
   function weakHTML(now) {

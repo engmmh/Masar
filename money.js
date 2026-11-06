@@ -128,7 +128,7 @@
 
     var advances = expActiveAdvances();
     var advHTML = !advances.length ? "" : '<div class="sec-h">السُّلف النشطة</div><div class="card">' + advances.map(function (it) {
-      return '<div class="exprow"><div class="exprow-l"><i class="catdot" style="background:var(--weak)"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '<br><small class="muted">' + expDateLabel(it.date, now) + '</small></div><div class="exprow-r"><span class="num">' + fmtMoney(it.amount) + '</span><button class="btn sm alt" data-act="exp-repay" data-id="' + it.id + '">اتردّت</button></div></div>';
+      return '<div class="exprow"><div class="exprow-l"><i class="catdot" style="background:var(--weak)"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '<br><small class="muted">' + expDateLabel(it.date, now) + '</small></div><div class="exprow-r"><span class="num">' + fmtMoney(it.amount) + '</span><button class="btn sm alt" data-act="exp-repay" data-id="' + esc(it.id) + '">اتردّت</button></div></div>';
     }).join("") + "</div>";
 
     var catsHTML = !cats.length ? '<p class="muted" style="font-size:14px;margin-block-start:10px">لسه مفيش مصاريف مسجّلة الشهر ده.</p>' :
@@ -147,7 +147,7 @@
       }).join("") + "</div>";
 
     var recurList = !state.exp.recurring.length ? "" : '<div class="card">' + state.exp.recurring.map(function (r) {
-      return '<div class="row between" style="padding-block:4px"><span>' + esc(r.cat) + (r.note ? " · " + esc(r.note) : "") + '</span><span class="row" style="gap:8px"><b class="num">' + fmtMoney(r.amount) + '</b><button class="del" data-act="exp-recur-del" data-id="' + r.id + '" aria-label="حذف">' + ico("trash") + "</button></span></div>";
+      return '<div class="row between" style="padding-block:4px"><span>' + esc(r.cat) + (r.note ? " · " + esc(r.note) : "") + '</span><span class="row" style="gap:8px"><b class="num">' + fmtMoney(r.amount) + '</b><button class="del" data-act="exp-recur-del" data-id="' + esc(r.id) + '" aria-label="حذف">' + ico("trash") + "</button></span></div>";
     }).join("") + "</div>";
     var recurAddForm = !state.expRecurAdd ? "" :
       '<div class="card" style="margin-block-start:8px"><div class="catrow">' + catChips + "</div>" +
@@ -166,10 +166,10 @@
       '<div class="sec-h">كل المصاريف</div>' + expSearchHTML() + '<div class="card">' + groups.map(function (g) {
         return '<div class="expgroup"><div class="datelbl">' + expDateLabel(g.date, now) + '</div>' + g.items.map(function (it) {
           var clr = catColor(it.cat), revealed = state.expSwipeId === it.id, inc = it.kind === "income";
-          return '<div class="exprow' + (revealed ? " revealed" : "") + '" data-swipeid="' + it.id + '"><div class="exprow-l"><i class="catdot" style="background:' + clr + '"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '</div>' +
+          return '<div class="exprow' + (revealed ? " revealed" : "") + '" data-swipeid="' + esc(it.id) + '"><div class="exprow-l"><i class="catdot" style="background:' + clr + '"></i><b>' + esc(it.cat) + "</b>" + (it.note ? " <small>· " + esc(it.note) + "</small>" : "") + '</div>' +
             (revealed
-              ? '<div class="exprow-r exprow-actions"><button class="btn sm alt" data-act="exp-edit" data-id="' + it.id + '">تعديل</button><button class="btn sm" style="background:var(--bad)" data-act="exp-del" data-id="' + it.id + '">حذف</button></div>'
-              : '<div class="exprow-r"><span class="num"' + (inc ? ' style="color:var(--done-deep);font-weight:700"' : "") + ">" + (inc ? "+" : "") + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-swipe" data-id="' + it.id + '" aria-label="خيارات">' + ico("trash") + "</button></div>") +
+              ? '<div class="exprow-r exprow-actions"><button class="btn sm alt" data-act="exp-edit" data-id="' + esc(it.id) + '">تعديل</button><button class="btn sm" style="background:var(--bad)" data-act="exp-del" data-id="' + esc(it.id) + '">حذف</button></div>'
+              : '<div class="exprow-r"><span class="num"' + (inc ? ' style="color:var(--done-deep);font-weight:700"' : "") + ">" + (inc ? "+" : "") + fmtMoney(it.amount) + '</span><button class="del" data-act="exp-swipe" data-id="' + esc(it.id) + '" aria-label="خيارات">' + ico("trash") + "</button></div>") +
             "</div>";
         }).join("") + "</div>";
       }).join("") + "</div>";

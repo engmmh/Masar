@@ -614,7 +614,13 @@
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 30000);
   }
   function admCsv(now) {
-    var rows = admRowsForReport(now), q = function (v) { v = String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    // A cell starting with = + - @ (or tab/CR) would run as a formula in Excel/Sheets,
+    // so such text is prefixed with an apostrophe; plain negative numbers stay numbers.
+    var rows = admRowsForReport(now), q = function (v) {
+      v = String(v);
+      if (/^[=+\-@\t\r]/.test(v) && !/^-?\d+(\.\d+)?$/.test(v)) v = "'" + v;
+      return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+    };
     var lines = [ADM_REPORT_COLS.map(function (c) { return q(c[1]); }).join(",")].concat(rows.map(function (r) { return ADM_REPORT_COLS.map(function (c) { return q(r[c[0]]); }).join(","); }));
     admDownload("masar-report-" + now.key + ".csv", "﻿" + lines.join("\n"), "text/csv;charset=utf-8");
   }

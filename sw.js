@@ -9,10 +9,11 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v22";
+var CACHE_NAME = "masar-v23";
 var PRECACHE = [
   "./",
   "./index.html",
+  "./vendor/supabase.js",
   "./manifest.webmanifest",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
@@ -77,8 +78,10 @@ self.addEventListener("fetch", function (event) {
       }
       return res;
     }).catch(function () {
+      // Only a page navigation falls back to the app shell; a missing script or data
+      // file must fail as itself, not be answered with index.html.
       return caches.match(req).then(function (cached) {
-        return cached || caches.match("./index.html");
+        return cached || (req.mode === "navigate" ? caches.match("./index.html") : Response.error());
       });
     })
   );

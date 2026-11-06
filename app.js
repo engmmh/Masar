@@ -753,7 +753,12 @@
   // before giving up on cloud sync for this session (otherwise the app would silently
   // fall back to an empty local-only account even though the person has a real cloud
   // account, with no visible PIN screen and no way back in without a reload).
+  // The SDK is self-hosted (vendor/supabase.js, the exact npm file of this version); the
+  // two CDNs are only a fallback if that file failed to load, and each is pinned with
+  // Subresource Integrity so a tampered CDN copy is refused by the browser.
+  var SUPABASE_SRI = "sha384-Rj26LVGvoeRVR6+mwQmFfcR3QOBEwT+ZmuCWpuiqeTzJpCs0ER4ITAWGb4Hiy3Ok";
   var SUPABASE_CDN_URLS = [
+    "vendor/supabase.js",
     "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js",
     "https://unpkg.com/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"
   ];
@@ -763,6 +768,7 @@
       var done = false, finish = function (ok) { if (done) return; done = true; resolve(ok); };
       var s = document.createElement("script");
       s.src = src;
+      if (/^https:/.test(src)) { s.integrity = SUPABASE_SRI; s.crossOrigin = "anonymous"; }
       s.onload = function () { finish(!!window.supabase); };
       s.onerror = function () { finish(false); };
       document.head.appendChild(s);
@@ -1600,8 +1606,23 @@
       return { ok: true, data: j };
     } catch (e) { return { unavailable: true }; }
   }
+  // On-device throttle for wrong codes: after 5 misses in a row each further try waits
+  // 30s, then 1m, 2m … up to 15 minutes. It slows guessing on this device; the real
+  // limit is the server-side lockout in masar-login.
+  var LOGIN_FAILS_KEY = "masar:lf";
+  function loginFails() { try { return JSON.parse(localStorage.getItem(LOGIN_FAILS_KEY) || "null") || { n: 0, until: 0 }; } catch (e) { return { n: 0, until: 0 }; } }
+  function loginWaitSec() { var f = loginFails(); return Math.max(0, Math.ceil((f.until - Date.now()) / 1000)); }
+  function loginFailed() {
+    var f = loginFails(); f.n = (f.n || 0) + 1;
+    if (f.n >= 5) f.until = Date.now() + Math.min(15 * 60, 30 * Math.pow(2, f.n - 5)) * 1000;
+    try { localStorage.setItem(LOGIN_FAILS_KEY, JSON.stringify(f)); } catch (e) { }
+  }
+  function loginSucceeded() { try { localStorage.removeItem(LOGIN_FAILS_KEY); } catch (e) { } }
+  function fmtWait(s) { return s >= 60 ? Math.ceil(s / 60) + " دقيقة" : s + " ثانية"; }
   async function unlock(code) {
     var btn = $("#pinbtn"); btn.disabled = true; $("#lockmsg").textContent = "";
+    var wait = loginWaitSec();
+    if (wait > 0) { $("#lockmsg").textContent = "محاولات كتير غلط — جرّب تاني بعد " + fmtWait(wait) + "."; btn.disabled = false; return; }
     if (!/^\d{4,8}$/.test(code)) { $("#lockmsg").textContent = "الرمز غير صحيح"; btn.disabled = false; return; }
     try {
       var matched = null;
@@ -1619,12 +1640,16 @@
         if (setRes.error) { $("#lockmsg").textContent = "تعذّر الدخول: " + setRes.error.message; btn.disabled = false; return; }
         matched = { acc: fast.data.acc, uid: fast.data.acc.uid };
       }
-      // fast.invalid and fast.unavailable (masar-login not deployed, broken/misconfigured
-      // on the server, or a network hiccup) both fall through to the original per-account
-      // signInWithPassword loop below, instead of trusting the Edge Function's "invalid"
-      // verdict outright — a server-side bug there must never be able to lock every
-      // account out of every correct PIN. Only if THIS direct path also fails to match
-      // do we tell the person the code itself is wrong.
+      // The server's "invalid" verdict is final: falling back to trying the code
+      // against every account here would bypass masar-login's attempt lockout. The
+      // direct per-account path runs only when the function is unreachable (not
+      // deployed, or a network error), so login still works without it.
+      if (!matched && fast.invalid) {
+        loginFailed();
+        var w2 = loginWaitSec();
+        $("#lockmsg").textContent = "الرمز غير صحيح" + (w2 ? " — جرّب تاني بعد " + fmtWait(w2) + "." : "");
+        btn.disabled = false; return;
+      }
       if (!matched) {
         if (!ACCOUNTS.length) await loadAccountsList();
         var pass = CFG.prefix + code, lastErrMsg = "", banned = false;
@@ -1640,10 +1665,13 @@
           btn.disabled = false; return;
         }
         if (!matched) {
-          $("#lockmsg").textContent = /invalid login/i.test(lastErrMsg) ? "الرمز غير صحيح" : "تعذّر الدخول: " + lastErrMsg;
+          if (/invalid login/i.test(lastErrMsg)) loginFailed();
+          var w3 = loginWaitSec();
+          $("#lockmsg").textContent = /invalid login/i.test(lastErrMsg) ? "الرمز غير صحيح" + (w3 ? " — جرّب تاني بعد " + fmtWait(w3) + "." : "") : "تعذّر الدخول: " + lastErrMsg;
           btn.disabled = false; return;
         }
       }
+      loginSucceeded();
       store.uid = matched.uid;
       $("#pin").value = "";
       if (matched.acc.role === "admin") {
