@@ -192,7 +192,7 @@
   // views, one delegated click handler. Only uses the edge-function actions that
   // already exist (getDashboardData, create, changePassword, setActive,
   // setPermissions, setAccountGoals, sendReminder), so it needs no server change.
-  var ADM = { stats: [], raw: null, at: 0, q: "", lfilter: "all", sort: "last", range: 14, metric: "pray", sub: "activity", nTo: "follow", nPick: {}, nTpl: 0, nCustom: "", addOpen: false, sending: false };
+  var ADM = { stats: [], raw: null, at: 0, q: "", lfilter: "all", sort: "last", range: 14, metric: "pray", sub: "ibada", nTo: "follow", nPick: {}, nTpl: 0, nCustom: "", addOpen: false, sending: false };
   var ADM_ICO = {
     overview: '<path d="M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z"/>',
     accounts: '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
@@ -202,12 +202,13 @@
     reports: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M8 13h8M8 17h5"/>'
   };
   function admIco(k) { return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ADM_ICO[k] + "</svg>"; }
+  // A single account's page ("profile") opens from the accounts list rather than
+  // being its own nav item; the old "compare" page lives at the end of the reports.
   var ADM_NAV = [
-    { id: "overview", label: "نظرة عامة" }, { id: "accounts", label: "الحسابات" }, { id: "profile", label: "ملف الحساب" },
-    { id: "compare", label: "مقارنة" }, { id: "notify", label: "الإشعارات" }, { id: "reports", label: "التقارير" }
+    { id: "overview", label: "نظرة عامة" }, { id: "accounts", label: "الحسابات" }, { id: "notify", label: "الإشعارات" }, { id: "reports", label: "التقارير" }
   ];
   var ADM_METRICS = [
-    { id: "pray", label: "الصلوات" }, { id: "pages", label: "صفحات القرآن" }, { id: "xp", label: "نقاط التعلّم" }, { id: "mins", label: "دقايق التعلّم" }
+    { id: "pray", label: "الصلوات" }, { id: "pages", label: "صفحات الورد" }, { id: "hz", label: "الحفظ (آيات)" }, { id: "dose", label: "جرعة الإنجليزي" }
   ];
   var ADM_TPL = [
     "فاتك تذاكر النهاردة في مسار — افتح التطبيق وكمّل 💪",
@@ -215,25 +216,48 @@
     "سجّل صلواتك في مسار عشان سلسلتك متقفش 🕌",
     "إنت ماشي كويس جدًا، كمّل كده! ✨"
   ];
-  var ADM_GAME_LBL = { match: "مطابقة", sprint: "سباق 60 ثانية", listen: "اسمع واختار", spell: "تهجئة" };
 
   /* metrics */
-  function admM(st, k) {
-    var d = st.days[k] || {};
-    return { pray: PRAYERS.filter(function (p) { return d[p.k] && d[p.k].t; }).length, pages: d.q || 0, xp: (st.learn.study || {})[k] || 0, mins: (st.learn.minutes || {})[k] || 0 };
+  // Everything an account does lives in its days rows (prayers, wird pages) and its
+  // "learn" meta: learn.hifz (memorized ranges + daily log), learn.coach (English path:
+  // placement, daily dose, weekly voice check), learn.talk («اتكلم» scenes).
+  var AYAH_PER_PAGE = 6236 / 604;
+  function admRangesLen(list) { return (list || []).reduce(function (t, r) { return t + (r[1] - r[0] + 1); }, 0); }
+  function admHzLog(learn, k) { var H = learn && learn.hifz; return (H && H.log && H.log[k]) || null; }
+  function admHzTotal(learn) { return admRangesLen(learn && learn.hifz && learn.hifz.mem); }
+  function admHzPages(ayahs) { return Math.round(ayahs / AYAH_PER_PAGE); }
+  function admDoseSteps(learn, k) { var d = learn && learn.coach && learn.coach.days && learn.coach.days[k]; return d ? ["ck", "rv", "dl", "tk"].filter(function (x) { return d[x]; }).length : 0; }
+  function admDoseStreak(learn, now) {
+    var k = now.key, n = 0;
+    if (admDoseSteps(learn, k) < 4) k = addDays(k, -1);
+    while (admDoseSteps(learn, k) === 4 && n < 3000) { n++; k = addDays(k, -1); }
+    return n;
   }
-  function admAny(m) { return m.pray > 0 || m.pages > 0 || m.xp > 0 || m.mins > 0; }
+  function admPl(learn) { return (learn && learn.coach && learn.coach.pl) || null; }
+  function admTalkDone(learn) { var sc = (learn && learn.talk && learn.talk.sc) || {}; return Object.keys(sc).filter(function (k) { return (sc[k].best || 0) >= 2; }).length; }
+  function admTalkTotal() { return typeof TALK_SETS === "undefined" ? 0 : TALK_SETS.reduce(function (t, x) { return t + x.scenes.length; }, 0); }
+  function admM(st, k) {
+    var d = st.days[k] || {}, hl = admHzLog(st.learn, k);
+    return {
+      pray: PRAYERS.filter(function (p) { return d[p.k] && d[p.k].t; }).length, pages: d.q || 0,
+      xp: (st.learn.study || {})[k] || 0, mins: (st.learn.minutes || {})[k] || 0,
+      hz: hl ? admRangesLen(hl.h) : 0, rv: hl && hl.r && hl.r.length ? 1 : 0, dose: admDoseSteps(st.learn, k)
+    };
+  }
+  function admAny(m) { return m.pray > 0 || m.pages > 0 || m.xp > 0 || m.mins > 0 || m.hz > 0 || m.rv > 0 || m.dose > 0; }
   function admWin(st, now, from, n) {
-    var t = { pray: 0, pages: 0, xp: 0, mins: 0, active: 0, full: 0 };
+    var t = { pray: 0, pages: 0, xp: 0, mins: 0, hz: 0, rv: 0, dose: 0, doseFull: 0, active: 0, full: 0 };
     for (var i = from; i < from + n; i++) {
       var m = admM(st, addDays(now.key, -i));
-      t.pray += m.pray; t.pages += m.pages; t.xp += m.xp; t.mins += m.mins;
+      t.pray += m.pray; t.pages += m.pages; t.xp += m.xp; t.mins += m.mins; t.hz += m.hz; t.rv += m.rv; t.dose += m.dose;
+      if (m.dose === 4) t.doseFull++;
       if (admAny(m)) t.active++; if (m.pray === 5) t.full++;
     }
     return t;
   }
   function admLastAny(st) {
-    var keys = Object.keys(st.days).concat(Object.keys(st.learn.study || {}), Object.keys(st.learn.minutes || {}));
+    var L = st.learn || {};
+    var keys = Object.keys(st.days).concat(Object.keys(L.study || {}), Object.keys(L.minutes || {}), Object.keys((L.hifz && L.hifz.log) || {}), Object.keys((L.coach && L.coach.days) || {}));
     var best = null;
     keys.forEach(function (k) { if ((!best || k > best) && admAny(admM(st, k))) best = k; });
     return best;
@@ -248,7 +272,6 @@
   function admEnabled() { return ADM.stats.filter(function (s) { return s.acc.active !== false; }); }
   function admFindSt(uid) { return ADM.stats.filter(function (s) { return s.acc.uid === uid; })[0] || null; }
   function admIdx(st) { return ADM.stats.indexOf(st); }
-  function admLevel(xp) { return Math.floor(Math.sqrt((xp || 0) / 40)) + 1; }
 
   /* small UI pieces */
   function admAv(st, size) {
@@ -302,7 +325,7 @@
   }
   function admSpark(st, now, n) {
     var v = [], W = 96, H = 30;
-    for (var i = n - 1; i >= 0; i--) { var m = admM(st, addDays(now.key, -i)); v.push(m.pray + Math.min(m.pages, 5) + (m.xp > 0 ? 2 : 0)); }
+    for (var i = n - 1; i >= 0; i--) { var m = admM(st, addDays(now.key, -i)); v.push(m.pray + Math.min(m.pages, 5) + (m.hz > 0 ? 2 : 0) + m.rv + m.dose); }
     var max = Math.max.apply(null, v.concat([1]));
     var pts = v.map(function (val, i) { return (i * W / (n - 1)).toFixed(1) + "," + (H - 2 - val / max * (H - 4)).toFixed(1); }).join(" ");
     return '<svg class="adm-spark" viewBox="0 0 ' + W + " " + H + '" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="' + accColor(admIdx(st)) + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
@@ -311,8 +334,8 @@
     var cells = "";
     for (var i = 34; i >= 0; i--) {
       var k = addDays(now.key, -i), m = admM(st, k), lv = m.pray === 5 ? 3 : m.pray > 0 ? 2 : 0;
-      if (m.xp > 0 || m.pages > 0) lv = Math.min(4, lv + 1);
-      cells += '<i class="h' + lv + '" title="' + esc(greg(k) + " · صلوات " + m.pray + "/5 · صفحات " + m.pages + " · XP " + m.xp) + '"></i>';
+      if (m.pages > 0 || m.hz > 0 || m.rv || m.dose) lv = Math.min(4, lv + 1);
+      cells += '<i class="h' + lv + '" title="' + esc(greg(k) + " · صلوات " + m.pray + "/5 · ورد " + m.pages + " ص · حفظ " + m.hz + " آية · جرعة " + m.dose + "/4") + '"></i>';
     }
     return '<div class="adm-heat">' + cells + '</div><div class="adm-heat-l"><span>أقل</span><i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><span>أكتر</span></div>';
   }
@@ -321,10 +344,11 @@
   function admOverview(now) {
     var en = admEnabled(), n = ADM.range;
     if (!ADM.stats.length) return admEmpty("مفيش حسابات لسه. ضيف أول حساب من صفحة «الحسابات».");
-    var cur = { pray: 0, pages: 0, xp: 0, mins: 0, act: 0 }, prev = { pray: 0, pages: 0, xp: 0, mins: 0, act: 0 }, follow = [];
+    var K = ["pray", "pages", "hz", "doseFull"], cur = { act: 0 }, prev = { act: 0 }, follow = [];
+    K.forEach(function (k) { cur[k] = 0; prev[k] = 0; });
     en.forEach(function (st) {
       var a = admWin(st, now, 0, n), b = admWin(st, now, n, n);
-      ["pray", "pages", "xp", "mins"].forEach(function (k) { cur[k] += a[k]; prev[k] += b[k]; });
+      K.forEach(function (k) { cur[k] += a[k]; prev[k] += b[k]; });
       if (a.active) cur.act++; if (b.active) prev.act++;
       var s = admStatus(st, now); if (s.k === "cold") follow.push({ st: st, s: s });
     });
@@ -332,20 +356,20 @@
     var kpis = '<div class="adm-kpis">' +
       admKpi("حسابات نشطة", cur.act + '<small class="muted">/' + en.length + "</small>", admDelta(cur.act, prev.act)) +
       admKpi("التزام الصلاة", Math.round(cur.pray / denom * 100) + "%", admDelta(cur.pray, prev.pray), cur.pray + " صلاة") +
-      admKpi("صفحات القرآن", cur.pages, admDelta(cur.pages, prev.pages)) +
-      admKpi("نقاط التعلّم", cur.xp, admDelta(cur.xp, prev.xp)) +
-      admKpi("دقايق التعلّم", cur.mins, admDelta(cur.mins, prev.mins)) +
+      admKpi("صفحات الورد", cur.pages, admDelta(cur.pages, prev.pages)) +
+      admKpi("الحفظ الجديد", cur.hz + '<small class="muted"> آية</small>', admDelta(cur.hz, prev.hz), "≈ " + admHzPages(cur.hz) + " صفحة") +
+      admKpi("جرعات إنجليزي كاملة", cur.doseFull, admDelta(cur.doseFull, prev.doseFull), "يوم") +
       admKpi("محتاج متابعة", follow.length, "", "غايب " + ADM_FOLLOWUP_DAYS + " أيام أو أكتر") + "</div>";
     var keys = []; for (var i = n - 1; i >= 0; i--) keys.push(addDays(now.key, -i));
     var series = en.map(function (st) { return { label: st.acc.label, c: accColor(admIdx(st)), v: keys.map(function (k) { return admM(st, k)[ADM.metric]; }) }; });
     var chart = '<div class="card"><div class="adm-card-h"><h3>النشاط اليومي</h3>' + admSeg("metric", ADM_METRICS, ADM.metric) + "</div>" +
       (series.length ? admLegend(en) + admLineChart(series, keys) : '<p class="muted">مفيش حسابات مفعّلة.</p>') + "</div>";
-    var board = en.map(function (st) { return { st: st, xp: admWin(st, now, 0, n).xp }; }).sort(function (a, b) { return b.xp - a.xp; });
-    var topXp = Math.max(1, board.length ? board[0].xp : 1);
-    var leader = '<div class="card"><div class="adm-card-h"><h3>🏆 لوحة الشرف</h3><small class="muted">نقاط آخر ' + n + " يوم</small></div>" +
+    // Most consistent = most active days in the window (any prayer, wird, hifz, review or dose).
+    var board = en.map(function (st) { var w = admWin(st, now, 0, n); return { st: st, d: w.active, w: w }; }).sort(function (a, b) { return b.d - a.d || b.w.pray - a.w.pray; });
+    var leader = '<div class="card"><div class="adm-card-h"><h3>🏆 الأكتر التزامًا</h3><small class="muted">أيام نشاط من ' + n + "</small></div>" +
       (board.length ? board.map(function (b, i) {
         return '<button class="adm-lrow" data-adm="open" data-uid="' + esc(b.st.acc.uid) + '"><span class="adm-rank">' + (["🥇", "🥈", "🥉"][i] || i + 1) + "</span>" + admAv(b.st, 30) +
-          '<span class="grow"><b>' + esc(b.st.acc.label) + '</b><span class="adm-mini"><i style="width:' + Math.round(b.xp / topXp * 100) + "%;background:" + accColor(admIdx(b.st)) + '"></i></span></span><b class="num">' + b.xp + "</b></button>";
+          '<span class="grow"><b>' + esc(b.st.acc.label) + '</b><span class="adm-mini"><i style="width:' + Math.round(b.d / n * 100) + "%;background:" + accColor(admIdx(b.st)) + '"></i></span></span><b class="num">' + b.d + "/" + n + "</b></button>";
       }).join("") : '<p class="muted">—</p>') + "</div>";
     var alerts = '<div class="card"><div class="adm-card-h"><h3>⚠️ محتاج متابعة</h3>' + (follow.length ? '<button class="btn sm alt" data-adm="nav" data-v="notify">ذكّرهم كلهم</button>' : "") + "</div>" +
       (follow.length ? follow.map(function (f) {
@@ -365,8 +389,14 @@
         var k = addDays(now.key, -i), m = admM(st, k);
         if (m.pray === 5) ev.push({ k: k, st: st, ico: "🕌", t: "صلّى الخمس صلوات" });
         else if (m.pray > 0) ev.push({ k: k, st: st, ico: "🕌", t: "سجّل " + m.pray + " صلوات" });
-        if (m.pages > 0) ev.push({ k: k, st: st, ico: "📖", t: "قرأ " + m.pages + " صفحة قرآن" });
+        if (m.pages > 0) ev.push({ k: k, st: st, ico: "📖", t: "قرأ " + m.pages + " صفحة من ورده" });
+        if (m.hz > 0) ev.push({ k: k, st: st, ico: "🌱", t: "حفظ " + m.hz + " آية جديدة", w: 1 });
+        if (m.rv) ev.push({ k: k, st: st, ico: "🔁", t: "راجع محفوظه" });
+        if (m.dose === 4) ev.push({ k: k, st: st, ico: "⚡", t: "خلّص جرعة الإنجليزي" });
       }
+      var pl = admPl(st.learn);
+      ((pl && pl.hist) || []).forEach(function (h) { if (admDaysSince(h.at, now) < 14) ev.push({ k: h.at, st: st, ico: "🎯", t: "عمل اختبار مستوى الإنجليزي: " + h.lv, w: 2 }); });
+      (((st.learn.coach || {}).wk) || []).forEach(function (w) { if (admDaysSince(w.key, now) < 14) ev.push({ k: w.key, st: st, ico: "🎙️", t: "سجّل دقيقة كلام (" + w.words + " كلمة)", w: 1 }); });
       Object.keys(st.learn.units || {}).forEach(function (uk) {
         var p = st.learn.units[uk], u = UNIT_BY_KEY[uk];
         if (p && p.done && p.date && admDaysSince(p.date, now) < 14) ev.push({ k: p.date, st: st, ico: "🎓", t: "خلّص وحدة «" + (u ? u.title : uk) + "»" + (p.best != null ? " بنتيجة " + p.best + "%" : ""), w: 1 });
@@ -397,7 +427,7 @@
     return admHead("الحسابات", ADM.stats.length + " حساب · اضغط على أي حساب عشان تفتح ملفه", '<button class="btn" data-adm="addtoggle">' + (ADM.addOpen ? "إلغاء" : "+ حساب جديد") + "</button>") +
       (ADM.addOpen ? adminAddAccountCard() : "") +
       '<div class="adm-toolbar"><input class="inp" id="admQ" type="search" placeholder="دوّر باسم الحساب" value="' + esc(ADM.q) + '" autocomplete="off">' +
-      '<select class="inp" id="admSort" aria-label="ترتيب"><option value="last"' + (ADM.sort === "last" ? " selected" : "") + '>آخر نشاط</option><option value="xp"' + (ADM.sort === "xp" ? " selected" : "") + '>الأكتر نقاط</option><option value="streak"' + (ADM.sort === "streak" ? " selected" : "") + '>أطول سلسلة</option><option value="name"' + (ADM.sort === "name" ? " selected" : "") + ">الاسم</option></select></div>" +
+      '<select class="inp" id="admSort" aria-label="ترتيب"><option value="last"' + (ADM.sort === "last" ? " selected" : "") + '>آخر نشاط</option><option value="active"' + (ADM.sort === "active" ? " selected" : "") + '>الأكتر التزامًا</option><option value="name"' + (ADM.sort === "name" ? " selected" : "") + ">الاسم</option></select></div>" +
       filters + '<div id="admList">' + admAccountsList(now) + "</div>";
   }
   function admAccountsList(now) {
@@ -405,11 +435,10 @@
     var list = ADM.stats.filter(function (st) {
       if (q && String(st.acc.label || "").toLowerCase().indexOf(q) < 0) return false;
       return ADM.lfilter === "all" || admStatus(st, now).k === ADM.lfilter;
-    }).map(function (st) { return { st: st, s: admStatus(st, now), w: admWin(st, now, 0, 7), streak: admStreak(st.days, now) }; });
+    }).map(function (st) { return { st: st, s: admStatus(st, now), w: admWin(st, now, 0, 7) }; });
     list.sort(function (a, b) {
       if (ADM.sort === "name") return String(a.st.acc.label).localeCompare(String(b.st.acc.label), "ar");
-      if (ADM.sort === "xp") return b.w.xp - a.w.xp;
-      if (ADM.sort === "streak") return b.streak - a.streak;
+      if (ADM.sort === "active") return b.w.active - a.w.active;
       var as = a.s.since == null ? 9999 : a.s.since, bs = b.s.since == null ? 9999 : b.s.since;
       return (a.s.k === "off") - (b.s.k === "off") || as - bs;
     });
@@ -421,79 +450,89 @@
         '<span class="grow"><b>' + esc(st.acc.label) + "</b>" + admPill(r.s) + "</span>" + admSpark(st, now, 14) + "</button>" +
         '<div class="adm-acc-stats">' +
         "<span><b class=\"num\">" + Math.round(r.w.pray / 35 * 100) + "%</b><small>صلاة 7 أيام</small></span>" +
-        "<span><b class=\"num\">" + r.streak + "</b><small>سلسلة</small></span>" +
-        "<span><b class=\"num\">" + r.w.pages + "</b><small>صفحات</small></span>" +
-        "<span><b class=\"num\">" + r.w.xp + "</b><small>نقاط</small></span></div>" +
+        "<span><b class=\"num\">" + r.w.pages + "</b><small>ورد 7 أيام</small></span>" +
+        "<span><b class=\"num\">≈" + admHzPages(admHzTotal(st.learn)) + "</b><small>صفحة محفوظة</small></span>" +
+        "<span><b class=\"num\">" + r.w.doseFull + "/7</b><small>جرعة إنجليزي</small></span></div>" +
         '<div class="adm-acc-act"><button class="btn sm alt" data-adm="remind" data-uid="' + esc(st.acc.uid) + '">🔔 تذكير</button>' +
-        '<button class="btn sm alt" data-adm="open" data-uid="' + esc(st.acc.uid) + '" data-sub="perm">⚙️ صلاحيات</button>' +
-        '<button class="btn sm alt" data-adm="open" data-uid="' + esc(st.acc.uid) + '" data-sub="security">🔑 الأمان</button></div></div>';
+        '<button class="btn sm alt" data-adm="open" data-uid="' + esc(st.acc.uid) + '" data-sub="settings">⚙️ الإعدادات</button></div></div>';
     }).join("");
   }
 
-  var ADM_SUBS = [{ id: "activity", label: "النشاط" }, { id: "learn", label: "التعلّم" }, { id: "perm", label: "الصلاحيات" }, { id: "security", label: "الأمان" }];
+  var ADM_SUBS = [{ id: "ibada", label: "العبادة" }, { id: "learn", label: "التعلّم" }, { id: "settings", label: "الإعدادات" }];
   function admProfile(now) {
     var st = admFindSt(state.adminDetailUid) || ADM.stats[0];
     if (!st) return admEmpty("مفيش حسابات لسه.");
     state.adminDetailUid = st.acc.uid;
-    var s = admStatus(st, now), last = admLastAny(st), learn = st.learn;
+    if (["ibada", "learn", "settings"].indexOf(ADM.sub) < 0) ADM.sub = ADM.sub === "perm" || ADM.sub === "security" ? "settings" : "ibada";
+    var s = admStatus(st, now), last = admLastAny(st), learn = st.learn, pl = admPl(learn), hz = admHzTotal(learn);
     var switcher = '<select class="inp" id="admSwitch" aria-label="اختار حساب">' + ADM.stats.map(function (x) {
       return '<option value="' + esc(x.acc.uid) + '"' + (x === st ? " selected" : "") + ">" + esc(x.acc.label) + "</option>";
     }).join("") + "</select>";
     var head = '<div class="card adm-prof" style="--ac:' + accColor(admIdx(st)) + '">' + admAv(st, 64) +
       '<div class="grow"><h2>' + esc(st.acc.label) + "</h2>" + admPill(s) +
       '<p class="muted" style="font-size:13px;margin-block-start:6px">' + (last ? "آخر نشاط: " + esc(greg(last)) : "لسه مفيش نشاط") +
-      " · مستوى " + admLevel(learn.xp) + " · " + (learn.xp || 0) + " نقطة · سلسلة صلاة " + admStreak(st.days, now) + "</p></div>" +
+      " · سلسلة صلاة " + admStreak(st.days, now) + " · محفوظ ≈ " + admHzPages(hz) + " صفحة" + (pl ? " · إنجليزي " + esc(pl.lv) : "") + "</p></div>" +
       '<div class="adm-prof-act"><button class="btn sm" data-adm="remind" data-uid="' + esc(st.acc.uid) + '">🔔 تذكير</button></div></div>';
     var sub = ADM.sub;
-    var body = sub === "learn" ? admProfLearn(st, now) : sub === "perm" ? admPermBody(st) : sub === "security" ? admSecurity(st) : admProfActivity(st, now);
-    return admHead("ملف الحساب", "", switcher) + head + admSeg("sub", ADM_SUBS, sub) + body;
+    var body = sub === "learn" ? admProfLearn(st, now) : sub === "settings" ? admSettingsBody(st) : admProfIbada(st, now);
+    return '<button class="linkbtn adm-back" data-adm="nav" data-v="accounts">← كل الحسابات</button>' + admHead("ملف الحساب", "", switcher) + head + admSeg("sub", ADM_SUBS, sub) + body;
   }
-  function admProfActivity(st, now) {
+  function admProfIbada(st, now) {
     var f = admFilterDef(), p = admPeriodStats(st.acc, st.days, st.learn, now, f);
-    var pPct = p.prayTotal ? Math.round(p.prayDone / p.prayTotal * 100) : 0;
+    var pPct = p.prayTotal ? Math.round(p.prayDone / p.prayTotal * 100) : 0, n = Math.round(p.prayTotal / 5) || 1, w = admWin(st, now, 0, n);
+    var H = st.learn.hifz || null, tot = admHzTotal(st.learn), lastHz = null;
+    Object.keys((H && H.log) || {}).forEach(function (k) { var l = H.log[k]; if (l && l.h && l.h.length && (!lastHz || k > lastHz)) lastHz = k; });
     var pages14 = "", maxP = 1;
     for (var j = 13; j >= 0; j--) maxP = Math.max(maxP, admM(st, addDays(now.key, -j)).pages);
     for (var i = 13; i >= 0; i--) {
       var k = addDays(now.key, -i), pg = admM(st, k).pages;
       pages14 += '<div title="' + esc(greg(k)) + ": " + pg + '"><span class="col"><i style="height:' + Math.round(pg / maxP * 100) + '%;background:var(--amber)"></i></span><span>' + fmtShort(k) + "</span></div>";
     }
+    var amt = H && H.amt ? (H.amt.n <= 0 ? "متوقف" : H.amt.t === "ayahs" ? H.amt.n + " آيات" : H.amt.n + " سطر") : "—";
+    var hifz = '<div class="card"><div class="adm-card-h"><h3>🌱 الحفظ والمراجعة</h3>' + (H && H.setup ? "" : '<small class="muted">لسه ماظبطش خطة الحفظ</small>') + "</div>" +
+      '<div class="adm-kpis k4">' + admKpi("المحفوظ", "≈" + admHzPages(tot) + '<small class="muted"> ص</small>', "", Math.round(tot / 6236 * 1000) / 10 + "% من المصحف") +
+      admKpi("حفظ جديد", w.hz + '<small class="muted"> آية</small>', "", f.label) + admKpi("أيام مراجعة", w.rv, "", f.label) +
+      admKpi("آخر حفظ", lastHz ? esc(fmtRel(lastHz, now)) : "—") + "</div>" +
+      '<p class="muted" style="font-size:12.5px;margin:10px 0 0">الخطة: حفظ ' + esc(amt) + " يوميًا · مراجعة " + (H && H.rev > 0 ? H.rev + " صفحة" : "متوقفة") + " يوميًا · " + (H && H.dir === "fwd" ? "من الفاتحة" : "من جزء عمّ") + "</p></div>";
     return admSeg("filter", ADM_FILTERS, f.id) +
       '<div class="adm-kpis k4">' + admKpi("الصلوات", p.prayDone + '<small class="muted">/' + p.prayTotal + "</small>", "", pPct + "% التزام") +
-        admKpi("أيام كاملة", p.completeDays, "", "الخمس صلوات") + admKpi("صفحات القرآن", p.pages) + admKpi("نقاط التعلّم", "+" + p.xp) + "</div>" +
+        admKpi("أيام كاملة", p.completeDays, "", "الخمس صلوات") + admKpi("صفحات الورد", p.pages) + admKpi("أيام نشاط", w.active + '<small class="muted">/' + n + "</small>") + "</div>" +
+      hifz +
       '<div class="adm-grid2"><div class="card"><div class="adm-card-h"><h3>خريطة النشاط</h3><small class="muted">آخر 5 أسابيع</small></div>' + admHeat(st, now) + "</div>" +
       '<div class="card"><div class="adm-card-h"><h3>صلوات الأسبوع</h3></div><div class="week">' + admWeekBars(st.days, now) + "</div></div></div>" +
-      '<div class="card"><div class="adm-card-h"><h3>صفحات القرآن</h3><small class="muted">آخر 14 يوم</small></div><div class="week adm-week14">' + pages14 + "</div></div>";
+      '<div class="card"><div class="adm-card-h"><h3>صفحات الورد</h3><small class="muted">آخر 14 يوم</small></div><div class="week adm-week14">' + pages14 + "</div></div>";
   }
   function admProfLearn(st, now) {
     var learn = st.learn, f = admFilterDef(), p = admPeriodStats(st.acc, st.days, learn, now, f), avg = admAvgQuizScore(learn);
+    var C = learn.coach || {}, pl = C.pl, wk = C.wk || [], n = Math.round(p.prayTotal / 5) || 1, w = admWin(st, now, 0, n), week = admWin(st, now, 0, 7);
+    var first = wk[0], lastW = wk[wk.length - 1];
+    var skills = pl && pl.sk ? '<div class="adm-chips">' + Object.keys(pl.sk).map(function (k) { return '<span class="chip">' + esc(({ grammar: "القواعد", vocab: "المفردات", reading: "القراءة", listen: "الاستماع", speak: "الكلام" })[k] || k) + " " + pl.sk[k] + "%</span>"; }).join("") + "</div>" : "";
+    var bars = wk.slice(-8).map(function (x) {
+      var mx = Math.max.apply(null, wk.slice(-8).map(function (y) { return y.words; }).concat([60]));
+      return '<div title="' + esc(greg(x.key)) + '"><span class="col"><i style="height:' + Math.round(x.words / mx * 100) + '%"></i></span><b class="num" style="font-weight:500">' + x.words + "</b><span>" + fmtShort(x.key) + "</span></div>";
+    }).join("");
+    var eng = '<div class="card"><div class="adm-card-h"><h3>🇬🇧 مسار الإنجليزي</h3>' + (pl ? '<small class="muted">اختبار المستوى: ' + esc(greg(pl.at)) + "</small>" : '<small class="muted">لسه ماعملش اختبار المستوى</small>') + "</div>" +
+      '<div class="adm-kpis k4">' + admKpi("المستوى", pl ? esc(pl.lv) : "—") + admKpi("أيام متواصلة", admDoseStreak(learn, now), "", "جرعة كاملة") +
+      admKpi("الأسبوع ده", week.doseFull + '<small class="muted">/' + (C.goal || 5) + "</small>", "", "هدف الأيام") + admKpi("مواقف «اتكلم»", admTalkDone(learn) + '<small class="muted">/' + admTalkTotal() + "</small>", "", "بنجمتين أو أكتر") + "</div>" + skills +
+      '<div class="adm-card-h" style="margin-block-start:14px"><h3>🎙️ صوتي كل أسبوع</h3>' + (first && lastW && first !== lastW ? '<small class="adm-delta ' + (lastW.words >= first.words ? "up" : "down") + '">' + (lastW.words - first.words >= 0 ? "+" : "") + (lastW.words - first.words) + " كلمة من أول تسجيل</small>" : "") + "</div>" +
+      (bars ? '<div class="week">' + bars + "</div>" : '<p class="muted" style="font-size:13px">لسه ماسجّلش.</p>') + "</div>";
     var courses = p.courses.map(function (c) {
       var pct = c.total ? Math.round(c.done / c.total * 100) : 0;
-      if (!c.allowed) return '<div class="adm-course off"><div class="row between"><span>' + esc(c.title) + '</span><span class="muted">مش مسموح</span></div></div>';
+      if (!c.allowed) return "";
       return '<div class="adm-course"><div class="row between"><span>' + esc(c.title) + '</span><span class="num">' + c.done + "/" + c.total + " · " + pct + '%</span></div><div class="bar"><i style="width:' + pct + '%"></i></div>' +
         (c.lastDate ? '<small class="muted">آخر وحدة: ' + esc(greg(c.lastDate)) + "</small>" : "") + "</div>";
     }).join("");
-    var games = Object.keys(learn.games || {}).map(function (k) {
-      var g = learn.games[k], parts = k.split(":"), c = COURSES[parts[0]];
-      return '<div class="adm-lrow"><span class="grow"><b>' + esc(ADM_GAME_LBL[parts[1]] || parts[1]) + '</b> <small class="muted">' + esc(c ? c.title : parts[0]) + '</small></span><span class="muted" style="font-size:12px">' + g.plays + " مرة · مستوى " + ((g.lvl || 0) + 1) + '</span><b class="num">🏆 ' + g.best + "</b></div>";
-    }).join("");
-    var it = learn.intro || {}, scenes = it.sc || {};
-    var intro = it.pts || Object.keys(scenes).length || (it.p && it.p.name)
-      ? '<div class="adm-kpis k4">' + admKpi("نقاط الثقة", it.pts || 0) + admKpi("أيام كلام", Object.keys(it.days || {}).length) +
-        admKpi("مواقف خلّصها", Object.keys(scenes).length) + admKpi("تقديم شخصي", it.p && it.p.name ? "✓" : "—") + "</div>" +
-        (Object.keys(scenes).length ? '<div class="adm-chips">' + Object.keys(scenes).map(function (k) { return '<span class="chip">' + esc((typeof SCENES !== "undefined" && (SCENES.filter(function (x) { return x.k === k; })[0] || {}).t) || k) + " " + "★".repeat(scenes[k].stars || 0) + "</span>"; }).join("") + "</div>" : "")
-      : '<p class="muted">لسه مدخلش قسم «قدّم نفسك».</p>';
-    return admSeg("filter", ADM_FILTERS, f.id) +
-      '<div class="adm-kpis">' + admKpi("المستوى", admLevel(learn.xp), "", (learn.xp || 0) + " نقطة") +
-        admKpi("دقايق (7 أيام)", admWeekMinutes(learn, now)) + admKpi("أيام تحقيق الهدف", admGoalDaysHit(st.acc, learn, now) + "/7") +
-        admKpi("متوسط الاختبارات", avg == null ? "—" : avg + "%") + admKpi("نقاط ضعف مفتوحة", Object.keys(learn.weak || {}).length) +
-        admKpi("الإنجازات", Object.keys(learn.badges || {}).filter(function (b) { return learn.badges[b]; }).length) + "</div>" +
-      '<div class="adm-grid2"><div class="card"><div class="adm-card-h"><h3>تقدّم الكورسات</h3></div>' + (courses || '<p class="muted">—</p>') + "</div>" +
-      '<div><div class="card"><div class="adm-card-h"><h3>🎮 الألعاب</h3></div>' + (games || '<p class="muted">لسه ملعبش.</p>') + "</div>" +
-      '<div class="card"><div class="adm-card-h"><h3>🎤 قدّم نفسك</h3></div>' + intro + "</div></div></div>";
+    return admSeg("filter", ADM_FILTERS, f.id) + eng +
+      '<div class="adm-kpis k4">' + admKpi("دقايق التعلّم", w.mins, "", f.label) + admKpi("أيام تحقيق الهدف", admGoalDaysHit(st.acc, learn, now) + "/7") +
+        admKpi("متوسط الاختبارات", avg == null ? "—" : avg + "%") + admKpi("نقاط ضعف مفتوحة", Object.keys(learn.weak || {}).length) + "</div>" +
+      '<div class="card"><div class="adm-card-h"><h3>تقدّم الكورسات</h3></div>' + (courses || '<p class="muted">—</p>') + "</div>";
   }
-  function admPermBody(st) {
-    var acc = st.acc, allowedC = admAllowedCourses(acc), allowedS = admAllowedSections(acc);
-    var courseChips = COURSE_ORDER.map(function (cid) {
+  // Permissions, learning goals, sign-in code, a direct message and the account's
+  // on/off state — everything the admin can change about one account, on one page.
+  function admSettingsBody(st) {
+    var acc = st.acc, allowedC = admAllowedCourses(acc), allowedS = admAllowedSections(acc), disabled = acc.active === false;
+    var auto = []; Object.keys(COURSE_COMPLEMENTS).forEach(function (k) { auto = auto.concat(COURSE_COMPLEMENTS[k]); });
+    var courseChips = COURSE_ORDER.filter(function (cid) { return auto.indexOf(cid) < 0; }).map(function (cid) {
       var c = COURSES[cid]; if (!c) return "";
       return '<button class="chipbtn' + (allowedC.indexOf(cid) >= 0 ? " on" : "") + '" data-adm="pcourse" data-permcourse="' + cid + '">' + esc(c.title) + "</button>";
     }).join("");
@@ -502,33 +541,25 @@
       return '<div class="adm-switch-row"><span>' + esc(ADM_SECTION_LABEL[s]) + '</span><button class="adm-switch' + (on ? " on" : "") + '" data-adm="psection" data-permsection="' + s + '" role="switch" aria-checked="' + on + '" aria-label="' + esc(ADM_SECTION_LABEL[s]) + '"><i></i></button></div>';
     }).join("");
     return '<div class="adm-grid2"><div class="card" id="permCourseBox"><div class="adm-card-h"><h3>الكورسات المسموحة</h3><span class="row" style="gap:6px"><button class="btn sm alt" data-adm="pall">الكل</button><button class="btn sm alt" data-adm="pnone">ولا حاجة</button></span></div>' +
-      '<div class="adm-chips">' + courseChips + "</div></div>" +
+      '<div class="adm-chips">' + courseChips + '</div><p class="muted" style="font-size:12px;margin:8px 0 0">كورسات 22002-100 و22002-1 بتتفتح تلقائي مع آيزو 22000.</p></div>' +
       '<div class="card"><div class="adm-card-h"><h3>الأقسام</h3></div>' + sections + "</div></div>" +
       '<div class="adm-save"><button class="btn" data-adm="psave" data-uid="' + esc(acc.uid) + '">حفظ الصلاحيات</button><span class="muted" id="permmsg"></span></div>' +
-      '<div class="card"><div class="adm-card-h"><h3>هدف التعلّم اليومي</h3></div><div class="row wrapr" style="gap:14px">' +
+      '<div class="adm-grid2"><div class="card"><div class="adm-card-h"><h3>🎯 هدف التعلّم اليومي</h3></div><div class="row wrapr" style="gap:14px">' +
       '<label class="field" style="max-width:180px">الهدف اليومي (دقيقة)<input class="inp" type="number" min="0" id="goalMin" value="' + (acc.dailyGoalMin || "") + '" placeholder="بدون هدف"></label>' +
       '<label class="field" style="max-width:180px">حد الكلمات الجديدة/يوم<input class="inp" type="number" min="0" id="goalWords" value="' + (acc.dailyNewWordLimit || "") + '" placeholder="الافتراضي"></label></div>' +
-      '<div class="adm-save"><button class="btn sm" data-adm="gsave" data-uid="' + esc(acc.uid) + '">حفظ الهدف</button><span class="muted" id="goalsmsg"></span></div></div>';
-  }
-  function admSecurity(st) {
-    var acc = st.acc, disabled = acc.active === false;
-    return '<div class="adm-grid2"><div class="card"><div class="adm-card-h"><h3>🔑 رمز الدخول</h3></div><p class="muted" style="font-size:13px">الرمز الجديد بيشتغل فورًا. ابعته لصاحب الحساب بطريقة آمنة.</p>' +
+      '<div class="adm-save"><button class="btn sm" data-adm="gsave" data-uid="' + esc(acc.uid) + '">حفظ الهدف</button><span class="muted" id="goalsmsg"></span></div></div>' +
+      '<div class="card"><div class="adm-card-h"><h3>🔑 رمز الدخول</h3></div><p class="muted" style="font-size:13px">الرمز الجديد بيشتغل فورًا. ابعته لصاحب الحساب بطريقة آمنة.</p>' +
       '<form class="row wrapr" data-act="admin-pw" data-uid="' + esc(acc.uid) + '" style="gap:8px;margin-block-start:10px">' +
       '<input class="inp" type="text" inputmode="numeric" placeholder="رمز جديد (4–8 أرقام)" style="max-width:190px" required pattern="\\d{4,8}" autocomplete="off">' +
-      '<button class="btn sm" type="submit">تغيير الرمز</button><span class="muted pwmsg" style="font-size:12.5px"></span></form></div>' +
+      '<button class="btn sm" type="submit">تغيير الرمز</button><span class="muted pwmsg" style="font-size:12.5px"></span></form></div></div>' +
       '<div class="card"><div class="adm-card-h"><h3>🔔 رسالة مخصوصة</h3></div><textarea class="inp" id="admOneMsg" rows="3" placeholder="اكتب رسالة توصل له كإشعار…" style="width:100%"></textarea>' +
-      '<div class="adm-save"><button class="btn sm" data-adm="sendone" data-uid="' + esc(acc.uid) + '">ابعت</button></div></div></div>' +
+      '<div class="adm-save"><button class="btn sm" data-adm="sendone" data-uid="' + esc(acc.uid) + '">ابعت</button></div></div>' +
       '<div class="card adm-danger"><div class="adm-card-h"><h3>حالة الحساب</h3>' + admPill(disabled ? { k: "off", t: "معطّل" } : { k: "on", t: "مفعّل" }) + "</div>" +
       '<p class="muted" style="font-size:13px">' + (disabled ? "الحساب مش هيقدر يدخل لحد ما تفعّله تاني. بياناته محفوظة." : "التعطيل بيمنع الدخول بس، ومفيش أي بيانات بتتمسح.") + "</p>" +
       (disabled ? '<button class="btn sm" data-adm="activate" data-uid="' + esc(acc.uid) + '" style="margin-block-start:10px">تفعيل الحساب</button>'
         : '<p class="muted" style="font-size:12.5px;margin-block:10px 6px">للتأكيد اكتب اسم الحساب بالظبط: <b>' + esc(acc.label) + "</b></p>" +
           '<div class="row" style="gap:8px"><input class="inp" type="text" id="deactivateInput" data-expect="' + esc(acc.label) + '" style="max-width:220px" autocomplete="off"><button class="btn sm adm-btn-danger" id="deactivateConfirmBtn" data-adm="deactivate" data-uid="' + esc(acc.uid) + '" disabled>تعطيل</button></div>' +
           '<div class="muted togglemsg" style="font-size:12.5px;margin-block-start:6px"></div>') + "</div>";
-  }
-
-  function admCompare(now) {
-    var html = admCompareHTML(ADM.stats, now);
-    return admHead("مقارنة", "قارن الحسابات المفعّلة جنب بعض") + html;
   }
 
   function admNotifyTargets(now) {
@@ -560,19 +591,21 @@
       var units = Object.keys(st.learn.units || {}).filter(function (k) { return st.learn.units[k].done; }).length;
       return {
         label: st.acc.label, status: admStatus(st, now).t, last: last || "—", streak: admStreak(st.days, now),
-        p7: Math.round(w7.pray / 35 * 100), p30: Math.round(w30.pray / 150 * 100), pages30: w30.pages, xp30: w30.xp,
-        mins7: w7.mins, units: units, weak: Object.keys(st.learn.weak || {}).length, level: admLevel(st.learn.xp)
+        p7: Math.round(w7.pray / 35 * 100), p30: Math.round(w30.pray / 150 * 100), pages30: w30.pages,
+        hz30: w30.hz, hzTot: admHzPages(admHzTotal(st.learn)), dose30: w30.doseFull, en: (admPl(st.learn) || {}).lv || "—",
+        mins7: w7.mins, units: units, weak: Object.keys(st.learn.weak || {}).length
       };
     });
   }
-  var ADM_REPORT_COLS = [["label", "الحساب"], ["status", "الحالة"], ["last", "آخر نشاط"], ["streak", "سلسلة"], ["p7", "صلاة 7 أيام %"], ["p30", "صلاة 30 يوم %"], ["pages30", "صفحات 30 يوم"], ["xp30", "نقاط 30 يوم"], ["mins7", "دقايق 7 أيام"], ["units", "وحدات"], ["weak", "نقاط ضعف"], ["level", "المستوى"]];
+  var ADM_REPORT_COLS = [["label", "الحساب"], ["status", "الحالة"], ["last", "آخر نشاط"], ["streak", "سلسلة"], ["p7", "صلاة 7 أيام %"], ["p30", "صلاة 30 يوم %"], ["pages30", "ورد 30 يوم (ص)"], ["hz30", "حفظ 30 يوم (آية)"], ["hzTot", "المحفوظ (ص)"], ["dose30", "جرعات إنجليزي 30 يوم"], ["en", "مستوى الإنجليزي"], ["mins7", "دقايق 7 أيام"], ["units", "وحدات"], ["weak", "نقاط ضعف"]];
   function admReports(now) {
     var rows = admRowsForReport(now);
     return admHead("التقارير", "ملخص شامل لكل الحسابات تقدر تنزّله") +
       '<div class="adm-grid2"><div class="card"><div class="adm-card-h"><h3>📊 ملخص Excel</h3></div><p class="muted" style="font-size:13px">ملف CSV يفتح على Excel أو Google Sheets، فيه كل المؤشرات اللي تحت.</p><div class="adm-save"><button class="btn sm" data-adm="csv">⬇️ تنزيل CSV</button></div></div>' +
       '<div class="card"><div class="adm-card-h"><h3>💾 نسخة احتياطية</h3></div><p class="muted" style="font-size:13px">كل بيانات الحسابات الخام (JSON)، احتفظ بيها في مكان آمن.</p><div class="adm-save"><button class="btn sm alt" data-adm="json">⬇️ تنزيل JSON</button></div></div></div>' +
       '<div class="card"><div class="adm-table-wrap"><table class="adm-table"><thead><tr>' + ADM_REPORT_COLS.map(function (c) { return "<th>" + esc(c[1]) + "</th>"; }).join("") + "</tr></thead><tbody>" +
-      rows.map(function (r) { return "<tr>" + ADM_REPORT_COLS.map(function (c) { return "<td>" + esc(String(r[c[0]])) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div></div>";
+      rows.map(function (r) { return "<tr>" + ADM_REPORT_COLS.map(function (c) { return "<td>" + esc(String(r[c[0]])) + "</td>"; }).join("") + "</tr>"; }).join("") + "</tbody></table></div></div>" +
+      '<div class="adm-head" style="margin-block-start:18px"><div><h2>مقارنة الحسابات</h2><p class="muted">الحسابات المفعّلة جنب بعض</p></div></div>' + admCompareHTML(ADM.stats, now);
   }
   function admDownload(name, text, type) {
     var a = document.createElement("a");
@@ -622,12 +655,13 @@
     wrap.id = "admin"; wrap.dir = "rtl"; wrap.lang = "ar";
     var now = nowR();
     var tab = state.adminTab || "overview";
-    if (tab === "details") { tab = "profile"; ADM.sub = "activity"; } else if (tab === "perm") { tab = "profile"; ADM.sub = "perm"; }
+    if (tab === "details") { tab = "profile"; ADM.sub = "ibada"; } else if (tab === "perm") { tab = "profile"; ADM.sub = "settings"; } else if (tab === "compare") tab = "reports";
     state.adminTab = tab;
-    var body = tab === "accounts" ? admAccounts(now) : tab === "profile" ? admProfile(now) : tab === "compare" ? admCompare(now)
+    var body = tab === "accounts" ? admAccounts(now) : tab === "profile" ? admProfile(now)
       : tab === "notify" ? admNotify(now) : tab === "reports" ? admReports(now) : admOverview(now);
+    var navOn = tab === "profile" ? "accounts" : tab;
     var nav = ADM_NAV.map(function (n) {
-      return '<button data-adm="nav" data-v="' + n.id + '"' + (n.id === tab ? ' aria-current="page"' : "") + ">" + admIco(n.id) + "<span>" + esc(n.label) + "</span></button>";
+      return '<button data-adm="nav" data-v="' + n.id + '"' + (n.id === navOn ? ' aria-current="page"' : "") + ">" + admIco(n.id) + "<span>" + esc(n.label) + "</span></button>";
     }).join("");
     wrap.innerHTML = '<div class="adm-shell"><aside class="adm-side"><div class="adm-brand"><span class="adm-logo">م</span><div><b>مسار</b><small>لوحة التحكم</small></div></div>' +
       '<nav class="adm-nav" aria-label="أقسام اللوحة">' + nav + "</nav>" +
@@ -661,7 +695,7 @@
     var a = el.getAttribute("data-adm"), v = el.getAttribute("data-v"), uid = el.getAttribute("data-uid"), now = nowR();
     switch (a) {
       case "nav": state.adminTab = v; renderAdminDashboard(); break;
-      case "open": state.adminDetailUid = uid; state.adminTab = "profile"; ADM.sub = el.getAttribute("data-sub") || "activity"; renderAdminDashboard(); break;
+      case "open": state.adminDetailUid = uid; state.adminTab = "profile"; ADM.sub = el.getAttribute("data-sub") || "ibada"; renderAdminDashboard(); break;
       case "sub": ADM.sub = v; admRerender(); break;
       case "range": ADM.range = Number(v); admRerender(); break;
       case "metric": ADM.metric = v; admRerender(); break;
