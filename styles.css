@@ -1360,3 +1360,10 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .c-badges > summary { cursor: pointer; list-style: none; }
 .c-badges > summary::after { content: " ▾"; color: var(--muted); }
 .c-badges[open] > summary::after { content: " ▴"; }
+
+/* home declutter */
+.banner-sm { display: block; width: 100%; text-align: start; border: 0; cursor: pointer; font: inherit; font-size: 12.5px; padding: 8px 12px; }
+.home-week { display: flex; align-items: center; gap: 12px; width: 100%; text-align: start; font: inherit; color: inherit; cursor: pointer; margin-block-start: 12px; }
+.home-week > .i { width: 22px; height: 22px; color: var(--teal); flex: none; }
+.home-week b { display: block; }
+.home-week small { font-size: 12px; }

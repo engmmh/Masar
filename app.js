@@ -818,7 +818,7 @@
     // settles, so the banner doubles as a one-tap retry instead of leaving the
     // person stuck in guest mode for the rest of the session.
     return state.mode === "local"
-      ? '<button type="button" class="banner" data-act="retry-cloud" style="display:block;width:100%;text-align:start;border:0;cursor:pointer;font:inherit">الحفظ السحابي غير متاح الآن (مشكلة اتصال مؤقتة) — بياناتك بتُحفظ على هذا المتصفح بس. اضغط هنا لإعادة المحاولة.</button>'
+      ? '<button type="button" class="banner banner-sm" data-act="retry-cloud">مش متصل بالحفظ السحابي: بياناتك على الجهاز ده بس. <u>إعادة المحاولة</u></button>'
       : "";
   }
   function weekBars(now) {
@@ -981,8 +981,10 @@
       if (hzs) lines.push({ key: "hifz", ic: "mushaf", text: "حفظ ومراجعة " + hzs.done + "/" + hzs.total, frac: hzs.done / hzs.total });
     }
     if (allow.indexOf("learn") >= 0) {
-      var due = dueCards(now).length;
-      lines.push({ key: "review", ic: "refresh", text: due ? due + " كلمة محتاجة مراجعة" : "خلصت مراجعتك النهاردة", frac: due ? 0 : 1 });
+      if (ALLOWED_COURSES.indexOf("en") >= 0) {
+        var dd = coD().days[now.key] || {}, dn = DOSE_STEPS.filter(function (s) { return dd[s[0]]; }).length;
+        lines.push({ key: "dose", ic: "cap", text: "جرعة الإنجليزي " + dn + "/4", frac: dn / 4 });
+      }
       var goalMin = state.settings.personalGoalMin || state.dailyGoalMin || 0;
       if (goalMin > 0) {
         var mins = Math.round(((state.learn.minutes || {})[now.key] || 0) * 10) / 10;
@@ -1006,8 +1008,9 @@
       var rp = state.learn.units[r.c + ":" + r.u];
       if (ru && !(rp && rp.done)) return { label: "كمّل من مكانك", sub: COURSES[r.c].title + " · " + ru.title, act: "resume-lesson", c: r.c, u: r.u };
     }
-    if (allow.indexOf("learn") >= 0 && dueCards(now).length) {
-      return { label: "كمّل من مكانك", sub: "مراجعة " + dueCards(now).length + " كلمة مستحقة", act: "resume-review" };
+    if (allow.indexOf("learn") >= 0 && ALLOWED_COURSES.indexOf("en") >= 0) {
+      var dd2 = coD().days[now.key] || {}, nx = DOSE_STEPS.filter(function (s) { return !dd2[s[0]]; })[0];
+      if (nx) return { label: "كمّل من مكانك", sub: "جرعة الإنجليزي: " + nx[1], act: "co-step", s: nx[0] };
     }
     if (allow.indexOf("prayer") >= 0) {
       var actionable = PRAYERS.some(function (p, i) { var s = status(now.key, i, now); return s === "current" || s === "missed"; });
@@ -1039,7 +1042,7 @@
     if (celebrate) planCelebratedKey = now.key;
     var bottom;
     if (resume) {
-      bottom = '<button class="btn plan-resume" data-act="' + resume.act + '"' + (resume.c ? ' data-c="' + resume.c + '" data-u="' + resume.u + '"' : "") + '><span class="pr-l">' + esc(resume.label) + '</span><span class="pr-s">' + esc(resume.sub) + "</span></button>";
+      bottom = '<button class="btn plan-resume" data-act="' + resume.act + '"' + (resume.c ? ' data-c="' + resume.c + '" data-u="' + resume.u + '"' : "") + (resume.s ? ' data-s="' + resume.s + '"' : "") + '><span class="pr-l">' + esc(resume.label) + '</span><span class="pr-s">' + esc(resume.sub) + "</span></button>";
     } else if (celebrate) {
       bottom = '<div class="plan-done">🎉 خلّصت خطة اليوم النهاردة، ما شاء الله!</div>';
     } else {
@@ -1053,8 +1056,8 @@
   function homeView(now) {
     if (state.settingsOpen) return settingsHTML(now);
     if (state.hv === "weekly") return weeklyReportHTML(now);
-    return greetingHTML(now) + bannerHTML() + planCardHTML(now) + dailyCardHTML(now) +
-      '<div class="card" style="margin-block-start:12px"><div class="row between"><h3 style="margin:0">الصلوات آخر 7 أيام</h3><button class="linkbtn" data-act="weekly-open">تقرير الأسبوع ←</button></div><div class="week">' + weekBars(now) + "</div></div>";
+    return greetingHTML(now) + bannerHTML() + planCardHTML(now) +
+      '<button class="card home-week" data-act="weekly-open">' + ic("chart") + '<span class="grow"><b>تقرير الأسبوع</b><small class="muted">صلواتك وقرآنك ومذاكرتك آخر ٧ أيام</small></span><span>←</span></button>';
   }
   function settingsHTML(now) {
     return '<button class="linkbtn" data-act="settings-close">← رجوع</button><div class="sec-h">الإعدادات</div>' + pushCardHTML() +
@@ -1277,7 +1280,6 @@
       case "resume-lesson":
         var rsC = el.getAttribute("data-c"), rsU = el.getAttribute("data-u"), rsUnit = unitOf(rsC, rsU); if (!rsUnit) break;
         state.lv = { mode: rsUnit.kind === "dialogue" ? "dialogue" : "lesson", c: rsC, u: rsU, step: 0 }; goTab("learn"); render(); break;
-      case "resume-review": state.card = { q: buildReviewQueue(now, null, 0, 10), i: 0, flip: false, known: 0, global: true }; state.lv = { mode: "cards", c: null }; goTab("learn"); render(); break;
       case "resume-prayer": goTab("prayer"); render(); break;
       case "resume-quran": state.qv = { mode: "today" }; goTab("quran"); render(); break;
       case "azkar-open": state.az = el.getAttribute("data-k"); $("#p-prayer").scrollTop = 0; render(); break;
@@ -1410,7 +1412,6 @@
         dueNow.forEach(function (r) { state.exp.items.push({ id: "e" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + r.id.slice(-3), date: addedDate, cat: r.cat, amount: r.amount, note: r.note, recurId: r.id }); });
         saveMeta("exp", 0); render(); toast("تم إضافة " + dueNow.length + " بند ثابت"); break;
       case "exp-undo": if (undoPending) { var fn = undoPending; undoPending = null; clearTimeout(undoT); $("#toast").classList.remove("on"); fn(); } break;
-      case "daily-start": startDailyChallenge(now); break;
       case "badge-info": var bi = ACHIEVEMENTS.filter(function (x) { return x.id === el.getAttribute("data-b"); })[0]; if (bi) toast((state.learn.badges[bi.id] ? "🏆 " : "🔒 ") + bi.title + " — " + bi.desc); break;
       case "notes-open": state.lv = { mode: "notes", c: el.getAttribute("data-c") }; state.ndraft = freshDraft(); $("#p-learn").scrollTop = 0; render(); break;
       case "mysent-open": state.lv = { mode: "mysent", c: el.getAttribute("data-c") }; $("#p-learn").scrollTop = 0; render(); break;

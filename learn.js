@@ -379,10 +379,7 @@
     if (pool.length < 5) pool = Object.keys(QINDEX);
     return pool;
   }
-  function todaysDaily(now) {
-    var d = state.learn.daily;
-    return (d && d.key === now.key) ? d : null;
-  }
+
   // Phase 11 — تحدي الأسبوع: a bigger (10-question), once-per-week bonus challenge
   // that becomes available every Saturday and stays open all week until attempted.
   function satKeyOf(key) { var back = (dowOf(key) - 6 + 7) % 7; return addDays(key, -back); }
@@ -404,19 +401,7 @@
     state.lv = { mode: "quiz", c: state.lv.c || COURSE_ORDER[0] };
     goTab("learn"); render();
   }
-  function startDailyChallenge(now) {
-    var d = todaysDaily(now);
-    if (!d) {
-      var pool = dailyPool(); pool = shuffle(pool).slice(0, Math.min(5, pool.length));
-      d = { key: now.key, ids: pool, done: false, score: null };
-      state.learn.daily = d; saveMeta("learn", 0);
-    }
-    var qs = d.ids.map(function (id) { return QINDEX[id]; }).filter(Boolean);
-    if (!qs.length) { toast("كمّل شوية وحدات الأول عشان يتجهز لك تحدي يومي"); return; }
-    state.quiz = { qs: shuffle(qs), i: 0, ok: 0, ans: null, title: "تحدي اليوم", unit: null, daily: true, wrong: [], right: [], pick: [] };
-    state.lv = { mode: "quiz", c: state.lv.c || COURSE_ORDER[0] };
-    goTab("learn"); render();
-  }
+
 
 
   /* ---------------- speaking challenge ---------------- */

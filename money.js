@@ -69,13 +69,7 @@
     if (key === addDays(now.key, -1)) return "أمس";
     return WD[dowOf(key)] + " · " + Number(key.slice(8)) + "/" + Number(key.slice(5, 7));
   }
-  function dailyCardHTML(now) {
-    var d = todaysDaily(now);
-    if (d && d.done) {
-      return '<div class="card daily done"><div class="row between"><div><h3 style="margin:0">✓ تحدي اليوم خلصته</h3><p class="muted" style="font-size:14px;margin-block-start:4px">نتيجتك: <span class="num">' + d.score + '%</span>. يجيلك تحدي جديد بكرة.</p></div></div></div>';
-    }
-    return '<div class="card daily"><div class="row between"><div><h3 style="margin:0">' + ic("zap") + ' تحدي اليوم</h3><p class="muted" style="font-size:14px;margin-block-start:4px">5 أسئلة سريعة من كل اللي اتعلمته، وتاخد نقاط إضافية.</p></div><button class="btn sm" data-act="daily-start">ابدأ</button></div></div>';
-  }
+
   function expHomeSub(now) {
     var mk = monthKey(now.key), sal = state.exp.salary[mk] || 0, tot = expTotalOf(mk);
     if (!sal && !tot) return "سجّل مصاريفك";
