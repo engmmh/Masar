@@ -311,8 +311,8 @@
      "q": "حد قالّك \"Nice to meet you\"، الرد المناسب إيه؟",
      "o": [
       "Nice to meet you too",
-      "Good night",
-      "Excuse me"
+      "Good night, see you",
+      "Excuse me, sorry"
      ],
      "a": "Nice to meet you too",
      "why": "الرد القياسي على أول تعارف."
@@ -2147,9 +2147,9 @@
      "q": "حاجز تذكرة طيارة لإسكندرية الجمعة. تقول:",
      "o": [
       "I'm going to travel to Alexandria on Friday.",
-      "I will travel maybe.",
-      "I travel yesterday.",
-      "I going travel."
+      "I will travel to Alexandria maybe on Friday.",
+      "I travel yesterday to Alexandria.",
+      "I going travel to Alexandria Friday."
      ],
      "a": "I'm going to travel to Alexandria on Friday.",
      "why": "خطة مرتبة ومحجوزة ← going to."
@@ -3343,9 +3343,9 @@
      "q": "بعد ما تجاوب على Where are you from?، أفضل طريقة تكمل الكلام:",
      "o": [
       "I'm from Egypt. What about you?",
-      "Egypt.",
-      "Yes.",
-      "I from Egypt."
+      "Egypt. And I am a engineer.",
+      "Yes, I from Egypt.",
+      "I from Egypt, what about you?"
      ],
      "a": "I'm from Egypt. What about you?",
      "why": "الإجابة الكاملة + سؤال راجع بيخلّي المحادثة طبيعية."
@@ -3478,8 +3478,8 @@
      "q": "Where is Mona's bag?",
      "o": [
       "On her brother's chair.",
-      "In the school.",
-      "On the bus."
+      "In the school with her books.",
+      "On the bus next to the driver."
      ],
      "a": "On her brother's chair.",
      "why": "قالت: It's on my brother's chair."
@@ -3721,8 +3721,8 @@
      "q": "عايز تقول إنك مش شغال ودايفتش على فرصة، تقول إيه؟",
      "o": [
       "I don't work. I'm looking for a job.",
-      "I work in a shop.",
-      "I have a degree."
+      "I work in a shop near my house.",
+      "I have a degree but I am working now."
      ],
      "a": "I don't work. I'm looking for a job.",
      "why": "أنسب جملة لوصف إنك بتدوّر على شغل."
@@ -4215,8 +4215,8 @@
      "q": "إيه الأكلات المفضلة عند Sam؟",
      "o": [
       "Pasta and grilled chicken",
-      "Pizza and salad",
-      "Rice and fish"
+      "Pizza and green salad",
+      "Rice and grilled fish"
      ],
      "a": "Pasta and grilled chicken",
      "why": "مذكورة في القراءة إنها أكلاته المفضلة والمشهورة عند الزباين."
@@ -4842,8 +4842,8 @@
      "q": "\"Make the bed\" معناها إيه؟",
      "o": [
       "يرتّب السرير",
-      "ينام",
-      "يفطر"
+      "ينام على السرير",
+      "يفطر في السرير"
      ],
      "a": "يرتّب السرير",
      "why": "Make the bed = يرتّب الفرش بعد ما يصحى."
