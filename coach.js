@@ -194,7 +194,9 @@
       '<div class="opts">' + shuffleStable(it.o, P.i).map(function (o) { return '<button class="opt" dir="ltr" lang="en" data-act="co-pl-pick" data-v="' + esc(o) + '">' + esc(o) + "</button>"; }).join("") + "</div>" +
       '<button class="linkbtn" data-act="co-pl-skip" style="margin-block-start:8px">مش عارف</button></div>';
   }
-  function shuffleStable(arr, seed) { var a = arr.slice(), s = seed * 7 + 3; for (var i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; var j = s % (i + 1); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  // Seeded per app session too, so option positions differ between attempts.
+  var CO_SALT = Math.floor(Math.random() * 9973);
+  function shuffleStable(arr, seed) { var a = arr.slice(), s = (seed * 7 + 3 + CO_SALT) % 233280; for (var i = a.length - 1; i > 0; i--) { s = (s * 9301 + 49297) % 233280; var j = s % (i + 1); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
   function plAnswer(v) {
     var P = coUi().pl, it = PLACEMENT[P.i];
     if (it.s === "speak") {

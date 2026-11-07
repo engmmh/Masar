@@ -1312,7 +1312,7 @@
         state.learn.resume = { c: roC, u: roU }; saveMeta("learn", 400); render(); break;
       case "reading-tr": state.lv.tr = !state.lv.tr; render(); break;
       case "lstep": var lsC = el.getAttribute("data-c"), lsU = el.getAttribute("data-u"), lsD = Number(el.getAttribute("data-d"));
-        state.lv = { mode: "lesson", c: lsC, u: lsU, step: (state.lv.step || 0) + lsD }; $("#p-learn").scrollTop = 0; render(); break;
+        state.lv = { mode: "lesson", c: lsC, u: lsU, step: (state.lv.step || 0) + lsD, os: state.lv.os }; $("#p-learn").scrollTop = 0; render(); break;
       case "unit-task": if (!state.learn.tasks) state.learn.tasks = {}; var utK = el.getAttribute("data-k"); state.learn.tasks[utK] = !state.learn.tasks[utK]; if (state.learn.tasks[utK]) { addXp(10); toast("برافو! التطبيق هو اللي بيثبّت التعلم"); } saveMeta("learn", 400); render(); break;
       case "lesson-next": state.lv.step = (state.lv.step || 0) + 1; state.lv.ans = null; $("#p-learn").scrollTop = 0; render(); break;
       case "lesson-retry-next": if (state.lv.retry) state.lv.retry.shift(); state.lv.ans = null; $("#p-learn").scrollTop = 0; render(); break;

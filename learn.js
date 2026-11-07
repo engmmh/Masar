@@ -231,7 +231,7 @@
       if (distractors.length < 3) return null;
       return shuffle([correct].concat(distractors));
     }
-    if (info.t === "mcq" && info.o && info.o.length) return info.o;
+    if (info.t === "mcq" && info.o && info.o.length) return optOrder(info, state.wd).map(function (i) { return info.o[i]; });
     return null;
   }
   function weakStart(id) {
@@ -322,6 +322,17 @@
     return Object.keys(state.learn.mistakes).filter(function (id) { return state.learn.mistakes[id] > 0 && QINDEX[id] && (!cid || QINDEX[id].c === cid); });
   }
   function norm(s) { return String(s).toLowerCase().replace(/[‘’ʼ`]/g, "'").replace(/[.!?]+$/g, "").replace(/\s+/g, " ").trim(); }
+  // Course options are stored with the right answer usually first, so every MCQ is
+  // shown shuffled: the order is stable while the question is on screen (seeded by the
+  // question and the current lesson/quiz session) and different in the next session.
+  function optOrder(q, holder) {
+    var n = (q.o || []).length, seed = holder ? (holder.os || (holder.os = Math.floor(Math.random() * 1e9) + 1)) : 1;
+    var key = String(q.id || q.q || "") + "|" + seed, h = 2166136261;
+    for (var i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    var idx = []; for (var j = 0; j < n; j++) idx.push(j);
+    for (var k = n - 1; k > 0; k--) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; var r = h % (k + 1), t = idx[k]; idx[k] = idx[r]; idx[r] = t; }
+    return idx;
+  }
   function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 
 
@@ -830,7 +841,7 @@
   function lessonQuizBody(q, a, kind) {
     var arQ = /[؀-ۿ]/.test(q.q), body;
     if (q.t === "mcq") {
-      body = '<div class="opts">' + q.o.map(function (o) {
+      body = '<div class="opts">' + optOrder(q, state.lv).map(function (i) { return q.o[i]; }).map(function (o) {
         var c = "opt"; if (a) { if (o === q.a) c += " ok"; else if (o === a.sel) c += " bad"; }
         return '<button class="' + c + '" data-act="lesson-quiz-pick" data-v="' + esc(o) + '" data-k="' + kind + '"' + (a ? " disabled" : "") + ">" + esc(o) + "</button>";
       }).join("") + "</div>";
@@ -1026,8 +1037,8 @@
     var q = z.qs[z.i], a = z.ans, body;
     var arQ = /[؀-ۿ]/.test(q.q);
     if (q.t === "mcq" || q.t === "wrongword") {
-      body = '<div class="opts">' + q.o.map(function (o, k) {
-        var c = "opt"; if (a) { if (o === q.a) c += " ok"; else if (o === a.sel) c += " bad"; }
+      body = '<div class="opts">' + optOrder(q, z).map(function (k) {
+        var o = q.o[k], c = "opt"; if (a) { if (o === q.a) c += " ok"; else if (o === a.sel) c += " bad"; }
         return '<button class="' + c + '" data-act="pick" data-k="' + k + '"' + (a ? " disabled" : "") + ">" + esc(o) + "</button>";
       }).join("") + "</div>";
     } else if (q.t === "order") {
