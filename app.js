@@ -32,6 +32,7 @@
   // (1.15em) unless a container sets it.
   var IC = {
     "mail": "<rect x=\"2\" y=\"4\" width=\"20\" height=\"16\" rx=\"2\"/><path d=\"m22 7-10 6L2 7\"/>",
+    "run": "<circle cx=\"14\" cy=\"4\" r=\"2\"/><path d=\"M7 21l3-6 3 2v5\"/><path d=\"M5 12l3-3 4-1 3 3 3 1\"/><path d=\"M10 15l2-6\"/>",
     "plus": "<path d=\"M12 5v14\"/><path d=\"M5 12h14\"/>",
     "refresh": "<path d=\"M3 12a9 9 0 0 1 15-6.7L21 8\"/><path d=\"M21 3v5h-5\"/><path d=\"M21 12a9 9 0 0 1-15 6.7L3 16\"/><path d=\"M3 21v-5h5\"/>",
     "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z\"/>",
@@ -1000,6 +1001,11 @@
         lines.push({ key: "lesson", ic: "cap", text: studied ? "ذاكرت درس النهاردة" : "لسه ما ذاكرتش درس النهاردة", frac: studied ? 1 : 0 });
       }
     }
+    var FT = fitGet();
+    if (FT) {
+      var fwm = Math.floor(fitWalkMin(FT, now.key, now.ms)), fwt = fitWalkTarget(FT, now.key), fdue = fitStrDue(FT, now.key), fd = FT.days[now.key] || {};
+      lines.push({ key: "fit", ic: "run", text: "مشي " + fwm + "/" + fwt + " د" + (fdue ? (fd.s ? " · مقاومة ✓" : " · جولة مقاومة") : ""), frac: fitDayFrac(FT, now.key, now.ms) });
+    }
     return lines;
   }
   // "كمّل من مكانك": one resume target at a time, in a fixed priority order — the lesson
@@ -1028,6 +1034,11 @@
       if (hz2 && hz2.done < hz2.total) return { label: "كمّل من مكانك", sub: "حفظ ومراجعة النهارده (" + hz2.done + "/" + hz2.total + ")", act: "resume-quran" };
       if (n2 < t2) return { label: "كمّل من مكانك", sub: "كمّل وِردك (" + (t2 - n2) + " صفحة باقية)", act: "resume-quran" };
     }
+    var FR = fitGet();
+    if (FR && fitDayFrac(FR, now.key, now.ms) < 1) {
+      var frd = FR.days[now.key] || {}, frw = fitWalkMin(FR, now.key, now.ms) < fitWalkTarget(FR, now.key);
+      return { label: "كمّل من مكانك", sub: frw ? "مشي النهارده (" + Math.max(1, Math.ceil(fitWalkTarget(FR, now.key) - fitWalkMin(FR, now.key, now.ms))) + " د باقية)" : (frd.s ? "تمارين النهارده" : "جولة المقاومة"), act: "fit-open" };
+    }
     return null;
   }
   var planCelebratedKey = null; // in-memory only — re-plays once per fresh page load at most, not on every render()
@@ -1037,7 +1048,7 @@
     var miss = state.loaded ? missedList(now).length : 0;
     var missLine = miss ? '<div class="plan-line plan-miss"><span class="pl-ic">' + ico("shield") + '</span><span class="grow">فاتتك ' + miss + (miss === 1 || miss > 10 ? " صلاة" : " صلوات") + ' — سجّل القضاء</span><button class="btn sm" data-act="tab" data-t="prayer">شوفها</button></div>' : "";
     var linesHTML = lines.map(function (l) {
-      return '<div class="plan-line' + (l.frac >= 1 ? " done" : "") + '"><span class="pl-ic">' + (l.frac >= 1 ? ico("check") : ico(l.ic)) + '</span><span class="grow">' + esc(l.text) + "</span></div>";
+      return '<div class="plan-line' + (l.frac >= 1 ? " done" : "") + '"><span class="pl-ic">' + (l.frac >= 1 ? ico("check") : (ico(l.ic) || ic(l.ic))) + '</span><span class="grow">' + esc(l.text) + "</span></div>";
     }).join("");
     var resume = planResume(now), celebrate = lines.length > 0 && pct >= 100 && !resume;
     // The pop animation plays only the first time this session that the plan reaches
@@ -1085,7 +1096,7 @@
   }
 
   /* ---------------- render ---------------- */
-  var TABS = ["home", "prayer", "quran", "learn", "exp"], panelCache = {};
+  var TABS = ["home", "prayer", "quran", "learn", "fit", "exp"], panelCache = {};
   // Per-account section permissions ("home" is always visible — only these four
   // are ever toggled off). Hides the bottom-nav button and the panel itself, and
   // bumps the user off a tab that just got hidden out from under them.
@@ -1152,7 +1163,7 @@
   }
   function render() {
     var now = nowR();
-    var views = { home: homeView(now), prayer: prayerView(now), quran: quranView(now), learn: learnView(now), exp: expView(now) };
+    var views = { home: homeView(now), prayer: prayerView(now), quran: quranView(now), learn: learnView(now), fit: fitView(now), exp: expView(now) };
     var active = document.activeElement, keepId = active && active.id, keepVal = active && active.value, keepSel = active && active.selectionStart;
     TABS.forEach(function (k) {
       if (panelCache[k] !== views[k]) {

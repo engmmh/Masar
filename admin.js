@@ -208,7 +208,7 @@
     { id: "overview", label: "نظرة عامة" }, { id: "accounts", label: "الحسابات" }, { id: "notify", label: "الإشعارات" }, { id: "reports", label: "التقارير" }
   ];
   var ADM_METRICS = [
-    { id: "pray", label: "الصلوات" }, { id: "pages", label: "صفحات الورد" }, { id: "hz", label: "الحفظ (آيات)" }, { id: "dose", label: "جرعة الإنجليزي" }
+    { id: "pray", label: "الصلوات" }, { id: "pages", label: "صفحات الورد" }, { id: "hz", label: "الحفظ (آيات)" }, { id: "dose", label: "جرعة الإنجليزي" }, { id: "fw", label: "دقائق المشي" }
   ];
   var ADM_TPL = [
     "فاتك تذاكر النهاردة في مسار — افتح التطبيق وكمّل 💪",
@@ -236,20 +236,22 @@
   function admPl(learn) { return (learn && learn.coach && learn.coach.pl) || null; }
   function admTalkDone(learn) { var sc = (learn && learn.talk && learn.talk.sc) || {}; return Object.keys(sc).filter(function (k) { return (sc[k].best || 0) >= 2; }).length; }
   function admTalkTotal() { return typeof TALK_SETS === "undefined" ? 0 : TALK_SETS.reduce(function (t, x) { return t + x.scenes.length; }, 0); }
+  function admFit(learn) { var F = learn && learn.fit; return F && F.prof ? F : null; }
   function admM(st, k) {
-    var d = st.days[k] || {}, hl = admHzLog(st.learn, k);
+    var d = st.days[k] || {}, hl = admHzLog(st.learn, k), fd = (admFit(st.learn) && st.learn.fit.days[k]) || {};
     return {
       pray: PRAYERS.filter(function (p) { return d[p.k] && d[p.k].t; }).length, pages: d.q || 0,
       xp: (st.learn.study || {})[k] || 0, mins: (st.learn.minutes || {})[k] || 0,
-      hz: hl ? admRangesLen(hl.h) : 0, rv: hl && hl.r && hl.r.length ? 1 : 0, dose: admDoseSteps(st.learn, k)
+      hz: hl ? admRangesLen(hl.h) : 0, rv: hl && hl.r && hl.r.length ? 1 : 0, dose: admDoseSteps(st.learn, k),
+      fw: Math.round(fd.wm || 0), fs: fd.s ? 1 : 0
     };
   }
-  function admAny(m) { return m.pray > 0 || m.pages > 0 || m.xp > 0 || m.mins > 0 || m.hz > 0 || m.rv > 0 || m.dose > 0; }
+  function admAny(m) { return m.pray > 0 || m.pages > 0 || m.xp > 0 || m.mins > 0 || m.hz > 0 || m.rv > 0 || m.dose > 0 || m.fw > 0 || m.fs > 0; }
   function admWin(st, now, from, n) {
-    var t = { pray: 0, pages: 0, xp: 0, mins: 0, hz: 0, rv: 0, dose: 0, doseFull: 0, active: 0, full: 0 };
+    var t = { pray: 0, pages: 0, xp: 0, mins: 0, hz: 0, rv: 0, dose: 0, doseFull: 0, fw: 0, fs: 0, active: 0, full: 0 };
     for (var i = from; i < from + n; i++) {
       var m = admM(st, addDays(now.key, -i));
-      t.pray += m.pray; t.pages += m.pages; t.xp += m.xp; t.mins += m.mins; t.hz += m.hz; t.rv += m.rv; t.dose += m.dose;
+      t.pray += m.pray; t.pages += m.pages; t.xp += m.xp; t.mins += m.mins; t.hz += m.hz; t.rv += m.rv; t.dose += m.dose; t.fw += m.fw; t.fs += m.fs;
       if (m.dose === 4) t.doseFull++;
       if (admAny(m)) t.active++; if (m.pray === 5) t.full++;
     }
@@ -257,7 +259,7 @@
   }
   function admLastAny(st) {
     var L = st.learn || {};
-    var keys = Object.keys(st.days).concat(Object.keys(L.study || {}), Object.keys(L.minutes || {}), Object.keys((L.hifz && L.hifz.log) || {}), Object.keys((L.coach && L.coach.days) || {}));
+    var keys = Object.keys(st.days).concat(Object.keys(L.study || {}), Object.keys(L.minutes || {}), Object.keys((L.hifz && L.hifz.log) || {}), Object.keys((L.coach && L.coach.days) || {}), Object.keys((L.fit && L.fit.days) || {}));
     var best = null;
     keys.forEach(function (k) { if ((!best || k > best) && admAny(admM(st, k))) best = k; });
     return best;
@@ -325,7 +327,7 @@
   }
   function admSpark(st, now, n) {
     var v = [], W = 96, H = 30;
-    for (var i = n - 1; i >= 0; i--) { var m = admM(st, addDays(now.key, -i)); v.push(m.pray + Math.min(m.pages, 5) + (m.hz > 0 ? 2 : 0) + m.rv + m.dose); }
+    for (var i = n - 1; i >= 0; i--) { var m = admM(st, addDays(now.key, -i)); v.push(m.pray + Math.min(m.pages, 5) + (m.hz > 0 ? 2 : 0) + m.rv + m.dose + (m.fs ? 2 : 0) + (m.fw >= 20 ? 1 : 0)); }
     var max = Math.max.apply(null, v.concat([1]));
     var pts = v.map(function (val, i) { return (i * W / (n - 1)).toFixed(1) + "," + (H - 2 - val / max * (H - 4)).toFixed(1); }).join(" ");
     return '<svg class="adm-spark" viewBox="0 0 ' + W + " " + H + '" aria-hidden="true"><polyline points="' + pts + '" fill="none" stroke="' + accColor(admIdx(st)) + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>';
@@ -334,8 +336,8 @@
     var cells = "";
     for (var i = 34; i >= 0; i--) {
       var k = addDays(now.key, -i), m = admM(st, k), lv = m.pray === 5 ? 3 : m.pray > 0 ? 2 : 0;
-      if (m.pages > 0 || m.hz > 0 || m.rv || m.dose) lv = Math.min(4, lv + 1);
-      cells += '<i class="h' + lv + '" title="' + esc(greg(k) + " · صلوات " + m.pray + "/5 · ورد " + m.pages + " ص · حفظ " + m.hz + " آية · جرعة " + m.dose + "/4") + '"></i>';
+      if (m.pages > 0 || m.hz > 0 || m.rv || m.dose || m.fw > 0 || m.fs) lv = Math.min(4, lv + 1);
+      cells += '<i class="h' + lv + '" title="' + esc(greg(k) + " · صلوات " + m.pray + "/5 · ورد " + m.pages + " ص · حفظ " + m.hz + " آية · جرعة " + m.dose + "/4 · مشي " + m.fw + " د" + (m.fs ? " · مقاومة ✓" : "")) + '"></i>';
     }
     return '<div class="adm-heat">' + cells + '</div><div class="adm-heat-l"><span>أقل</span><i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><span>أكتر</span></div>';
   }
@@ -344,7 +346,7 @@
   function admOverview(now) {
     var en = admEnabled(), n = ADM.range;
     if (!ADM.stats.length) return admEmpty("مفيش حسابات لسه. ضيف أول حساب من صفحة «الحسابات».");
-    var K = ["pray", "pages", "hz", "doseFull"], cur = { act: 0 }, prev = { act: 0 }, follow = [];
+    var K = ["pray", "pages", "hz", "doseFull", "fw", "fs"], cur = { act: 0 }, prev = { act: 0 }, follow = [];
     K.forEach(function (k) { cur[k] = 0; prev[k] = 0; });
     en.forEach(function (st) {
       var a = admWin(st, now, 0, n), b = admWin(st, now, n, n);
@@ -353,12 +355,14 @@
       var s = admStatus(st, now); if (s.k === "cold") follow.push({ st: st, s: s });
     });
     var denom = Math.max(1, en.length * n * 5);
-    var kpis = '<div class="adm-kpis">' +
+    var kpis = '<div class="adm-kpis k4">' +
       admKpi("حسابات نشطة", cur.act + '<small class="muted">/' + en.length + "</small>", admDelta(cur.act, prev.act)) +
       admKpi("التزام الصلاة", Math.round(cur.pray / denom * 100) + "%", admDelta(cur.pray, prev.pray), cur.pray + " صلاة") +
       admKpi("صفحات الورد", cur.pages, admDelta(cur.pages, prev.pages)) +
       admKpi("الحفظ الجديد", cur.hz + '<small class="muted"> آية</small>', admDelta(cur.hz, prev.hz), "≈ " + admHzPages(cur.hz) + " صفحة") +
       admKpi("جرعات إنجليزي كاملة", cur.doseFull, admDelta(cur.doseFull, prev.doseFull), "يوم") +
+      admKpi("دقائق المشي", cur.fw, admDelta(cur.fw, prev.fw), "≈ " + Math.round(cur.fw / Math.max(1, n)) + " د في اليوم") +
+      admKpi("جولات مقاومة", cur.fs, admDelta(cur.fs, prev.fs)) +
       admKpi("محتاج متابعة", follow.length, "", "غايب " + ADM_FOLLOWUP_DAYS + " أيام أو أكتر") + "</div>";
     var keys = []; for (var i = n - 1; i >= 0; i--) keys.push(addDays(now.key, -i));
     var series = en.map(function (st) { return { label: st.acc.label, c: accColor(admIdx(st)), v: keys.map(function (k) { return admM(st, k)[ADM.metric]; }) }; });
@@ -393,6 +397,13 @@
         if (m.hz > 0) ev.push({ k: k, st: st, ico: "🌱", t: "حفظ " + m.hz + " آية جديدة", w: 1 });
         if (m.rv) ev.push({ k: k, st: st, ico: "🔁", t: "راجع محفوظه" });
         if (m.dose === 4) ev.push({ k: k, st: st, ico: "⚡", t: "خلّص جرعة الإنجليزي" });
+        if (m.fs) ev.push({ k: k, st: st, ico: "🏋️", t: "خلّص جولة مقاومة" });
+        if (m.fw >= 15) ev.push({ k: k, st: st, ico: "🚶", t: "مشي " + m.fw + " دقيقة" });
+      }
+      var FF = admFit(st.learn);
+      if (FF) {
+        (FF.hist || []).forEach(function (h, hi) { if (hi > 0 && admDaysSince(h.k, now) < 14) ev.push({ k: h.k, st: st, ico: "🚀", t: "بقى في مستوى التمارين " + (h.st + 1) + "/6", w: 2 }); });
+        (FF.log || []).forEach(function (l, li) { if (li > 0 && admDaysSince(l.k, now) < 14) ev.push({ k: l.k, st: st, ico: "⚖️", t: "سجّل قياسه" + (l.w ? ": " + l.w + " كجم" : "") + (l.waist ? " · وسط " + l.waist + " سم" : ""), w: 1 }); });
       }
       var pl = admPl(st.learn);
       ((pl && pl.hist) || []).forEach(function (h) { if (admDaysSince(h.at, now) < 14) ev.push({ k: h.at, st: st, ico: "🎯", t: "عمل اختبار مستوى الإنجليزي: " + h.lv, w: 2 }); });
@@ -452,18 +463,19 @@
         "<span><b class=\"num\">" + Math.round(r.w.pray / 35 * 100) + "%</b><small>صلاة 7 أيام</small></span>" +
         "<span><b class=\"num\">" + r.w.pages + "</b><small>ورد 7 أيام</small></span>" +
         "<span><b class=\"num\">≈" + admHzPages(admHzTotal(st.learn)) + "</b><small>صفحة محفوظة</small></span>" +
-        "<span><b class=\"num\">" + r.w.doseFull + "/7</b><small>جرعة إنجليزي</small></span></div>" +
+        "<span><b class=\"num\">" + r.w.doseFull + "/7</b><small>جرعة إنجليزي</small></span>" +
+        "<span><b class=\"num\">" + r.w.fw + "</b><small>مشي 7 أيام (د)</small></span></div>" +
         '<div class="adm-acc-act"><button class="btn sm alt" data-adm="remind" data-uid="' + esc(st.acc.uid) + '">🔔 تذكير</button>' +
         '<button class="btn sm alt" data-adm="open" data-uid="' + esc(st.acc.uid) + '" data-sub="settings">⚙️ الإعدادات</button></div></div>';
     }).join("");
   }
 
-  var ADM_SUBS = [{ id: "ibada", label: "العبادة" }, { id: "learn", label: "التعلّم" }, { id: "settings", label: "الإعدادات" }];
+  var ADM_SUBS = [{ id: "ibada", label: "العبادة" }, { id: "learn", label: "التعلّم" }, { id: "fit", label: "الرياضة" }, { id: "settings", label: "الإعدادات" }];
   function admProfile(now) {
     var st = admFindSt(state.adminDetailUid) || ADM.stats[0];
     if (!st) return admEmpty("مفيش حسابات لسه.");
     state.adminDetailUid = st.acc.uid;
-    if (["ibada", "learn", "settings"].indexOf(ADM.sub) < 0) ADM.sub = ADM.sub === "perm" || ADM.sub === "security" ? "settings" : "ibada";
+    if (["ibada", "learn", "fit", "settings"].indexOf(ADM.sub) < 0) ADM.sub = ADM.sub === "perm" || ADM.sub === "security" ? "settings" : "ibada";
     var s = admStatus(st, now), last = admLastAny(st), learn = st.learn, pl = admPl(learn), hz = admHzTotal(learn);
     var switcher = '<select class="inp" id="admSwitch" aria-label="اختار حساب">' + ADM.stats.map(function (x) {
       return '<option value="' + esc(x.acc.uid) + '"' + (x === st ? " selected" : "") + ">" + esc(x.acc.label) + "</option>";
@@ -471,10 +483,10 @@
     var head = '<div class="card adm-prof" style="--ac:' + accColor(admIdx(st)) + '">' + admAv(st, 64) +
       '<div class="grow"><h2>' + esc(st.acc.label) + "</h2>" + admPill(s) +
       '<p class="muted" style="font-size:13px;margin-block-start:6px">' + (last ? "آخر نشاط: " + esc(greg(last)) : "لسه مفيش نشاط") +
-      " · سلسلة صلاة " + admStreak(st.days, now) + " · محفوظ ≈ " + admHzPages(hz) + " صفحة" + (pl ? " · إنجليزي " + esc(pl.lv) : "") + "</p></div>" +
+      " · سلسلة صلاة " + admStreak(st.days, now) + " · محفوظ ≈ " + admHzPages(hz) + " صفحة" + (pl ? " · إنجليزي " + esc(pl.lv) : "") + (admFit(learn) ? " · وزن " + fitCurW(learn.fit) + " كجم" : "") + "</p></div>" +
       '<div class="adm-prof-act"><button class="btn sm" data-adm="remind" data-uid="' + esc(st.acc.uid) + '">🔔 تذكير</button></div></div>';
     var sub = ADM.sub;
-    var body = sub === "learn" ? admProfLearn(st, now) : sub === "settings" ? admSettingsBody(st) : admProfIbada(st, now);
+    var body = sub === "learn" ? admProfLearn(st, now) : sub === "fit" ? admProfFit(st, now) : sub === "settings" ? admSettingsBody(st) : admProfIbada(st, now);
     return '<button class="linkbtn adm-back" data-adm="nav" data-v="accounts">← كل الحسابات</button>' + admHead("ملف الحساب", "", switcher) + head + admSeg("sub", ADM_SUBS, sub) + body;
   }
   function admProfIbada(st, now) {
@@ -526,6 +538,41 @@
       '<div class="adm-kpis k4">' + admKpi("دقايق التعلّم", w.mins, "", f.label) + admKpi("أيام تحقيق الهدف", admGoalDaysHit(st.acc, learn, now) + "/7") +
         admKpi("متوسط الاختبارات", avg == null ? "—" : avg + "%") + admKpi("نقاط ضعف مفتوحة", Object.keys(learn.weak || {}).length) + "</div>" +
       '<div class="card"><div class="adm-card-h"><h3>تقدّم الكورسات</h3></div>' + (courses || '<p class="muted">—</p>') + "</div>";
+  }
+  function admProfFit(st, now) {
+    var F = admFit(st.learn);
+    if (!F) return admEmpty("لسه ماعملش خطة التمارين.");
+    var p = F.prof, w = fitCurW(F), dw = Math.round((w - p.w) * 10) / 10, b = fitBmi(F), waist = fitCurWaist(F), N = fitNums(F);
+    var dz = p.waist && waist ? Math.round((waist - p.waist) * 10) / 10 : null;
+    var wk = fitWeek(F, now.key), w30 = fitWeek(F, now.key, 30), st6 = fitStage(F);
+    var dlt = function (v, u) { return v ? '<span class="adm-delta ' + (v < 0 ? "up" : "down") + '">' + (v < 0 ? "▼ " : "▲ ") + Math.abs(v) + " " + u + "</span>" : '<span class="adm-delta">—</span>'; };
+    var kpi1 = '<div class="adm-kpis k4">' + admKpi("الوزن", w + '<small class="muted"> كجم</small>', dlt(dw, "كجم"), "البداية " + p.w + " · الهدف " + N.goal) +
+      admKpi("مؤشر الكتلة", b, "", fitBmiCat(b)) + admKpi("الوسط", waist ? waist + '<small class="muted"> سم</small>' : "—", dz != null ? dlt(dz, "سم") : "", "الهدف أقل من " + N.waistOk) +
+      admKpi("المستوى", (F.st + 1) + '<small class="muted">/6</small>', "", FIT_PHASES[st6.ph] + (F.stAt ? " من " + fmtRel(F.stAt, now) : "")) + "</div>";
+    var kpi2 = '<div class="adm-kpis k4">' + admKpi("مشي 7 أيام", wk.walk + '<small class="muted"> د</small>', "", "الهدف " + st6.walk + " د/يوم") +
+      admKpi("مقاومة 7 أيام", wk.str + '<small class="muted">/' + F.sched.length + "</small>") + admKpi("أيام كاملة", wk.full + '<small class="muted">/7</small>', "", "مشي + مقاومة") +
+      admKpi("سلسلة", fitStreak(F, now), "", "يوم ورا بعض") + "</div>";
+    var pts = [{ k: p.start, v: p.w }].concat((F.log || []).filter(function (l) { return l.w; }).map(function (l) { return { k: l.k, v: l.w }; }));
+    var seen = {}; pts = pts.filter(function (x) { if (seen[x.k]) return false; seen[x.k] = 1; return true; }).sort(function (a, c) { return a.k < c.k ? -1 : 1; });
+    var bars = "", maxW = 1;
+    for (var j = 13; j >= 0; j--) maxW = Math.max(maxW, admM(st, addDays(now.key, -j)).fw);
+    for (var i = 13; i >= 0; i--) {
+      var k = addDays(now.key, -i), m = admM(st, k);
+      bars += '<div title="' + esc(greg(k)) + ": " + m.fw + " د" + (m.fs ? " + مقاومة" : "") + '"><span class="col"><i style="height:' + Math.round(m.fw / maxW * 100) + '%;background:' + (m.fs ? "var(--teal-deep)" : "var(--blue)") + '"></i></span><span>' + fmtShort(k) + "</span></div>";
+    }
+    var lims = [p.lim && p.lim.knee ? "الركبة" : "", p.lim && p.lim.back ? "الضهر" : "", p.lim && p.lim.bp ? "ضغط/قلب" : ""].filter(Boolean);
+    var rpe = { 1: "سهلة", 2: "مناسبة", 3: "صعبة" }, lastS = null;
+    Object.keys(F.days).forEach(function (k2) { if (F.days[k2].s && (!lastS || k2 > lastS)) lastS = k2; });
+    var info = '<div class="card"><div class="adm-card-h"><h3>البيانات والخطة</h3><small class="muted">بدأ ' + esc(greg(p.start)) + "</small></div>" +
+      '<p class="muted" style="font-size:13px;line-height:1.8;margin:0">' + (p.sex === "f" ? "أنثى" : "ذكر") + " · " + p.age + " سنة · " + p.h + " سم · " +
+      "مقاومة: " + F.sched.map(function (x) { return FIT_DOW[x]; }).join("، ") + " · راحة: " + FIT_DOW[F.rest] +
+      (lims.length ? " · ملاحظات: " + esc(lims.join("، ")) : "") + "<br>سعرات مقترحة ≈ " + N.kcal + " · بروتين " + N.protLo + "–" + N.protHi + " جم" +
+      (lastS ? "<br>آخر جولة مقاومة: " + esc(fmtRel(lastS, now)) + " (" + (rpe[F.days[lastS].rpe] || "—") + ")" : "") + " · مشي 30 يوم: " + w30.walk + " د · مقاومة 30 يوم: " + w30.str + "</p></div>";
+    var logs = (F.log || []).slice(-8).reverse().map(function (l) { return "<tr><td>" + esc(greg(l.k)) + "</td><td>" + (l.w || "—") + "</td><td>" + (l.waist || "—") + "</td></tr>"; }).join("");
+    return kpi1 + kpi2 +
+      '<div class="adm-grid2"><div class="card"><div class="adm-card-h"><h3>⚖️ الوزن</h3><small class="muted">' + pts.length + " قياس</small></div>" + (pts.length > 1 ? fitChart(pts) : '<p class="muted">قياس واحد بس لحد دلوقتي.</p>') + "</div>" +
+      '<div class="card"><div class="adm-card-h"><h3>🚶 المشي والمقاومة</h3><small class="muted">آخر 14 يوم · الغامق = يوم مقاومة</small></div><div class="week adm-week14">' + bars + "</div></div></div>" +
+      info + (logs ? '<div class="card"><div class="adm-card-h"><h3>آخر القياسات</h3></div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>التاريخ</th><th>الوزن (كجم)</th><th>الوسط (سم)</th></tr></thead><tbody>' + logs + "</tbody></table></div></div>" : "");
   }
   // Permissions, learning goals, sign-in code, a direct message and the account's
   // on/off state — everything the admin can change about one account, on one page.
@@ -588,16 +635,18 @@
   function admRowsForReport(now) {
     return ADM.stats.map(function (st) {
       var w7 = admWin(st, now, 0, 7), w30 = admWin(st, now, 0, 30), last = admLastAny(st);
-      var units = Object.keys(st.learn.units || {}).filter(function (k) { return st.learn.units[k].done; }).length;
+      var units = Object.keys(st.learn.units || {}).filter(function (k) { return st.learn.units[k].done; }).length, FR = admFit(st.learn);
       return {
         label: st.acc.label, status: admStatus(st, now).t, last: last || "—", streak: admStreak(st.days, now),
         p7: Math.round(w7.pray / 35 * 100), p30: Math.round(w30.pray / 150 * 100), pages30: w30.pages,
         hz30: w30.hz, hzTot: admHzPages(admHzTotal(st.learn)), dose30: w30.doseFull, en: (admPl(st.learn) || {}).lv || "—",
-        mins7: w7.mins, units: units, weak: Object.keys(st.learn.weak || {}).length
+        mins7: w7.mins, units: units, weak: Object.keys(st.learn.weak || {}).length,
+        fwt: FR ? fitCurW(FR) : "—", fbmi: FR ? fitBmi(FR) : "—", fwd: FR ? Math.round((fitCurW(FR) - FR.prof.w) * 10) / 10 : "—",
+        fwz: FR ? (fitCurWaist(FR) || "—") : "—", fw30: w30.fw, fs30: w30.fs
       };
     });
   }
-  var ADM_REPORT_COLS = [["label", "الحساب"], ["status", "الحالة"], ["last", "آخر نشاط"], ["streak", "سلسلة"], ["p7", "صلاة 7 أيام %"], ["p30", "صلاة 30 يوم %"], ["pages30", "ورد 30 يوم (ص)"], ["hz30", "حفظ 30 يوم (آية)"], ["hzTot", "المحفوظ (ص)"], ["dose30", "جرعات إنجليزي 30 يوم"], ["en", "مستوى الإنجليزي"], ["mins7", "دقايق 7 أيام"], ["units", "وحدات"], ["weak", "نقاط ضعف"]];
+  var ADM_REPORT_COLS = [["label", "الحساب"], ["status", "الحالة"], ["last", "آخر نشاط"], ["streak", "سلسلة"], ["p7", "صلاة 7 أيام %"], ["p30", "صلاة 30 يوم %"], ["pages30", "ورد 30 يوم (ص)"], ["hz30", "حفظ 30 يوم (آية)"], ["hzTot", "المحفوظ (ص)"], ["dose30", "جرعات إنجليزي 30 يوم"], ["en", "مستوى الإنجليزي"], ["mins7", "دقايق 7 أيام"], ["units", "وحدات"], ["weak", "نقاط ضعف"], ["fwt", "الوزن (كجم)"], ["fwd", "تغيّر الوزن"], ["fbmi", "BMI"], ["fwz", "الوسط (سم)"], ["fw30", "مشي 30 يوم (د)"], ["fs30", "مقاومة 30 يوم"]];
   function admReports(now) {
     var rows = admRowsForReport(now);
     return admHead("التقارير", "ملخص شامل لكل الحسابات تقدر تنزّله") +
