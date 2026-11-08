@@ -297,12 +297,34 @@
     for (var i = 0; i < raw.length; i++) out[i] = raw.charCodeAt(i);
     return out;
   }
+  // Every-15-minutes notifications (English phrase / dhikr) are switched on per account
+  // by the admin (masar_notify); the phone still needs its owner to allow notifications
+  // once, so the app asks for that here and on the home screen.
+  function notifyQuietTxt(n) { return "ما عدا من " + fmtHourAr(n.quiet_from) + " لـ " + fmtHourAr(n.quiet_to); }
+  function fmtHourAr(h) { h = Number(h) || 0; var p = h < 12 ? "الصبح" : h < 15 ? "الضهر" : h < 18 ? "العصر" : "بالليل"; return (h % 12 || 12) + " " + p; }
+  function pushNeedsAllow() {
+    return !!(state.notify && state.notify.enabled && pushSupported() && !(Notification.permission === "granted" && pushLocalFlag()));
+  }
+  function pushAllowHTML(compact) {
+    var denied = pushSupported() && Notification.permission === "denied";
+    return '<div class="card push-allow"><div class="row" style="gap:10px;align-items:flex-start"><span class="pa-ic">' + ic("bell") + '</span><div class="grow"><b>الأدمن فعّل لك الإشعارات</b>' +
+      '<p class="muted" style="font-size:13px;margin:2px 0 0">جملة إنجليزي أو ذِكر كل ١٥ دقيقة، ' + esc(notifyQuietTxt(state.notify)) + ".</p>" +
+      (denied ? '<p class="muted" style="font-size:12.5px;margin:6px 0 0">الإشعارات مقفولة للموقع من الموبايل. افتح إعدادات Chrome ← الإشعارات (أو اضغط على القفل جنب العنوان) وسمّح لمسار، وبعدين ارجع هنا.</p>' : "") +
+      "</div></div>" + (denied ? "" : '<button class="btn" style="width:100%;margin-block-start:10px" data-act="push-on">اسمح بالإشعارات</button>') + "</div>";
+  }
   function pushCardHTML() {
-    if (!pushSupported()) return "";
-    var on = pushLocalFlag();
-    return '<div class="card row between" style="align-items:center"><div><h3 style="margin:0 0 2px">' + ic("bell") + ' تذكير يومي</h3><p class="muted" style="font-size:13px">' +
-      (on ? "مفعّل — هتوصلك كلمة أو جملة إنجليزي كل فترة." : "فعّله عشان توصلك كلمة أو جملة إنجليزي جديدة بانتظام.") + '</p></div>' +
-      (on ? '<button class="btn sm alt" data-act="push-off">إيقاف</button>' : '<button class="btn sm" data-act="push-on">تفعيل</button>') + "</div>";
+    if (!pushSupported() || state.mode !== "supa") return "";
+    var n = state.notify;
+    if (!n || !n.enabled) return '<div class="card"><h3 style="margin:0 0 4px">' + ic("bell") + ' الإشعارات</h3><p class="muted" style="font-size:13px">مقفولة — الأدمن هو اللي بيشغّلها لحسابك.</p></div>';
+    if (pushNeedsAllow()) return pushAllowHTML();
+    return '<div class="card"><h3 style="margin:0 0 4px">' + ic("bell") + ' الإشعارات شغّالة</h3><p class="muted" style="font-size:13px">جملة إنجليزي أو ذِكر كل ١٥ دقيقة، ' + esc(notifyQuietTxt(n)) +
+      '. صوتها هو صوت إشعارات Chrome — تقدر تخليه أخف من إعدادات الموبايل ← التطبيقات ← Chrome ← الإشعارات.</p></div>';
+  }
+  async function loadNotifyRule() {
+    try {
+      var r = await store.sb.from("masar_notify").select("enabled,quiet_from,quiet_to").eq("user_id", store.uid).maybeSingle();
+      state.notify = (!r.error && r.data) ? r.data : null;
+    } catch (e) { state.notify = null; }
   }
   async function enablePush() {
     if (!pushSupported()) { toast("الإشعارات مش مدعومة على المتصفح ده."); return; }
@@ -314,9 +336,12 @@
       var sub = await reg.pushManager.getSubscription();
       if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY) });
       var j = sub.toJSON();
-      var r = await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth }, { onConflict: "endpoint" });
+      // tz = this device's UTC offset in hours, so the server can respect quiet hours in local time.
+      var row = { user_id: store.uid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, tz: -new Date().getTimezoneOffset() / 60 };
+      var r = await store.sb.from("masar_push_subs").upsert(row, { onConflict: "endpoint" });
+      if (r.error && /tz/.test(r.error.message || "")) { delete row.tz; r = await store.sb.from("masar_push_subs").upsert(row, { onConflict: "endpoint" }); }
       if (r.error) throw r.error;
-      setPushLocalFlag(true); toast("تم تفعيل التذكير اليومي."); render();
+      setPushLocalFlag(true); toast("تمام — الإشعارات هتوصلك."); render();
     } catch (e) { toast("تعذّر التفعيل: " + (e && e.message ? e.message : "خطأ غير متوقع")); }
   }
   async function disablePush() {
@@ -1075,7 +1100,7 @@
   function homeView(now) {
     if (state.settingsOpen) return settingsHTML(now);
     if (state.hv === "weekly") return weeklyReportHTML(now);
-    return greetingHTML(now) + bannerHTML() + planCardHTML(now) +
+    return greetingHTML(now) + bannerHTML() + (pushNeedsAllow() ? pushAllowHTML() : "") + planCardHTML(now) +
       '<button class="card home-week" data-act="weekly-open">' + ic("chart") + '<span class="grow"><b>تقرير الأسبوع</b><small class="muted">صلواتك وقرآنك ومذاكرتك آخر ٧ أيام</small></span><span>←</span></button>';
   }
   function settingsHTML(now) {

@@ -80,6 +80,25 @@
     });
   })();
 
+  // Opening a notification: «جملة إنجليزي» → مساري, «ذِكر» → the tasbih counter. Comes as
+  // ?go= when the app was closed (acted on once the account is open) or as a message
+  // from the service worker when it was already open.
+  function goFromNotification(go) {
+    if (go === "coach" && typeof coGo === "function") { coGo("hub"); return; }
+    if (go === "tasbih") { state.tool = "tasbih"; goTab("prayer"); $("#p-prayer").scrollTop = 0; render(); }
+  }
+  (function () {
+    var m = /[?&]go=(coach|tasbih)\b/.exec(location.search); if (!m) return;
+    try { history.replaceState(null, "", location.pathname); } catch (e) { }
+    var tries = 0, iv = setInterval(function () {
+      if (++tries > 240) { clearInterval(iv); return; }
+      if (state.loaded && $("#lock").hidden) { clearInterval(iv); goFromNotification(m[1]); }
+    }, 500);
+  })();
+  if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", function (e) {
+    if (e.data && e.data.masarGo && state.loaded && $("#lock").hidden) goFromNotification(e.data.masarGo);
+  });
+
   // First-run welcome screen: shown once before the lock screen, then
   // dismissed for good via a localStorage flag.
   var welcomeBtn = document.getElementById("welcomeBtn");

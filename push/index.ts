@@ -1,6 +1,8 @@
 // Edge Function: masar-send-notification
-// بيبعت إشعار يومي (كلمة أو جملة إنجليزي بالتبادل) لكل الأجهزة المشتركة في masar_push_subs.
-// انشرها من لوحة تحكم Supabase: Edge Functions → New Function → الاسم: masar-send-notification → الصق الكود ده → Deploy.
+// كل 15 دقيقة: جملة إنجليزي يومية أو ذكر (60% إنجليزي / 40% ذكر) — للحسابات اللي الأدمن فعّل لها
+// الإشعارات في جدول masar_notify، وبيتخطّى ساعات الراحة بتوقيت كل جهاز.
+// ومع ?mode=weekly بيبعت التقرير الأسبوعي زي الأول.
+// انشرها من لوحة Supabase: Edge Functions → masar-send-notification → الصق الكود ده كله مكان القديم → Deploy.
 
 import { createClient } from "npm:@supabase/supabase-js@2";
 import webpush from "npm:web-push@3.6.7";
@@ -13,473 +15,244 @@ const PUSH_SHARED_SECRET = Deno.env.get("PUSH_SHARED_SECRET")!;
 
 webpush.setVapidDetails("mailto:masar-app@example.com", VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
-// مصدر الكلمات: نفس كروت المفردات الموجودة فعليًا في كورس الإنجليزي بالموقع
-const WORDS = [
-  {
-    "en": "know",
-    "ar": "يعرف",
-    "ex": "I know your brother."
-  },
-  {
-    "en": "do",
-    "ar": "يفعل",
-    "ex": "I do my homework at night."
-  },
-  {
-    "en": "have",
-    "ar": "يمتلك / عندي",
-    "ex": "We have a big house."
-  },
-  {
-    "en": "have got",
-    "ar": "حصل على / عنده",
-    "ex": "I have got a new computer."
-  },
-  {
-    "en": "be",
-    "ar": "يكون",
-    "ex": "I want to be an engineer."
-  },
-  {
-    "en": "play",
-    "ar": "يلعب",
-    "ex": "They play football on Friday."
-  },
-  {
-    "en": "football",
-    "ar": "كرة القدم",
-    "ex": "He doesn't play football."
-  },
-  {
-    "en": "homework",
-    "ar": "واجب منزلي",
-    "ex": "She does her homework."
-  },
-  {
-    "en": "car",
-    "ar": "سيارة",
-    "ex": "Ahmed has a new car."
-  },
-  {
-    "en": "job",
-    "ar": "وظيفة",
-    "ex": "My father has a job."
-  },
-  {
-    "en": "pen",
-    "ar": "قلم",
-    "ex": "This is my pen."
-  },
-  {
-    "en": "phone",
-    "ar": "هاتف",
-    "ex": "That is your phone."
-  },
-  {
-    "en": "cover",
-    "ar": "غطاء / غلاف",
-    "ex": "This is its cover."
-  },
-  {
-    "en": "shirt",
-    "ar": "قميص",
-    "ex": "This is our shirt."
-  },
-  {
-    "en": "boy",
-    "ar": "ولد",
-    "ex": "The boys play here."
-  },
-  {
-    "en": "baby",
-    "ar": "طفل رضيع",
-    "ex": "The babies are at home."
-  },
-  {
-    "en": "street",
-    "ar": "شارع",
-    "ex": "There is a car on the street."
-  },
-  {
-    "en": "teacher",
-    "ar": "معلم",
-    "ex": "Are you a teacher?"
-  },
-  {
-    "en": "Egyptian",
-    "ar": "مصري",
-    "ex": "He is Egyptian."
-  },
-  {
-    "en": "Italian",
-    "ar": "إيطالي",
-    "ex": "Rome is an Italian city."
-  },
-  {
-    "en": "here",
-    "ar": "هنا",
-    "ex": "Are they here?"
-  },
-  {
-    "en": "there",
-    "ar": "هناك",
-    "ex": "The books are there."
-  },
-  {
-    "en": "at",
-    "ar": "في (مكان)",
-    "ex": "I am at work."
-  },
-  {
-    "en": "what",
-    "ar": "ماذا",
-    "ex": "What is this?"
-  },
-  {
-    "en": "how",
-    "ar": "كيف",
-    "ex": "How are you?"
-  },
-  {
-    "en": "where",
-    "ar": "أين",
-    "ex": "Where are you?"
-  },
-  {
-    "en": "vowel",
-    "ar": "حرف علة",
-    "ex": "An apple starts with a vowel."
-  },
-  {
-    "en": "mine",
-    "ar": "ملكي (ضمير)",
-    "ex": "This book is mine."
-  },
-  {
-    "en": "yours",
-    "ar": "ملكك (ضمير)",
-    "ex": "That phone is yours."
-  },
-  {
-    "en": "theirs",
-    "ar": "ملكهم (ضمير)",
-    "ex": "The books are theirs."
-  },
-  {
-    "en": "will",
-    "ar": "سوف (فعل مساعد للمستقبل)",
-    "ex": "I will call you tomorrow."
-  },
-  {
-    "en": "tomorrow",
-    "ar": "غدًا",
-    "ex": "I will see you tomorrow."
-  },
-  {
-    "en": "tonight",
-    "ar": "الليلة",
-    "ex": "We are going to watch a movie tonight."
-  },
-  {
-    "en": "next week",
-    "ar": "الأسبوع القادم",
-    "ex": "She is going to travel next week."
-  },
-  {
-    "en": "soon",
-    "ar": "قريبًا",
-    "ex": "He will finish soon."
-  },
-  {
-    "en": "plan",
-    "ar": "خطة / يخطط",
-    "ex": "We plan to visit Jeddah."
-  },
-  {
-    "en": "its",
-    "ar": "ملكه / ملكها (لغير العاقل)",
-    "ex": "The dog wagged its tail."
-  },
-  {
-    "en": "apple",
-    "ar": "تفاحة",
-    "ex": "I have an apple."
-  },
-  {
-    "en": "dog",
-    "ar": "كلب",
-    "ex": "She has a dog."
-  },
-  {
-    "en": "egg",
-    "ar": "بيضة",
-    "ex": "He eats an egg for breakfast."
-  },
-  {
-    "en": "elephant",
-    "ar": "فيل",
-    "ex": "We see an elephant at the zoo."
-  },
-  {
-    "en": "orange",
-    "ar": "برتقالة",
-    "ex": "Tom has an orange."
-  },
-  {
-    "en": "bag",
-    "ar": "حقيبة / شنطة",
-    "ex": "Where is your bag?"
-  },
-  {
-    "en": "milk",
-    "ar": "لبن",
-    "ex": "I like milk."
-  },
-  {
-    "en": "tennis",
-    "ar": "تنس",
-    "ex": "Does Ali play tennis?"
-  },
-  {
-    "en": "bus",
-    "ar": "أتوبيس",
-    "ex": "The bus stops here."
-  },
-  {
-    "en": "lunch",
-    "ar": "غداء",
-    "ex": "They eat lunch at home."
-  },
-  {
-    "en": "shop",
-    "ar": "محل",
-    "ex": "My brother works in a shop."
-  },
-  {
-    "en": "rain",
-    "ar": "مطر / تمطر",
-    "ex": "It rains in winter."
-  },
-  {
-    "en": "coffee",
-    "ar": "قهوة",
-    "ex": "Do you like coffee?"
-  },
-  {
-    "en": "fish",
-    "ar": "سمك",
-    "ex": "We eat fish every day."
-  },
-  {
-    "en": "tea",
-    "ar": "شاي",
-    "ex": "Do you like tea?"
-  },
-  {
-    "en": "drink",
-    "ar": "يشرب",
-    "ex": "We drink water every day."
-  },
-  {
-    "en": "eat",
-    "ar": "يأكل",
-    "ex": "They eat lunch at home."
-  },
-  {
-    "en": "live",
-    "ar": "يعيش / يسكن",
-    "ex": "My brother lives in Cairo."
-  },
-  {
-    "en": "speak",
-    "ar": "يتكلم",
-    "ex": "Do you speak English?"
-  },
-  {
-    "en": "wash",
-    "ar": "يغسل",
-    "ex": "You wash your hands."
-  },
-  {
-    "en": "glass",
-    "ar": "كوب (زجاجي)",
-    "ex": "I drink a glass of water."
-  },
-  {
-    "en": "bottle",
-    "ar": "زجاجة",
-    "ex": "She has a bottle of water."
-  },
-  {
-    "en": "need",
-    "ar": "يحتاج",
-    "ex": "I need a cup of tea."
-  },
-  {
-    "en": "want",
-    "ar": "يريد",
-    "ex": "What do you want?"
-  },
-  {
-    "en": "cup",
-    "ar": "كوب / فنجان",
-    "ex": "He needs a cup of tea."
-  },
-  {
-    "en": "rice",
-    "ar": "أرز",
-    "ex": "We eat rice for lunch."
-  },
-  {
-    "en": "sugar",
-    "ar": "سكر",
-    "ex": "Do you have sugar?"
-  },
-  {
-    "en": "breakfast",
-    "ar": "فطار",
-    "ex": "I eat a good breakfast."
-  },
-  {
-    "en": "water",
-    "ar": "مياه",
-    "ex": "I drink a bottle of water."
-  },
-  {
-    "en": "when",
-    "ar": "متى",
-    "ex": "When do you need the money?"
-  },
-  {
-    "en": "who",
-    "ar": "من",
-    "ex": "Who is your teacher?"
-  }
+// جمل يومية بسيطة — من بنك عبارات «مساري» في التطبيق [إنجليزي، معناها]
+const EN: [string, string][] = [
+  ["Hello, this is Mahmoud from quality.","ألو، معاك محمود من الجودة."],
+  ["Do you have a minute?","عندك دقيقة؟"],
+  ["How's it going?","عامل إيه؟"],
+  ["In my opinion, ...","في رأيي، ..."],
+  ["I'll get back to you on that.","هرجعلك في الموضوع ده."],
+  ["Can I see the menu, please?","ممكن أشوف المنيو لو سمحت؟"],
+  ["How much is this?","ده بكام؟"],
+  ["Excuse me, how do I get to the station?","لو سمحت، أروح المحطة إزاي؟"],
+  ["I have a reservation under the name Ahmed.","عندي حجز باسم أحمد."],
+  ["Hello, this is Ahmed speaking.","ألو، معاك أحمد."],
+  ["I don't feel well today.","مش حاسس إني كويس النهارده."],
+  ["In my opinion, we should wait.","في رأيي، المفروض نستنى."],
+  ["Could you do me a favor?","ممكن تعملّي خدمة؟"],
+  ["I usually wake up at seven.","عادةً بصحى الساعة سبعة."],
+  ["Is this a good time to talk?","ده وقت مناسب نتكلم؟"],
+  ["Could you give me a hand?","ممكن تساعدني؟"],
+  ["Not bad, thanks. You?","مش وحش، شكرًا. وانت؟"],
+  ["I agree with you.","أنا متفق معاك."],
+  ["Long time no see!","بقالي كتير مشفتكش!"],
+  ["Could you send me the details by email?","ممكن تبعتلي التفاصيل على الإيميل؟"],
+  ["I'd like a coffee with milk, please.","عايز قهوة بلبن لو سمحت."],
+  ["Do you have this in a smaller size?","عندك ده بمقاس أصغر؟"],
+  ["Is it far from here?","هو بعيد من هنا؟"],
+  ["What time is check-out?","معاد تسليم الأوضة الساعة كام؟"],
+  ["Could you speak a little slower, please?","ممكن تتكلم أبطأ شوية لو سمحت؟"],
+  ["I have a headache.","عندي صداع."],
+  ["I totally agree with you.","أنا متفق معاك تمامًا."],
+  ["Would you mind closing the window?","تمانع تقفل الشباك؟"],
+  ["I'm running late!","أنا متأخر!"],
+  ["I'm calling about ...","بكلمك بخصوص ..."],
+  ["Just a quick reminder, ...","مجرد تذكير سريع، ..."],
+  ["What are you up to this weekend?","ناوي على إيه الويك إند ده؟"],
+  ["I'm not sure I agree.","مش متأكد إني متفق."],
+  ["What have you been up to?","كنت بتعمل إيه الفترة اللي فاتت؟"],
+  ["I'm working on it right now.","أنا شغال عليها دلوقتي."],
+  ["What do you recommend?","ترشّحلي إيه؟"],
+  ["I'm just looking, thanks.","بتفرّج بس، شكرًا."],
+  ["Can you take me to this address?","ممكن توصلني العنوان ده؟"],
+  ["Is breakfast included?","الفطار ضمن الحجز؟"],
+  ["Can I call you back later?","ممكن أكلمك تاني بعدين؟"],
+  ["I've had a fever since yesterday.","عندي سخونية من امبارح."],
+  ["I see your point, but I think it's risky.","فاهم وجهة نظرك، بس شايف إنها مخاطرة."],
+  ["Sorry for the delay.","آسف على التأخير."],
+  ["What's for dinner?","هناكل إيه على العشا؟"],
+  ["Sorry, could you speak a bit slower?","آسف، ممكن تتكلم أبطأ شوية؟"],
+  ["Please wear your hairnet.","لو سمحت البس غطا الشعر."],
+  ["I'm exhausted today.","أنا مهدود النهارده."],
+  ["I see what you mean, but ...","فاهم قصدك، بس ..."],
+  ["Nice to meet you.","اتشرفت بمعرفتك."],
+  ["Let me check and let you know.","خليني أتأكد وأقولك."],
+  ["Could we have the bill, please?","ممكن الحساب لو سمحت؟"],
+  ["Can I try it on?","ممكن أقيسه؟"],
+  ["How long does it take to get there?","المشوار ده بياخد قد إيه؟"],
+  ["Where is the boarding gate?","فين بوابة ركوب الطيارة؟"],
+  ["I'd like to book an appointment.","عايز أحجز معاد."],
+  ["How often should I take this medicine?","آخد الدوا ده كل قد إيه؟"],
+  ["That makes sense.","ده منطقي."],
+  ["My apologies, it was my mistake.","أعتذر، دي كانت غلطتي."],
+  ["I'm exhausted, I need some rest.","أنا مهدود، محتاج أرتاح شوية."],
+  ["The line is breaking up.","الخط بيقطع."],
+  ["Don't forget to wash your hands.","متنساش تغسل إيدك."],
+  ["It's boiling outside!","الجو نار برا!"],
+  ["The problem is that ...","المشكلة إن ..."],
+  ["I've heard a lot about you.","سمعت عنك كتير."],
+  ["Can we schedule a meeting for tomorrow?","ممكن نحدد اجتماع بكرة؟"],
+  ["Is this table free?","الترابيزة دي فاضية؟"],
+  ["Is there any discount?","فيه أي خصم؟"],
+  ["Turn left at the traffic lights.","لف شمال عند الإشارة."],
+  ["My luggage didn't arrive.","شنطي موصلتش."],
+  ["Does Thursday at 3 work for you?","يناسبك الخميس الساعة 3؟"],
+  ["I need to take a sick day.","محتاج آخد يوم أجازة مرضي."],
+  ["I'm not sure about that.","أنا مش متأكد من ده."],
+  ["No worries, it happens.","ولا يهمك، بتحصل."],
+  ["Let's go out this weekend.","يلا نخرج الويك إند ده."],
+  ["Can I call you back in ten minutes?","ممكن أكلمك تاني كمان عشر دقايق؟"],
+  ["Good job today!","شغل ممتاز النهارده!"],
+  ["I'm running late.","أنا متأخر."],
+  ["On the other hand, ...","من ناحية تانية، ..."],
+  ["Take care, see you soon.","خلّي بالك من نفسك، أشوفك قريب."],
+  ["I need a little more time to finish this.","محتاج وقت زيادة شوية عشان أخلّص ده."],
+  ["Can I get this to go?","ممكن آخد ده تيك أواي؟"],
+  ["I'll take it.","هاخده."],
+  ["I'm stuck in traffic, I'll be a bit late.","أنا واقف في الزحمة، هتأخر شوية."],
+  ["Could I have a window seat?","ممكن كرسي جنب الشباك؟"],
+  ["Sorry, you're breaking up.","آسف، الصوت بيقطع."],
+  ["Is there a pharmacy near here?","فيه صيدلية قريبة من هنا؟"],
+  ["What do you think?","إنت رأيك إيه؟"],
+  ["Can you give me a hand with this?","ممكن تساعدني في ده؟"],
+  ["I'll do it later.","هعملها بعدين."],
+  ["Could you spell that, please?","ممكن تتهجّاها لو سمحت؟"],
+  ["Thanks for your help.","شكرًا على مساعدتك."],
+  ["I'll be there in ten minutes.","هكون هناك كمان عشر دقايق."],
+  ["Have a nice weekend!","ويك إند سعيد!"],
+  ["That's a good point.","دي نقطة كويسة."],
+  ["I'm allergic to nuts.","عندي حساسية من المكسرات."],
+  ["Can I return it if it doesn't fit?","ينفع أرجّعه لو مجاش مقاسي؟"],
+  ["Could you stop here, please?","ممكن تقف هنا لو سمحت؟"],
+  ["The air conditioning isn't working.","التكييف مش شغال."],
+  ["Can I leave a message?","ممكن أسيب رسالة؟"],
+  ["It hurts here.","بيوجعني هنا."],
+  ["Let's look at it from another angle.","خلينا نبص لها من زاوية تانية."],
+  ["Thank you so much, that's very kind of you.","شكرًا جدًا، ده ذوق منك."],
+  ["Could you turn down the TV?","ممكن توطّي التلفزيون؟"],
+  ["Let me write that down.","خليني أكتب ده."],
+  ["I see your point.","فاهم وجهة نظرك."],
+  ["That's exactly what I meant.","ده بالظبط اللي قصدته."],
+  ["Say hi to your family for me.","سلّملي على أهلك."],
+  ["Could you walk me through it?","ممكن تشرحهالي خطوة خطوة؟"],
+  ["This is delicious!","ده طعمه تحفة!"],
+  ["Where can I find the milk?","ألاقي اللبن فين؟"],
+  ["Which bus goes to downtown?","أنهي أتوبيس بيروح وسط البلد؟"],
+  ["Can you recommend a good place to visit?","ترشّحلي مكان حلو أزوره؟"],
+  ["I need to reschedule our meeting.","محتاج أغيّر معاد اجتماعنا."],
+  ["I'm feeling much better now.","أنا أحسن بكتير دلوقتي."],
+  ["To be honest, I prefer the first option.","بصراحة، أنا أفضّل الاختيار الأول."],
+  ["You're welcome, anytime.","العفو، في أي وقت."],
+  ["I'm going to bed, good night.","أنا داخل أنام، تصبح على خير."],
+  ["Just to confirm, you said ...","بس عشان أتأكد، انت قلت ..."],
+  ["Let's figure it out together.","خلينا نحلها سوا."],
+  ["It's up to you.","زي ما تحب."],
+  ["Let me put it another way.","خليني أقولها بطريقة تانية."],
+  ["Sorry, I didn't catch your name.","آسف، ملحقتش أسمع اسمك."],
+  ["I'm afraid I can't make it to the meeting.","للأسف مش هقدر أحضر الاجتماع."],
+  ["Excuse me, this isn't what I ordered.","لو سمحت، ده مش اللي أنا طلبته."],
+  ["Could I have a receipt, please?","ممكن الفاتورة لو سمحت؟"],
+  ["It's within walking distance.","المكان قريب، ينفع تروحه مشي."],
+  ["I'm here on business.","أنا هنا في شغل."],
+  ["Get well soon!","ألف سلامة عليك!"],
+  ["I didn't mean to interrupt.","مكنتش أقصد أقاطعك."],
+  ["Don't forget to lock the door.","متنساش تقفل الباب."],
+  ["I'll send you the details by email.","هبعتلك التفاصيل على الإيميل."],
+  ["Sorry, that was my mistake.","آسف، دي كانت غلطتي."],
+  ["I'm not sure yet.","لسه مش متأكد."],
+  ["For example, ...","على سبيل المثال، ..."],
+  ["It was great to see you.","كان جميل إني شفتك."],
+  ["Thanks for your help, I really appreciate it.","شكرًا على مساعدتك، بجد مقدّر ده."],
+  ["Can I pay by card?","ينفع أدفع بالكارت؟"],
+  ["That's a bit too expensive for me.","ده غالي عليّا شوية."],
+  ["I think I'm lost.","أعتقد إني تهت."],
+  ["Could you call me a taxi, please?","ممكن تطلبلي تاكسي لو سمحت؟"],
+  ["Thanks for calling, have a good day.","شكرًا على اتصالك، يومك سعيد."],
+  ["Do I need a prescription for this?","محتاج روشتة للدوا ده؟"],
+  ["Fair enough.","ماشي، عندك حق."],
+  ["Is it okay if I leave early today?","ينفع أمشي بدري النهارده؟"],
+  ["I'm on my way home.","أنا في الطريق للبيت."],
+  ["Could I speak to the QA manager?","ممكن أكلم مدير ضمان الجودة؟"],
+  ["The good thing is that ...","الحلو إن ..."],
+  ["He's not available right now.","هو مش متاح دلوقتي."],
+  ["Can you cover for me for an hour?","ممكن تغطي مكاني ساعة؟"],
+  ["Sounds good to me.","تمام بالنسبالي."],
+  ["I suggest we ...","أقترح إننا ..."],
+  ["I'm swamped today.","أنا غرقان شغل النهارده."],
+  ["I didn't get much sleep.","منمتش كويس."],
+  ["Why don't we try ...?","ليه منجربش ...؟"],
+  ["Thanks for calling.","شكرًا على اتصالك."],
+  ["Let me know if you need anything.","قولي لو احتجت أي حاجة."],
+  ["Let's grab a coffee.","يلا نشرب قهوة."],
+  ["It depends on ...","ده بيعتمد على ..."],
+  ["Sorry, I missed your call.","آسف، فاتتني مكالمتك."],
+  ["Who's on the night shift?","مين وردية الليل؟"],
+  ["I've been really busy lately.","كنت مشغول جدًا الفترة اللي فاتت."],
+  ["As far as I know, ...","على حد علمي، ..."],
+  ["I'll get back to you today.","هرجعلك النهارده."],
+  ["Welcome to the team!","أهلاً بيك في الفريق!"],
+  ["It's been ages!","بقالنا كتير!"],
+  ["To be honest, ...","بصراحة، ..."],
+  ["What's the best number to reach you?","إيه أنسب رقم أكلمك عليه؟"],
+  ["Let me show you how it's done.","خليني أوريك بتتعمل إزاي."],
+  ["How was your vacation?","إجازتك كانت عاملة إيه؟"],
+  ["I have a different idea.","عندي فكرة مختلفة."],
+  ["Hold on a second, please.","استنى ثانية لو سمحت."],
+  ["Take your time.","خد وقتك."],
+  ["I'm looking forward to it.","مستنيه بفارغ الصبر."],
+  ["That could work.","ده ممكن ينفع."],
+  ["Sorry, I didn't catch that.","آسف، ملحقتش أسمع."],
+  ["Keep up the good work.","كمّل كده."],
+  ["Never mind.","مش مهم / خلاص."],
+  ["Let's look at the data first.","خلينا نبص على البيانات الأول."],
+  ["Talk to you soon.","نتكلم قريب."],
+  ["I'll ask the supervisor.","هسأل المشرف."],
+  ["Take care!","خلّي بالك من نفسك!"],
+  ["I think we should ...","أعتقد إننا لازم ..."]
 ];
 
-// جمل إنجليزي يومية شائعة الاستخدام
-const PHRASES = [
-  {
-    "en": "How are you doing?",
-    "ar": "عامل إيه؟ / أخبارك إيه؟"
-  },
-  {
-    "en": "What's up?",
-    "ar": "إيه الأخبار؟"
-  },
-  {
-    "en": "I'm on my way.",
-    "ar": "أنا في الطريق."
-  },
-  {
-    "en": "Could you repeat that, please?",
-    "ar": "ممكن تعيد تاني؟"
-  },
-  {
-    "en": "I have no idea.",
-    "ar": "معنديش فكرة."
-  },
-  {
-    "en": "It doesn't matter.",
-    "ar": "مش مهم / معلش."
-  },
-  {
-    "en": "Take your time.",
-    "ar": "خد وقتك."
-  },
-  {
-    "en": "Let me know.",
-    "ar": "قولّي / خليني أعرف."
-  },
-  {
-    "en": "I'm looking forward to it.",
-    "ar": "متحمس له / في انتظاره."
-  },
-  {
-    "en": "Sounds good.",
-    "ar": "تمام / حلو كده."
-  },
-  {
-    "en": "I'll be right back.",
-    "ar": "هرجع حالًا."
-  },
-  {
-    "en": "Can you help me with this?",
-    "ar": "ممكن تساعدني في ده؟"
-  },
-  {
-    "en": "I'm not sure.",
-    "ar": "مش متأكد."
-  },
-  {
-    "en": "What time is it?",
-    "ar": "الساعة كام؟"
-  },
-  {
-    "en": "See you later.",
-    "ar": "أشوفك بعدين."
-  },
-  {
-    "en": "Thanks for your help.",
-    "ar": "شكرًا على مساعدتك."
-  },
-  {
-    "en": "No problem at all.",
-    "ar": "ولا يهمك / مفيش مشكلة."
-  },
-  {
-    "en": "I need more time.",
-    "ar": "محتاج وقت أكتر."
-  },
-  {
-    "en": "Let's get started.",
-    "ar": "يلا نبدأ."
-  },
-  {
-    "en": "That makes sense.",
-    "ar": "ده كلام مظبوط / منطقي."
-  },
-  {
-    "en": "I'll think about it.",
-    "ar": "هفكر فيها."
-  },
-  {
-    "en": "Keep in touch.",
-    "ar": "خلينا على تواصل."
-  },
-  {
-    "en": "It's up to you.",
-    "ar": "الأمر راجعلك."
-  },
-  {
-    "en": "I appreciate it.",
-    "ar": "أقدّر ده."
-  },
-  {
-    "en": "Give me a second.",
-    "ar": "ثانية واحدة."
-  },
-  {
-    "en": "Where are you headed?",
-    "ar": "رايح فين؟"
-  },
-  {
-    "en": "I'm running late.",
-    "ar": "أنا متأخر شوية."
-  },
-  {
-    "en": "That's a good question.",
-    "ar": "سؤال كويس."
-  },
-  {
-    "en": "I'll get back to you.",
-    "ar": "هرد عليك تاني."
-  },
-  {
-    "en": "Have a nice day!",
-    "ar": "يوم سعيد!"
-  }
+// أذكار ثابتة بفضلها من الأحاديث الصحيحة [الذكر، فضله]
+const DHIKR: [string, string][] = [
+  [
+    "سبحان الله وبحمده",
+    "من قالها مئة مرة في يوم حُطّت خطاياه وإن كانت مثل زبد البحر — متفق عليه"
+  ],
+  [
+    "أستغفر الله وأتوب إليه",
+    "«والله إني لأستغفر الله وأتوب إليه في اليوم أكثر من سبعين مرة» — رواه البخاري"
+  ],
+  [
+    "سبحان الله وبحمده، سبحان الله العظيم",
+    "كلمتان خفيفتان على اللسان، ثقيلتان في الميزان، حبيبتان إلى الرحمن — متفق عليه"
+  ],
+  [
+    "لا حول ولا قوة إلا بالله",
+    "كنز من كنوز الجنة — متفق عليه"
+  ],
+  [
+    "اللهم صلِّ وسلّم على نبينا محمد",
+    "«من صلّى عليّ صلاة صلّى الله عليه بها عشرًا» — رواه مسلم"
+  ],
+  [
+    "لا إله إلا الله وحده لا شريك له، له الملك وله الحمد، وهو على كل شيء قدير",
+    "من قالها عشر مرات كان كمن أعتق أربعة أنفس من ولد إسماعيل — متفق عليه"
+  ],
+  [
+    "أستغفر الله العظيم الذي لا إله إلا هو الحي القيوم وأتوب إليه",
+    "من قالها غُفر له وإن كان فرّ من الزحف — رواه أبو داود والترمذي"
+  ],
+  [
+    "سبحان الله، والحمد لله، ولا إله إلا الله، والله أكبر",
+    "أحب الكلام إلى الله أربع — رواه مسلم"
+  ],
+  [
+    "الحمد لله",
+    "«والحمد لله تملأ الميزان» — رواه مسلم"
+  ],
+  [
+    "سبحان الله وبحمده عدد خلقه، ورضا نفسه، وزنة عرشه، ومداد كلماته",
+    "أربع كلمات لو وُزنت بما قيل من أول النهار لوزنته — رواه مسلم"
+  ]
 ];
+
+// في كل 5 خانات (كل خانة 15 دقيقة): 3 إنجليزي و2 ذكر بالتبادل
+const PATTERN = ["en", "dhikr", "en", "en", "dhikr"];
+const SLOT_MS = 15 * 60 * 1000;
+
+function inQuiet(hour: number, from: number, to: number): boolean {
+  if (from === to) return false;
+  return from < to ? hour >= from && hour < to : hour >= from || hour < to;
+}
 
 // ---------- تقرير أسبوعي (weekly digest) ----------
 const TZ_HOURS = 3; // الرياض UTC+3
@@ -562,57 +335,53 @@ async function sendWeeklyDigest(supa: ReturnType<typeof createClient>) {
   return { ok: true, mode: "weekly", users, sent, removed, failed };
 }
 
+async function sendNudge(supa: ReturnType<typeof createClient>) {
+  const slot = Math.floor(Date.now() / SLOT_MS);
+  const kind = PATTERN[slot % PATTERN.length];
+  const nEn = Math.floor(slot / 5) * 3 + [0, 0, 1, 2, 2][slot % 5];
+  const nDh = Math.floor(slot / 5) * 2 + [0, 0, 1, 1, 1][slot % 5];
+  let payload: string, pick: unknown;
+  if (kind === "en") {
+    const p = EN[nEn % EN.length]; pick = p;
+    payload = JSON.stringify({ title: "جملة إنجليزي 💬", body: p[0] + "\n" + p[1], en: p[0], type: "en", tag: "masar-nudge", go: "coach" });
+  } else {
+    const d = DHIKR[nDh % DHIKR.length]; pick = d;
+    payload = JSON.stringify({ title: "ذِكر 📿", body: d[0] + "\n" + d[1], type: "dhikr", tag: "masar-nudge", go: "tasbih" });
+  }
+
+  const { data: rules, error: e1 } = await supa.from("masar_notify").select("user_id,enabled,quiet_from,quiet_to").eq("enabled", true);
+  if (e1) return { ok: false, error: e1.message };
+  const rule = new Map((rules || []).map((r) => [r.user_id, r]));
+  if (!rule.size) return { ok: true, kind, sent: 0, note: "no enabled accounts" };
+
+  const { data: subs, error: e2 } = await supa.from("masar_push_subs").select("id,endpoint,p256dh,auth,user_id,tz").in("user_id", [...rule.keys()]);
+  if (e2) return { ok: false, error: e2.message };
+
+  let sent = 0, quiet = 0, removed = 0, failed = 0;
+  for (const s of subs || []) {
+    const r = rule.get(s.user_id)!;
+    const tz = typeof s.tz === "number" ? s.tz : Number(s.tz ?? 3);
+    const hour = new Date(Date.now() + (isFinite(tz) ? tz : 3) * 3600000).getUTCHours();
+    if (inQuiet(hour, r.quiet_from ?? 6, r.quiet_to ?? 14)) { quiet++; continue; }
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 600, urgency: "normal" });
+      sent++;
+    } catch (e) {
+      const code = (e as { statusCode?: number })?.statusCode;
+      if (code === 404 || code === 410) { await supa.from("masar_push_subs").delete().eq("id", s.id); removed++; }
+      else failed++;
+    }
+  }
+  return { ok: true, kind, pick, sent, quiet, removed, failed };
+}
+
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const token = url.searchParams.get("token") || req.headers.get("x-push-token");
   if (!PUSH_SHARED_SECRET || token !== PUSH_SHARED_SECRET) {
     return new Response("unauthorized", { status: 401 });
   }
-
-  if (url.searchParams.get("mode") === "weekly") {
-    const supa = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-    const result = await sendWeeklyDigest(supa);
-    return new Response(JSON.stringify(result), { headers: { "content-type": "application/json" } });
-  }
-
-  // نستخدم رقم الساعة (منذ 1970) مش رقم اليوم، عشان كل إشعار في نفس اليوم يبقى مختلف عن اللي قبله
-  const hourNum = Math.floor(Date.now() / 3600000);
-  const useWord = hourNum % 2 === 0;
-  const pool = useWord ? WORDS : PHRASES;
-  const pick = pool[((hourNum % pool.length) + pool.length) % pool.length];
-
-  const title = useWord ? "كلمة اليوم 📘" : "جملة اليوم 💬";
-  const body = useWord
-    ? `${pick.en} — ${pick.ar}${pick.ex ? "\n" + pick.ex : ""}`
-    : `${pick.en}\n${pick.ar}`;
-  // en: النص الإنجليزي الخام اللي هيتقال بالصوت لما تضغط على الإشعار (من غير عربي)
-  const en = useWord ? `${pick.en}. ${pick.ex || ""}`.trim() : pick.en;
-  const payload = JSON.stringify({ title, body, en, type: useWord ? "word" : "phrase" });
-
   const supa = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
-  const { data: subs, error } = await supa.from("masar_push_subs").select("id,endpoint,p256dh,auth");
-  if (error) {
-    return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: { "content-type": "application/json" } });
-  }
-
-  let sent = 0, removed = 0, failed = 0;
-  for (const s of subs || []) {
-    const sub = { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } };
-    try {
-      await webpush.sendNotification(sub, payload);
-      sent++;
-    } catch (e) {
-      const code = e && e.statusCode;
-      if (code === 404 || code === 410) {
-        await supa.from("masar_push_subs").delete().eq("id", s.id);
-        removed++;
-      } else {
-        failed++;
-      }
-    }
-  }
-
-  return new Response(JSON.stringify({ ok: true, type: useWord ? "word" : "phrase", pick, sent, removed, failed }), {
-    headers: { "content-type": "application/json" },
-  });
+  const result = url.searchParams.get("mode") === "weekly" ? await sendWeeklyDigest(supa) : await sendNudge(supa);
+  return new Response(JSON.stringify(result), { headers: { "content-type": "application/json" } });
 });

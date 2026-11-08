@@ -599,6 +599,7 @@
       '<form class="row wrapr" data-act="admin-pw" data-uid="' + esc(acc.uid) + '" style="gap:8px;margin-block-start:10px">' +
       '<input class="inp" type="text" inputmode="numeric" placeholder="رمز جديد (4–8 أرقام)" style="max-width:190px" required pattern="\\d{4,8}" autocomplete="off">' +
       '<button class="btn sm" type="submit">تغيير الرمز</button><span class="muted pwmsg" style="font-size:12.5px"></span></form></div></div>' +
+      admNotifyCard(acc) +
       '<div class="card"><div class="adm-card-h"><h3>🔔 رسالة مخصوصة</h3></div><textarea class="inp" id="admOneMsg" rows="3" placeholder="اكتب رسالة توصل له كإشعار…" style="width:100%"></textarea>' +
       '<div class="adm-save"><button class="btn sm" data-adm="sendone" data-uid="' + esc(acc.uid) + '">ابعت</button></div></div>' +
       '<div class="card adm-danger"><div class="adm-card-h"><h3>حالة الحساب</h3>' + admPill(disabled ? { k: "off", t: "معطّل" } : { k: "on", t: "مفعّل" }) + "</div>" +
@@ -764,6 +765,15 @@
       case "pall": document.querySelectorAll("#admin [data-permcourse]").forEach(function (c) { c.classList.add("on"); }); break;
       case "pnone": document.querySelectorAll("#admin [data-permcourse]").forEach(function (c) { c.classList.remove("on"); }); break;
       case "psection": var on = el.classList.toggle("on"); el.setAttribute("aria-checked", String(on)); break;
+      case "ntoggle": var non = el.classList.toggle("on"); el.setAttribute("aria-checked", String(non)); break;
+      case "nsave": {
+        var nmsg = document.getElementById("nmsg"), row = { user_id: uid, enabled: document.getElementById("nOn").classList.contains("on"),
+          quiet_from: Number(document.getElementById("nQf").value), quiet_to: Number(document.getElementById("nQt").value), updated_at: new Date().toISOString() };
+        nmsg.textContent = "جارٍ الحفظ…"; el.disabled = true;
+        var nr2 = await store.sb.from("masar_notify").upsert(row, { onConflict: "user_id" }); el.disabled = false;
+        if (nr2.error) { nmsg.textContent = "تعذّر الحفظ: " + nr2.error.message; break; }
+        ADM.notify[uid] = row; nmsg.textContent = row.enabled ? "اتشغّلت ✓" : "اتقفلت ✓"; break;
+      }
       case "psave": {
         var chips = Array.from(document.querySelectorAll("#admin [data-permcourse]")), secs = Array.from(document.querySelectorAll("#admin [data-permsection]"));
         var isOn = function (x) { return x.classList.contains("on"); };
@@ -842,6 +852,7 @@
     // The food log is private to its owner: it never reaches the dashboard, the JSON backup or the CSV.
     if (r.data && Array.isArray(r.data.meta)) r.data.meta = r.data.meta.filter(function (row) { return row.name !== "food"; });
     ADM.raw = r.data; ADM.at = Date.now();
+    await admLoadNotify();
     var dRows = r.data.days || [], mRows = r.data.meta || [];
     var accounts = ACCOUNTS.filter(function (a) { return a.role === "user"; });
     var stats = accounts.map(function (acc) {
@@ -853,6 +864,31 @@
     });
     if (!state.adminDetailUid && stats.length) state.adminDetailUid = stats[0].acc.uid;
     renderAdminDashboard(stats, true);
+  }
+  // Every-15-minutes notifications: per-account switch + quiet hours (masar_notify), and
+  // how many of that account's devices have allowed notifications (masar_push_subs).
+  async function admLoadNotify() {
+    ADM.notify = {}; ADM.subs = {}; ADM.notifyErr = "";
+    try {
+      var n = await store.sb.from("masar_notify").select("user_id,enabled,quiet_from,quiet_to");
+      if (n.error) ADM.notifyErr = n.error.message || "err";
+      else (n.data || []).forEach(function (x) { ADM.notify[x.user_id] = x; });
+      var s = await store.sb.from("masar_push_subs").select("user_id");
+      if (!s.error) (s.data || []).forEach(function (x) { ADM.subs[x.user_id] = (ADM.subs[x.user_id] || 0) + 1; });
+    } catch (e) { ADM.notifyErr = "err"; }
+  }
+  function admNotifyCard(acc) {
+    var nr = (ADM.notify || {})[acc.uid] || { enabled: false, quiet_from: 6, quiet_to: 14 }, devs = (ADM.subs || {})[acc.uid] || 0;
+    var hours = function (id, v) {
+      var o = ""; for (var h = 0; h < 24; h++) o += '<option value="' + h + '"' + (h === Number(v) ? " selected" : "") + ">" + esc(fmtHourAr(h)) + "</option>";
+      return '<select class="inp" id="' + id + '">' + o + "</select>";
+    };
+    return '<div class="card"><div class="adm-card-h"><h3>🔔 إشعارات كل ١٥ دقيقة</h3><small class="muted">٦٠٪ جملة إنجليزي · ٤٠٪ ذِكر</small></div>' +
+      (ADM.notifyErr ? '<p class="muted" style="font-size:13px">محتاج تشغّل ملف push/notify.sql في Supabase الأول.</p>' :
+      '<div class="adm-switch-row"><span>تشغيل الإشعارات للحساب ده</span><button class="adm-switch' + (nr.enabled ? " on" : "") + '" id="nOn" data-adm="ntoggle" role="switch" aria-checked="' + !!nr.enabled + '" aria-label="تشغيل الإشعارات"><i></i></button></div>' +
+      '<div class="row wrapr" style="gap:10px;margin-block-start:10px"><label class="field" style="max-width:170px">راحة من' + hours("nQf", nr.quiet_from) + '</label><label class="field" style="max-width:170px">لحد' + hours("nQt", nr.quiet_to) + "</label></div>" +
+      '<p class="muted" style="font-size:12.5px;margin:8px 0 0">' + (devs ? "أجهزة سمحت بالإشعارات: " + devs : "لسه مفيش جهاز سمح بالإشعارات — أول ما تشغّلها، صاحب الحساب هيلاقي زرار «اسمح» في التطبيق.") + "</p>" +
+      '<div class="adm-save"><button class="btn sm" data-adm="nsave" data-uid="' + esc(acc.uid) + '">حفظ</button><span class="muted" id="nmsg"></span></div>') + "</div>";
   }
   function admCompareHTML(stats, now) {
     var activeStats = stats.filter(function (st) { return st.acc.active !== false; });
@@ -914,6 +950,7 @@
   async function loadSupa(first) {
     if (!store.uid) return;
     var before = snap();
+    if (first) await loadNotifyRule();
     var d = await store.sb.from("masar_days").select("day,data");
     var m = await store.sb.from("masar_meta").select("name,data");
     if (d.error || m.error) {
@@ -955,7 +992,7 @@
   async function lockNow() {
     clearInterval(store.poll);
     try { await store.sb.auth.signOut(); } catch (e) { }
-    store.uid = null; store.acc = null; state.days = {}; state.learn = freshLearn(); state.food = freshFood(); state.fd = null; state.fv = null; state.fs = null;
+    store.uid = null; store.acc = null; state.notify = null; state.days = {}; state.learn = freshLearn(); state.food = freshFood(); state.fd = null; state.fv = null; state.fs = null;
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
     state.exp = { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} }; state.expMonth = null; state.expTab = "main"; state.expQ = ""; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;

@@ -1569,3 +1569,6 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 #touchGlow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9000; }
 :root[data-theme="dark"] #touchGlow { mix-blend-mode: screen; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #touchGlow { mix-blend-mode: screen; } }
+.push-allow { border-inline-start: 4px solid var(--teal); }
+.push-allow .pa-ic { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--teal-ink); background: linear-gradient(160deg, var(--teal), var(--teal-deep)); }
+.push-allow .pa-ic .i { width: 20px; height: 20px; }

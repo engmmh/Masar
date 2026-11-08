@@ -9,7 +9,7 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v32";
+var CACHE_NAME = "masar-v33";
 var PRECACHE = [
   "./",
   "./index.html",
@@ -45,21 +45,22 @@ self.addEventListener("push", function (event) {
   try { data = event.data ? event.data.json() : {}; } catch (e) { }
   var title = data.title || "مسار";
   var body = data.body || "افتح مسار كمّل.";
-  event.waitUntil(self.registration.showNotification(title, {
-    body: body,
-    icon: "icons/icon-192.png",
-    badge: "icons/icon-192.png",
-    dir: "rtl",
-    lang: "ar"
-  }));
+  // The every-15-minutes nudges share one tag, so each new one replaces the last
+  // instead of piling up; renotify keeps its (soft, system-default) sound.
+  var opts = { body: body, icon: "icons/icon-192.png", badge: "icons/icon-192.png", dir: "rtl", lang: "ar", data: { go: data.go || "" } };
+  if (data.tag) { opts.tag = data.tag; opts.renotify = true; }
+  event.waitUntil(self.registration.showNotification(title, opts));
 });
 
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
+  var go = (event.notification.data && event.notification.data.go) || "";
   event.waitUntil(
     self.clients.matchAll({ type: "window" }).then(function (list) {
-      for (var i = 0; i < list.length; i++) { if ("focus" in list[i]) return list[i].focus(); }
-      if (self.clients.openWindow) return self.clients.openWindow("./");
+      for (var i = 0; i < list.length; i++) {
+        if ("focus" in list[i]) { if (go) list[i].postMessage({ masarGo: go }); return list[i].focus(); }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow("./" + (go ? "?go=" + go : ""));
     })
   );
 });
