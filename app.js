@@ -223,13 +223,15 @@
     return pad(h) + ":" + pad(m) + ":" + pad(s);
   }
   var brandMarkN = 0;
-  // The brand: a crystal-brown crescent (cream tile behind it for app-icon style uses).
+  // The brand: a slim crystal crescent — gold-caramel on an espresso tile, or deep brown on its own.
   function brandMark(size, tile) {
     brandMarkN++;
-    var p = "bm" + brandMarkN, c = "<defs><linearGradient id=\"__P__g\" x1=\"0.12\" y1=\"0.08\" x2=\"0.88\" y2=\"0.96\"><stop offset=\"0\" stop-color=\"#E8B784\"/><stop offset=\"0.32\" stop-color=\"#B9773F\"/><stop offset=\"0.62\" stop-color=\"#7C431B\"/><stop offset=\"1\" stop-color=\"#3D1D09\"/></linearGradient><radialGradient id=\"__P__h\" cx=\"0.3\" cy=\"0.24\" r=\"0.42\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\"0.6\"/><stop offset=\"1\" stop-color=\"#FFFFFF\" stop-opacity=\"0\"/></radialGradient><mask id=\"__P__m\"><rect width=\"100\" height=\"100\" fill=\"#fff\"/><circle cx=\"67\" cy=\"39\" r=\"24\" fill=\"#000\"/></mask></defs><g mask=\"url(#__P__m)\"><circle cx=\"50\" cy=\"52\" r=\"31\" fill=\"url(#__P__g)\"/><polygon points=\"19,44 44,21 37,58\" fill=\"#fff\" opacity=\".2\"/><polygon points=\"37,58 19,44 21,70\" fill=\"#3A1A06\" opacity=\".12\"/><polygon points=\"37,58 21,70 47,84\" fill=\"#fff\" opacity=\".12\"/><polygon points=\"37,58 47,84 72,76\" fill=\"#3A1A06\" opacity=\".16\"/><polygon points=\"37,58 72,76 81,58\" fill=\"#fff\" opacity=\".07\"/><circle cx=\"50\" cy=\"52\" r=\"31\" fill=\"url(#__P__h)\"/><circle cx=\"50\" cy=\"52\" r=\"30.3\" fill=\"none\" stroke=\"#FFEBD0\" stroke-opacity=\".55\" stroke-width=\"1.3\"/></g>".replace(/__P__/g, p);
-    if (!tile) return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true">' + c + "</svg>";
-    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="' + p + 't" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFAF3"/><stop offset="1" stop-color="#EFDDC6"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#' + p + 't)"/><g transform="translate(8 4) scale(.9)">' + c + "</g></svg>";
+    var p = "bm" + brandMarkN;
+    var c = (tile ? "<defs><linearGradient id=\"__P__g\" x1=\"0.1\" y1=\"0.15\" x2=\"0.75\" y2=\"1\"><stop offset=\"0\" stop-color=\"#FFF1DA\"/><stop offset=\"0.35\" stop-color=\"#F1C88F\"/><stop offset=\"0.7\" stop-color=\"#D49A5C\"/><stop offset=\"1\" stop-color=\"#9E5E2A\"/></linearGradient><mask id=\"__P__m\"><rect width=\"100\" height=\"100\" fill=\"#fff\"/><circle cx=\"61\" cy=\"40\" r=\"29\" fill=\"#000\"/></mask></defs><g mask=\"url(#__P__m)\"><circle cx=\"50\" cy=\"51\" r=\"32\" fill=\"url(#__P__g)\"/><path d=\"M18 51 L40 64 L50 83 Z\" fill=\"#fff\" opacity=\".16\"/><path d=\"M40 64 L50 83 L72 77 Z\" fill=\"#000\" opacity=\".12\"/><path d=\"M18 51 L40 64 L22 28 Z\" fill=\"#000\" opacity=\".06\"/><path d=\"M40 64 L72 77 L82 60 Z\" fill=\"#fff\" opacity=\".08\"/><circle cx=\"50\" cy=\"51\" r=\"31.4\" fill=\"none\" stroke=\"#FFF4E4\" stroke-opacity=\".55\" stroke-width=\"1.1\"/></g>" : "<defs><linearGradient id=\"__P__g\" x1=\"0.1\" y1=\"0.15\" x2=\"0.75\" y2=\"1\"><stop offset=\"0\" stop-color=\"#D9A06A\"/><stop offset=\"0.35\" stop-color=\"#A9692F\"/><stop offset=\"0.7\" stop-color=\"#7A4419\"/><stop offset=\"1\" stop-color=\"#4A260C\"/></linearGradient><mask id=\"__P__m\"><rect width=\"100\" height=\"100\" fill=\"#fff\"/><circle cx=\"61\" cy=\"40\" r=\"29\" fill=\"#000\"/></mask></defs><g mask=\"url(#__P__m)\"><circle cx=\"50\" cy=\"51\" r=\"32\" fill=\"url(#__P__g)\"/><path d=\"M18 51 L40 64 L50 83 Z\" fill=\"#fff\" opacity=\".16\"/><path d=\"M40 64 L50 83 L72 77 Z\" fill=\"#000\" opacity=\".12\"/><path d=\"M18 51 L40 64 L22 28 Z\" fill=\"#000\" opacity=\".06\"/><path d=\"M40 64 L72 77 L82 60 Z\" fill=\"#fff\" opacity=\".08\"/><circle cx=\"50\" cy=\"51\" r=\"31.4\" fill=\"none\" stroke=\"#FFF4E4\" stroke-opacity=\".35\" stroke-width=\"1.1\"/></g>").replace(/__P__/g, p);
+    var bg = tile ? "<defs><linearGradient id=\"__P__t\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#5A341A\"/><stop offset=\"0.55\" stop-color=\"#3A2010\"/><stop offset=\"1\" stop-color=\"#1F1007\"/></linearGradient><radialGradient id=\"__P__r\" cx=\"0.3\" cy=\"0.2\" r=\"0.8\"><stop offset=\"0\" stop-color=\"#E9B57C\" stop-opacity=\".35\"/><stop offset=\"1\" stop-color=\"#E9B57C\" stop-opacity=\"0\"/></radialGradient></defs><rect width=\"100\" height=\"100\" rx=\"24\" fill=\"url(#__P__t)\"/><rect width=\"100\" height=\"100\" rx=\"24\" fill=\"url(#__P__r)\"/><rect x=\".75\" y=\".75\" width=\"98.5\" height=\"98.5\" rx=\"23.5\" fill=\"none\" stroke=\"#F3D3A8\" stroke-opacity=\".28\" stroke-width=\"1.5\"/>".replace(/__P__/g, p) : "";
+    return '<svg class="brand-mark" width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true">' + bg + (tile ? '<g transform="translate(16 13) scale(.72)">' + c + "</g>" : c) + "</svg>";
   }
+
 
   function ico(name) {
     var s = {
@@ -1151,6 +1153,9 @@
     var r = document.documentElement;
     if (t === "auto") r.removeAttribute("data-theme"); else r.setAttribute("data-theme", t);
     var b = $("#theme"); if (b) b.textContent = THEME_LBL[t];
+    // Phone status/navigation bar follows the page background in the brand palette.
+    var dark = t === "dark" || (t === "auto" && window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches);
+    var m = document.getElementById("themeColor"); if (m) m.setAttribute("content", dark ? "#120D09" : "#F7F1E9");
   }
   function markTabs() {
     document.querySelectorAll(".tabs button").forEach(function (b) {

@@ -59,7 +59,7 @@
   // A fixed 8-color palette (not just the 3 base accent hues) so categories stay visually
   // distinct from each other even once someone has 6-8 of them — hashed deterministically
   // by category name, so the same category always lands on the same color.
-  var CAT_COLORS = ["#0DA66B", "#F59E0B", "#3B6FED", "#E0607E", "#7C6FE0", "#17A2A2", "#C2703D", "#5B8A3C"];
+  var CAT_COLORS = ["#A86A33", "#F59E0B", "#3B6FED", "#E0607E", "#7C6FE0", "#17A2A2", "#C2703D", "#8A7A52"];
   function catColor(name) {
     var h = 0; for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
     return CAT_COLORS[h % CAT_COLORS.length];

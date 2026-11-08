@@ -520,7 +520,7 @@
   // "continue where you left off" card, the recommended English course featured on
   // its own, then every other allowed course as a cover card, and badges last.
   var COURSE_THEME = {
-    en: ["#3B6FED", "#1E3FA8"], iso: ["#0DA66B", "#087A4F"], iso14001: ["#22A35A", "#136B3A"], iso45001: ["#F59E0B", "#B86E00"],
+    en: ["#3B6FED", "#1E3FA8"], iso: ["#9A5B26", "#6B3A14"], iso14001: ["#4F7A8C", "#2F5363"], iso45001: ["#F59E0B", "#B86E00"],
     iso22000: ["#E8664A", "#B23E25"], iso22002100: ["#D9822B", "#9C5414"], iso22002: ["#C2593F", "#86321E"], iso17025: ["#7B5CE0", "#4E32A8"], micro: ["#14A3B8", "#0B6E7D"], nutrition: ["#E2477A", "#A6234F"]
   };
   function courseStyle(cid) { var t = COURSE_THEME[cid] || COURSE_THEME.iso; return ' style="--c1:' + t[0] + ";--c2:" + t[1] + '"'; }
@@ -1196,27 +1196,27 @@
     var W = canvas.width, H = canvas.height;
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, W, H);
-    ctx.strokeStyle = "#2F8F5B"; ctx.lineWidth = 10; ctx.strokeRect(20, 20, W - 40, H - 40);
-    ctx.strokeStyle = "#CFE8DA"; ctx.lineWidth = 2; ctx.strokeRect(42, 42, W - 84, H - 84);
+    ctx.strokeStyle = "#8A5426"; ctx.lineWidth = 10; ctx.strokeRect(20, 20, W - 40, H - 40);
+    ctx.strokeStyle = "#EAD8C2"; ctx.lineWidth = 2; ctx.strokeRect(42, 42, W - 84, H - 84);
     ctx.textAlign = "center"; ctx.direction = "rtl";
-    ctx.fillStyle = "#2F8F5B"; ctx.font = "bold 34px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillStyle = "#8A5426"; ctx.font = "bold 34px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText("مسار", W / 2, 110);
     ctx.fillStyle = "#17301F"; ctx.font = "bold 48px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText("شهادة إتمام", W / 2, 190);
-    ctx.fillStyle = "#4b5b50"; ctx.font = "22px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillStyle = "#5E4A3A"; ctx.font = "22px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText("تشهد منصّة مسار بأن", W / 2, 240);
-    ctx.fillStyle = "#1b4332"; ctx.font = "bold 54px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillStyle = "#3A2010"; ctx.font = "bold 54px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText(name || "——", W / 2, 330);
-    ctx.strokeStyle = "#2F8F5B"; ctx.lineWidth = 2;
+    ctx.strokeStyle = "#8A5426"; ctx.lineWidth = 2;
     ctx.beginPath(); ctx.moveTo(W / 2 - 220, 352); ctx.lineTo(W / 2 + 220, 352); ctx.stroke();
-    ctx.fillStyle = "#4b5b50"; ctx.font = "24px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillStyle = "#5E4A3A"; ctx.font = "24px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText("أكمل بنجاح كورس", W / 2, 405);
-    ctx.fillStyle = "#1b4332"; ctx.font = "bold 38px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillStyle = "#3A2010"; ctx.font = "bold 38px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText(c.title, W / 2, 455);
-    ctx.fillStyle = "#4b5b50"; ctx.font = "22px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillStyle = "#5E4A3A"; ctx.font = "22px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText("بتقدير " + (rec.best || 0) + "% في الامتحان النهائي", W / 2, 515);
     ctx.fillText("بتاريخ " + fmtArDate(rec.date || ""), W / 2, 555);
-    ctx.fillStyle = "#8aa092"; ctx.font = "16px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
+    ctx.fillStyle = "#A08A76"; ctx.font = "16px 'IBM Plex Sans Arabic', Tahoma, Arial, sans-serif";
     ctx.fillText("مسار · رحلتك في التعلم والعبادة", W / 2, H - 55);
   }
   function drawCertPreview(cid) {

@@ -137,7 +137,7 @@
       '<label class="field">عايز تحققه إمتى؟ (اختياري)<input class="inp" id="goalBy" type="month" min="' + monthKey(now.key) + '"></label>' +
       '<div class="row" style="gap:8px;margin-block-start:10px"><button class="btn sm" data-act="goal-save">حفظ الهدف</button><button class="btn sm alt" data-act="goal-add-toggle">إلغاء</button></div></div>' : "";
     var list = goals.map(function (g) {
-      var pct = g.target ? (g.saved || 0) / g.target * 100 : 0, left = Math.max(0, g.target - (g.saved || 0)), color = pct >= 100 ? "#22B35E" : "#0E9F6E";
+      var pct = g.target ? (g.saved || 0) / g.target * 100 : 0, left = Math.max(0, g.target - (g.saved || 0)), color = pct >= 100 ? "#C98A4B" : "#8A5426";
       var plan = "";
       if (g.by && left > 0) { var m = monthsBetween(now.key, g.by) + 1; plan = m > 0 ? "محتاج توفّر " + fmtMoney(Math.ceil(left / m)) + " كل شهر لحد " + monthLabel(g.by) : "المعاد فات — حدّث الهدف"; }
       var open = state.expGoalOpen === g.id;

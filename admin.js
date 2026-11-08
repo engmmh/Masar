@@ -1,7 +1,7 @@
 "use strict";
   /* ---------------- admin dashboard ---------------- */
   var ADMIN_FN_URL = CFG.url + "/functions/v1/admin-change-password";
-  var ACCOUNT_COLORS = ["#0E9F6E", "#3D6BF0", "#F59E0B", "#E2477A", "#7B61F0", "#14A3B8"];
+  var ACCOUNT_COLORS = ["#A86A33", "#3D6BF0", "#F59E0B", "#E2477A", "#7B61F0", "#14A3B8"];
   var ADM_FOLLOWUP_DAYS = 3; // no activity for this many days or more -> "needs follow-up"
   var ADM_SECTION_LABEL = { prayer: "الصلاة", quran: "القرآن", learn: "التعلّم", exp: "فلوسي" };
   function accColor(i) { return ACCOUNT_COLORS[i % ACCOUNT_COLORS.length]; }
