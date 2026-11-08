@@ -110,7 +110,7 @@
       '<input type="file" id="backupFile" accept="application/json,.json" hidden></div>';
   }
   function exportBackup() {
-    var data = { app: "masar", version: 1, at: new Date().toISOString(), settings: state.settings, days: state.days, learn: state.learn, exp: state.exp };
+    var data = { app: "masar", version: 1, at: new Date().toISOString(), settings: state.settings, days: state.days, learn: state.learn, exp: state.exp, food: state.food };
     var blob = new Blob([JSON.stringify(data)], { type: "application/json" });
     var a = document.createElement("a");
     a.href = URL.createObjectURL(blob); a.download = "masar-backup-" + nowR().key + ".json";
@@ -148,6 +148,7 @@
       if (isPlainObj(o.settings)) state.settings = Object.assign(state.settings, o.settings);
       if (isPlainObj(o.learn)) state.learn = Object.assign(state.learn, o.learn);
       if (isPlainObj(o.exp)) state.exp = Object.assign(state.exp, o.exp);
+      if (isPlainObj(o.food)) { state.food = Object.assign(freshFood(), o.food); saveMeta("food", 0); }
       state.days = days;
       Object.keys(state.days).forEach(function (k) { saveDay(k, 0); });
       saveMeta("settings", 0); saveMeta("learn", 0); saveMeta("exp", 0);

@@ -133,9 +133,10 @@
     var F = state.learn.fit;
     if (!F || !F.prof || fitUi().v === "setup") return fitSetupHTML(now);
     if (state.fv.v === "sess") return fitSessHTML(now);
-    var tabs = [["today", "النهارده"], ["prog", "تقدّمي"], ["plan", "الخطة"]];
+    if (state.fv.v === "food" && fdUi().v !== "day") return foodHTML(now);
+    var tabs = [["today", "النهارده"], ["food", "أكلي"], ["prog", "تقدّمي"], ["plan", "الخطة"]];
     var seg = '<div class="seg2 fit-seg">' + tabs.map(function (t) { return '<button data-act="fit-v" data-v="' + t[0] + '" aria-pressed="' + (state.fv.v === t[0]) + '">' + t[1] + "</button>"; }).join("") + "</div>";
-    var body = state.fv.v === "prog" ? fitProgHTML(F, now) : state.fv.v === "plan" ? fitPlanHTML(F, now) : fitTodayHTML(F, now);
+    var body = state.fv.v === "food" ? foodHTML(now) : state.fv.v === "prog" ? fitProgHTML(F, now) : state.fv.v === "plan" ? fitPlanHTML(F, now) : fitTodayHTML(F, now);
     return '<div class="sec-h">التمارين</div>' + seg + body;
   }
 

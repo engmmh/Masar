@@ -839,6 +839,8 @@
       toast("تعذّر تحميل بيانات اللوحة: " + r.error);
       return;
     }
+    // The food log is private to its owner: it never reaches the dashboard, the JSON backup or the CSV.
+    if (r.data && Array.isArray(r.data.meta)) r.data.meta = r.data.meta.filter(function (row) { return row.name !== "food"; });
     ADM.raw = r.data; ADM.at = Date.now();
     var dRows = r.data.days || [], mRows = r.data.meta || [];
     var accounts = ACCOUNTS.filter(function (a) { return a.role === "user"; });
@@ -925,6 +927,7 @@
     (m.data || []).forEach(function (r) {
       if (r.name === "settings") { hasSettings = true; if (!dirty["meta:settings"]) Object.assign(state.settings, r.data); }
       if (r.name === "learn" && !dirty["meta:learn"]) state.learn = Object.assign(freshLearn(), r.data);
+      if (r.name === "food" && !dirty["meta:food"]) state.food = Object.assign(freshFood(), r.data || {});
       if (r.name === "exp" && !dirty["meta:exp"]) {
         var ed = r.data || {};
         // Merge field-by-field rather than a flat Object.assign: an older save (from
@@ -952,7 +955,7 @@
   async function lockNow() {
     clearInterval(store.poll);
     try { await store.sb.auth.signOut(); } catch (e) { }
-    store.uid = null; state.days = {}; state.learn = freshLearn();
+    store.uid = null; state.days = {}; state.learn = freshLearn(); state.food = freshFood(); state.fd = null; state.fv = null; state.fs = null;
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
     state.exp = { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} }; state.expMonth = null; state.expTab = "main"; state.expQ = ""; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;

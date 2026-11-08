@@ -634,11 +634,13 @@
   // open and the tab/page visible, accumulated by tick() below. Powers the admin
   // dashboard's weekly-minutes KPI and the per-account "هدف الدقايق" goal (Phase 6).
   function freshLearn() { return { xp: 0, units: {}, cards: {}, mistakes: {}, study: {}, badges: {}, daily: null, notes: {}, notesSeeded: 0, exam: {}, resume: null, minutes: {}, srsVersion: 1, srsDaily: null, weak: {}, mySentences: [] }; }
+  function freshFood() { return { days: {}, my: [], recent: [], cal: null }; }
   var state = {
     loaded: false, mode: "local",
     settings: { startDate: today0, unit: "page", amount: 5, startPage: 1, certName: "" },
     days: {},
     learn: freshLearn(),
+    food: freshFood(),
     exp: { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} },
     expMonth: null, expAdd: false, expCat: "", expNewCat: false, expSalEdit: false,
     expKind: "expense", expEditId: null, expBudgetEditCat: null, expRecurAdd: false, expSwipeId: null,
@@ -697,7 +699,7 @@
   var store = { sb: null, uid: null };
   var LSKEY = "masar:v1";
   function localSave() {
-    try { localStorage.setItem(LSKEY, JSON.stringify({ settings: state.settings, days: state.days, learn: state.learn, exp: state.exp })); } catch (e) { }
+    try { localStorage.setItem(LSKEY, JSON.stringify({ settings: state.settings, days: state.days, learn: state.learn, exp: state.exp, food: state.food })); } catch (e) { }
   }
   function localLoad() {
     try {
@@ -707,6 +709,7 @@
       if (o.days) state.days = o.days;
       if (o.learn) Object.assign(state.learn, o.learn);
       if (o.exp) Object.assign(state.exp, o.exp);
+      if (o.food) state.food = Object.assign(freshFood(), o.food);
     } catch (e) { }
   }
   var timers = {}, dirty = {}, chains = {};
@@ -730,7 +733,7 @@
     }
     localSave();
   }
-  function metaData(name) { return name === "settings" ? state.settings : name === "exp" ? state.exp : state.learn; }
+  function metaData(name) { return name === "settings" ? state.settings : name === "exp" ? state.exp : name === "food" ? state.food : state.learn; }
   function saveMeta(name, delay) {
     if (state.mode === "supa") {
       persist("meta:" + name, delay || 0, function () {

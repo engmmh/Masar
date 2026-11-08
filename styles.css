@@ -1386,7 +1386,7 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .adm-heat { width: 100%; }
 
 /* ---------------- التمارين ---------------- */
-.fit-seg { margin-block-end: 12px; }
+.fit-seg { margin-block-end: 12px; display: grid; grid-template-columns: repeat(4, 1fr); }
 .fit-note { font-size: 13.5px; margin: 6px 0 10px; }
 .fit-small { font-size: 12.5px; margin: 6px 0 0; }
 .fit-walk h3, .fit-str h3, .fit-weigh h3 { display: flex; align-items: center; gap: 6px; margin: 0; }
@@ -1450,3 +1450,49 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .fit-health ul { margin: 6px 0 0; padding-inline-start: 18px; font-size: 13.5px; line-height: 1.75; }
 .fit-privacy { display: flex; align-items: center; gap: 6px; margin-block: 4px 12px; }
 .fit-intro p { margin: 6px 0 0; font-size: 14px; line-height: 1.7; }
+
+/* ---------------- أكلي ---------------- */
+.fd-nav { display: flex; align-items: center; justify-content: space-between; margin-block-end: 10px; }
+.fd-nav b { font-size: 16px; }
+.fd-nav .chipbtn { width: 38px; height: 38px; padding: 0; font-size: 20px; display: grid; place-items: center; }
+.fd-sum .ringtxt b { font-size: 26px; }
+.fd-sum.over .ringtxt b { color: #FFE2A8; }
+.fd-prot { display: grid; gap: 4px; font-size: 13.5px; margin-block: 6px; }
+.fd-prot .bar { background: rgba(255, 255, 255, .25); }
+.fd-hint { display: flex; gap: 6px; align-items: flex-start; font-size: 13px; background: color-mix(in srgb, var(--amber) 16%, transparent); border-radius: 12px; padding: 9px 11px; margin-block: 0 12px; }
+.fd-meal h3 { margin: 0; font-size: 16px; }
+.fd-meal h3 small { font-weight: 500; font-size: 12.5px; margin-inline-start: 4px; }
+.fd-list { list-style: none; padding: 0; margin: 8px 0 0; }
+.fd-list li { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px dashed var(--line); }
+.fd-list li .grow { display: grid; gap: 1px; }
+.fd-list li small { font-size: 12px; }
+.fd-copy { margin-block-start: 6px; font-size: 13px; }
+.fd-inc { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--muted); margin-block: 6px 10px; }
+.fd-small { font-size: 12.5px; line-height: 1.7; margin: 6px 0 0; }
+.fd-calnote { display: flex; gap: 6px; align-items: flex-start; margin-block: 0 12px; }
+.fd-cal { border-inline-start: 4px solid var(--teal-deep); }
+.fd-cal h3 { display: flex; gap: 6px; align-items: center; margin: 0 0 6px; }
+.fd-cal p { font-size: 14px; line-height: 1.75; margin: 0 0 8px; }
+.fd-search { width: 100%; margin-block-end: 10px; }
+.fd-cats { display: flex; gap: 6px; overflow-x: auto; padding-block-end: 6px; margin-block-end: 8px; scrollbar-width: none; }
+.fd-cats .chipbtn { flex: none; }
+.fd-results { padding: 4px 12px; }
+.fd-row { width: 100%; display: flex; align-items: center; gap: 10px; text-align: start; background: none; border: 0; border-bottom: 1px solid var(--line); padding: 11px 2px; color: inherit; font: inherit; cursor: pointer; }
+.fd-row:last-child { border-bottom: 0; }
+.fd-row .grow { display: grid; gap: 2px; }
+.fd-row small { font-size: 12px; }
+.fd-row .num { color: var(--teal-deep); font-weight: 700; font-size: 13.5px; white-space: nowrap; }
+.fd-more { gap: 8px; }
+.fd-units { gap: 6px; margin-block-end: 10px; }
+.fd-step { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); }
+.fd-step .row { gap: 10px; align-items: center; }
+.fd-step b { font-size: 20px; min-width: 34px; text-align: center; }
+.fd-step small { color: var(--muted); font-size: 12px; }
+.fd-step .chipbtn { width: 38px; height: 38px; padding: 0; font-size: 20px; display: grid; place-items: center; }
+.fd-fat .row.wrapr { gap: 6px; }
+.fd-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.fd-total b { font-size: 24px; color: var(--teal-deep); }
+.fd-total small { flex-basis: 100%; }
+.fd-mydel { display: block; margin: 12px auto 0; font-size: 13px; }
+.fd-rcadd { display: grid; grid-template-columns: 1fr 70px 1fr auto; gap: 6px; align-items: center; margin-block-start: 8px; }
+@media (max-width: 480px) { .fd-rcadd { grid-template-columns: 76px 1fr auto; } .fd-rcadd #rcI { grid-column: 1 / -1; } }
