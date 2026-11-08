@@ -1564,3 +1564,8 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .inst-dl { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #2A170A; background: linear-gradient(160deg, #F6D3A2, #C98A4B); }
 .inst-dl svg { width: 18px; height: 18px; }
 .inst-help { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 0; }
+
+/* touch glow overlay (touch-glow.js) — never takes input */
+#touchGlow { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9000; }
+:root[data-theme="dark"] #touchGlow { mix-blend-mode: screen; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) #touchGlow { mix-blend-mode: screen; } }

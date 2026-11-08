@@ -1085,6 +1085,8 @@
       '<div class="row wrapr">' + SPEECH_RATES.map(function (r) {
         return '<button class="chipbtn' + ((state.settings.speechRate || 0.92) === r.v ? " on" : "") + '" data-act="speech-rate" data-v="' + r.v + '">' + r.lbl + "</button>";
       }).join("") + "</div></div>" +
+      '<div class="card"><h3 style="margin:0 0 6px">إضاءة اللمس</h3><p class="muted" style="font-size:13px;margin-block-end:10px">لمعة دهبي خفيفة تحت صباعك وإنت بتلمس أو بتسحب الشاشة.</p>' +
+      '<div class="row wrapr"><button class="chipbtn' + (state.settings.touchGlow !== false ? " on" : "") + '" data-act="touch-glow" data-v="1">شغّالة</button><button class="chipbtn' + (state.settings.touchGlow === false ? " on" : "") + '" data-act="touch-glow" data-v="0">مقفولة</button></div></div>' +
       '<div class="card"><h3 style="margin:0 0 6px">الهدف اليومي بالدقايق</h3><p class="muted" style="font-size:13px;margin-block-end:10px">قد إيه ناوي تذاكر كل يوم — بيظهر في خطة اليوم بالدقايق بدل علامة تمت/لأ.</p>' +
       '<div class="row wrapr">' + [5, 10, 15, 20].map(function (m) {
         return '<button class="chipbtn' + ((state.settings.personalGoalMin || 0) === m ? " on" : "") + '" data-act="goal-min-set" data-v="' + m + '">' + m + " د</button>";
@@ -1268,6 +1270,7 @@
     switch (act) {
       case "lock": lockNow(); break;
       case "speak": if (spkHoldFired) { spkHoldFired = false; break; } speak(el.getAttribute("data-txt")); break;
+      case "touch-glow": state.settings.touchGlow = el.getAttribute("data-v") === "1"; saveMeta("settings", 0); render(); break;
       case "speech-rate": state.settings.speechRate = Number(el.getAttribute("data-v")) || 0.92; saveMeta("settings", 0); render(); break;
       case "goal-min-set": state.settings.personalGoalMin = Number(el.getAttribute("data-v")) || 0; saveMeta("settings", 0); render(); break;
       case "push-on": enablePush(); break;
