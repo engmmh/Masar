@@ -1171,7 +1171,7 @@
       var pending = Object.keys(timers).some(function (k) { return timers[k]; });
       if (pending && Date.now() - t0 < 5000) { setTimeout(wait, 200); return; }
       var all = Object.keys(chains).map(function (k) { return chains[k]; });
-      Promise.all(all).catch(function () { }).then(function () {
+      Promise.all(all).catch(function () { }).then(parkSessionForReload).then(function () {
         if (!("serviceWorker" in navigator)) return;
         return navigator.serviceWorker.getRegistration().then(function (r) { if (r) return r.update(); }).catch(function () { });
       }).then(function () { location.reload(); });
@@ -1606,6 +1606,7 @@
     // actually types a code this has almost always already finished in the background.
     loadAccountsList();
     showLock("");
+    resumeAfterReload();
   }
   // One request to a server-side Edge Function that tries the code against every
   // account itself (with the service-role key) and returns ready session tokens —
@@ -1704,7 +1705,14 @@
         }
       }
       loginSucceeded();
-      store.uid = matched.uid;
+      await finishLogin(matched, btn);
+    } catch (e) { $("#lockmsg").textContent = "تعذّر الاتصال. تحقق من الإنترنت."; }
+    btn.disabled = false;
+  }
+  // Everything after the code is accepted: load the account and open the app. Shared by
+  // the PIN form and by «تحديث», which carries the session across one reload.
+  async function finishLogin(matched, btn) {
+      store.uid = matched.uid; store.acc = matched.acc;
       $("#pin").value = "";
       if (matched.acc.role === "admin") {
         resetPermissions(); // the admin is never restricted — always sees everything
@@ -1725,8 +1733,32 @@
       await loadSupa(true);
       $("#lock").hidden = true; btn.textContent = "دخول";
       clearInterval(store.poll); store.poll = setInterval(function () { if (!document.hidden) loadSupa(false); }, 60000);
-    } catch (e) { $("#lockmsg").textContent = "تعذّر الاتصال. تحقق من الإنترنت."; }
-    btn.disabled = false;
+  }
+  // «تحديث» hand-off: the app never keeps a login across app restarts (the code is asked
+  // every time it opens), so a reload would normally lock it. Right before a refresh the
+  // live session is parked in sessionStorage (this tab only) for up to a minute, picked
+  // up once on the next load and deleted immediately.
+  var RESUME_KEY = "masar:resume";
+  async function parkSessionForReload() {
+    try {
+      if (state.mode !== "supa" || !store.uid || !store.acc) return;
+      var r = await store.sb.auth.getSession(), ses = r && r.data && r.data.session;
+      if (!ses) return;
+      sessionStorage.setItem(RESUME_KEY, JSON.stringify({ t: Date.now(), a: ses.access_token, r: ses.refresh_token, uid: store.uid, acc: store.acc }));
+    } catch (e) { }
+  }
+  async function resumeAfterReload() {
+    var o = null;
+    try { o = JSON.parse(sessionStorage.getItem(RESUME_KEY) || "null"); sessionStorage.removeItem(RESUME_KEY); } catch (e) { }
+    if (!o || !o.a || !o.r || !o.acc || Date.now() - o.t > 60000) return false;
+    try {
+      var res = await store.sb.auth.setSession({ access_token: o.a, refresh_token: o.r });
+      if (res.error || !res.data || !res.data.user || res.data.user.id !== o.uid) return false;
+      var btn = $("#pinbtn"); btn.disabled = true;
+      await finishLogin({ acc: o.acc, uid: o.uid }, btn);
+      btn.disabled = false;
+      return true;
+    } catch (e) { return false; }
   }
 
 
