@@ -770,8 +770,8 @@
         var nmsg = document.getElementById("nmsg"), row = { user_id: uid, enabled: document.getElementById("nOn").classList.contains("on"),
           quiet_from: Number(document.getElementById("nQf").value), quiet_to: Number(document.getElementById("nQt").value), updated_at: new Date().toISOString() };
         nmsg.textContent = "جارٍ الحفظ…"; el.disabled = true;
-        var nr2 = await store.sb.from("masar_notify").upsert(row, { onConflict: "user_id" }); el.disabled = false;
-        if (nr2.error) { nmsg.textContent = "تعذّر الحفظ: " + nr2.error.message; break; }
+        var nr2 = await store.sb.rpc("masar_set_notify", { p_user: uid, p_enabled: row.enabled, p_from: row.quiet_from, p_to: row.quiet_to }); el.disabled = false;
+        if (nr2.error) { nmsg.textContent = "تعذّر الحفظ: " + nr2.error.message + (/function|schema cache/i.test(nr2.error.message || "") ? " — شغّل notify-rpc.sql في Supabase." : ""); break; }
         ADM.notify[uid] = row; nmsg.textContent = row.enabled ? "اتشغّلت ✓" : "اتقفلت ✓"; break;
       }
       case "psave": {
@@ -870,11 +870,11 @@
   async function admLoadNotify() {
     ADM.notify = {}; ADM.subs = {}; ADM.notifyErr = "";
     try {
-      var n = await store.sb.from("masar_notify").select("user_id,enabled,quiet_from,quiet_to");
-      if (n.error) ADM.notifyErr = n.error.message || "err";
-      else (n.data || []).forEach(function (x) { ADM.notify[x.user_id] = x; });
-      var s = await store.sb.from("masar_push_subs").select("user_id");
-      if (!s.error) (s.data || []).forEach(function (x) { ADM.subs[x.user_id] = (ADM.subs[x.user_id] || 0) + 1; });
+      // Through security-definer functions (push/notify-rpc.sql) so the admin check
+      // doesn't depend on row-level policies of other tables.
+      var n = await store.sb.rpc("masar_admin_notify");
+      if (n.error) { ADM.notifyErr = n.error.message || "err"; return; }
+      (n.data || []).forEach(function (x) { ADM.notify[x.user_id] = x; ADM.subs[x.user_id] = x.devices || 0; });
     } catch (e) { ADM.notifyErr = "err"; }
   }
   function admNotifyCard(acc) {
@@ -884,7 +884,7 @@
       return '<select class="inp" id="' + id + '">' + o + "</select>";
     };
     return '<div class="card"><div class="adm-card-h"><h3>🔔 إشعارات كل ١٥ دقيقة</h3><small class="muted">٦٠٪ جملة إنجليزي · ٤٠٪ ذِكر</small></div>' +
-      (ADM.notifyErr ? '<p class="muted" style="font-size:13px">محتاج تشغّل ملف push/notify.sql في Supabase الأول.</p>' :
+      (ADM.notifyErr ? '<p class="muted" style="font-size:13px">' + (/function|schema cache/i.test(ADM.notifyErr) ? "محتاج تشغّل ملف push/notify-rpc.sql في Supabase الأول." : "تعذّر تحميل الإعدادات: " + esc(ADM.notifyErr)) + "</p>" :
       '<div class="adm-switch-row"><span>تشغيل الإشعارات للحساب ده</span><button class="adm-switch' + (nr.enabled ? " on" : "") + '" id="nOn" data-adm="ntoggle" role="switch" aria-checked="' + !!nr.enabled + '" aria-label="تشغيل الإشعارات"><i></i></button></div>' +
       '<div class="row wrapr" style="gap:10px;margin-block-start:10px"><label class="field" style="max-width:170px">راحة من' + hours("nQf", nr.quiet_from) + '</label><label class="field" style="max-width:170px">لحد' + hours("nQt", nr.quiet_to) + "</label></div>" +
       '<p class="muted" style="font-size:12.5px;margin:8px 0 0">' + (devs ? "أجهزة سمحت بالإشعارات: " + devs : "لسه مفيش جهاز سمح بالإشعارات — أول ما تشغّلها، صاحب الحساب هيلاقي زرار «اسمح» في التطبيق.") + "</p>" +

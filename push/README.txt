@@ -1,12 +1,13 @@
 إشعارات كل 15 دقيقة (جملة إنجليزي / ذِكر) — الإعداد الجديد
 =========================================================
 (لو عملت خطوات الإعداد القديمة تحت قبل كده، اعمل الـ 3 خطوات دول بس)
-(لو شغّلت notify.sql قبل كده وظهر خطأ row-level security وإنت بتحفظ من الأدمن: شغّل notify-fix.sql مرة واحدة)
+(بعد notify.sql شغّل كمان notify-rpc.sql — ده اللي لوحة الأدمن بتحفظ وتقرا من خلاله)
 
 الخطوة أ: الجدول الجديد (دقيقة)
   1. افتح: https://supabase.com/dashboard/project/guorxzejmtvypiwxrogf/sql/new
   2. افتح ملف notify.sql، انسخه كله، الصقه، واضغط Run.
      ده بيعمل جدول masar_notify (الأدمن بيفعّل منه الإشعارات لكل حساب وساعات الراحة).
+  3. وبعده بنفس الطريقة: ملف notify-rpc.sql ← Run.
 
 الخطوة ب: تحديث دالة الإرسال
   1. افتح: https://supabase.com/dashboard/project/guorxzejmtvypiwxrogf/functions
