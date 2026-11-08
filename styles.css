@@ -1548,7 +1548,7 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .brand-mark { border-radius: 24%; box-shadow: 0 10px 28px -10px rgba(70, 40, 14, .55); }
 #top h1 .brand-mark { border-radius: 8px; box-shadow: 0 3px 8px -3px rgba(70, 40, 14, .5); }
 
-/* install badge (lock screen) + Quran refresh */
+/* install badge (lock screen) */
 .inst { margin-block-start: 18px; display: grid; gap: 8px; justify-items: center; }
 .inst[hidden] { display: none; }
 .inst-badge { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 60px; padding: 8px 16px; border-radius: 16px; cursor: pointer; font: inherit; color: #FFF4E6; text-align: start;
@@ -1564,10 +1564,3 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .inst-dl { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #2A170A; background: linear-gradient(160deg, #F6D3A2, #C98A4B); }
 .inst-dl svg { width: 18px; height: 18px; }
 .inst-help { font-size: 13px; line-height: 1.7; color: var(--muted); margin: 0; }
-.q-navrow { display: flex; gap: 8px; align-items: center; margin-block-end: 14px; }
-.q-navrow .q-nav { flex: 1; min-width: 0; margin: 0; }
-.q-refresh { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: var(--teal-deep);
-  background: linear-gradient(160deg, var(--g-a), var(--g-b)); border: 1px solid var(--g-edge); box-shadow: inset 0 1px 0 var(--g-hi), var(--g-shadow); }
-.q-refresh .i { width: 20px; height: 20px; }
-.q-refresh.spin .i { animation: qspin .8s linear infinite; }
-@keyframes qspin { to { transform: rotate(360deg); } }

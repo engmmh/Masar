@@ -955,7 +955,7 @@
   async function lockNow() {
     clearInterval(store.poll);
     try { await store.sb.auth.signOut(); } catch (e) { }
-    store.uid = null; store.acc = null; try { sessionStorage.removeItem("masar:resume"); } catch (e) { } state.days = {}; state.learn = freshLearn(); state.food = freshFood(); state.fd = null; state.fv = null; state.fs = null;
+    store.uid = null; store.acc = null; state.days = {}; state.learn = freshLearn(); state.food = freshFood(); state.fd = null; state.fv = null; state.fs = null;
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
     state.exp = { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} }; state.expMonth = null; state.expTab = "main"; state.expQ = ""; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
