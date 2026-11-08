@@ -1162,6 +1162,21 @@
       if (b.getAttribute("data-t") === state.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current");
     });
   }
+  // «تحديث»: reload the app in place (fresh files from the network, a service-worker
+  // update check) — but only after any pending save has gone out, so nothing is lost.
+  function appRefresh(btn) {
+    if (btn) { btn.disabled = true; btn.classList.add("spin"); }
+    var t0 = Date.now();
+    (function wait() {
+      var pending = Object.keys(timers).some(function (k) { return timers[k]; });
+      if (pending && Date.now() - t0 < 5000) { setTimeout(wait, 200); return; }
+      var all = Object.keys(chains).map(function (k) { return chains[k]; });
+      Promise.all(all).catch(function () { }).then(function () {
+        if (!("serviceWorker" in navigator)) return;
+        return navigator.serviceWorker.getRegistration().then(function (r) { if (r) return r.update(); }).catch(function () { });
+      }).then(function () { location.reload(); });
+    })();
+  }
   function goTab(t) {
     state.tab = t; markTabs();
     var el = $("#p-" + t); if (el) el.scrollIntoView({ behavior: "smooth", inline: "start", block: "nearest" });
@@ -1280,6 +1295,7 @@
       // into a freshly authenticated cloud one.
       case "retry-cloud": location.reload(); break;
       case "pv": state.pv = el.getAttribute("data-v"); render(); break;
+      case "app-refresh": appRefresh(el); break;
       case "tab": var tt = el.getAttribute("data-t"); if (tt === "archive") { state.pv = "archive"; tt = "prayer"; } goTab(tt); render(); break;
       case "tp": togglePrayer(el.getAttribute("data-d"), Number(el.getAttribute("data-p"))); break;
       case "more": state.archiveN += 30; render(); break;

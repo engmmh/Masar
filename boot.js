@@ -55,6 +55,31 @@
     });
   }
 
+  // «نزّل التطبيق» badge under the sign-in form: hidden when already running as the
+  // installed app; uses the browser's install prompt when there is one, otherwise shows
+  // the two-step way to add it from the browser menu.
+  (function () {
+    var box = document.getElementById("instBox"), btn = document.getElementById("installBtn"), help = document.getElementById("installHelp");
+    if (!box || !btn) return;
+    function standalone() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
+    box.hidden = standalone();
+    var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    if (ios) btn.querySelector(".inst-t").innerHTML = "<small>أضف التطبيق على</small><b>iPhone</b>";
+    window.addEventListener("appinstalled", function () { window.__masarInstall = null; box.hidden = true; toast("التطبيق اتثبت — افتحه من أيقونته"); });
+    btn.addEventListener("click", function () {
+      var ev = window.__masarInstall;
+      if (ev) {
+        ev.prompt();
+        ev.userChoice.then(function (c) { if (c && c.outcome === "accepted") box.hidden = true; }).catch(function () { });
+        window.__masarInstall = null; return;
+      }
+      help.textContent = ios
+        ? "من Safari: اضغط زرار المشاركة (المربع اللي فيه سهم لفوق)، وبعدين «إضافة إلى الشاشة الرئيسية»."
+        : "من Chrome: افتح القايمة ⋮ فوق، واختار «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية». لو هو متثبت بالفعل، افتحه من أيقونته.";
+      help.hidden = !help.hidden;
+    });
+  })();
+
   // First-run welcome screen: shown once before the lock screen, then
   // dismissed for good via a localStorage flag.
   var welcomeBtn = document.getElementById("welcomeBtn");

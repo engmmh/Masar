@@ -429,7 +429,8 @@
   function quranSubNavHTML() {
     var m = (state.qv && state.qv.mode) || "today";
     function b(k, t) { return '<button data-act="qv" data-m="' + k + '" aria-pressed="' + (m === k) + '">' + t + "</button>"; }
-    return '<div class="seg2 q-nav" style="margin-block-end:14px">' + b("today", "خطة اليوم") + b("mushaf", "المصحف") + b("wird", "الورد") + b("mem", "محفوظي") + "</div>";
+    return '<div class="q-navrow"><div class="seg2 q-nav">' + b("today", "خطة اليوم") + b("mushaf", "المصحف") + b("wird", "الورد") + b("mem", "محفوظي") + "</div>" +
+      '<button class="q-refresh" data-act="app-refresh" aria-label="تحديث التطبيق" title="تحديث التطبيق">' + ic("refresh") + "</button></div>";
   }
   // Four sub-screens: today's plan (new memorization + review of what's memorized +
   // wird — hifz.js), the Mushaf reader, wird/khatma stats, and "محفوظي" (what's memorized).
