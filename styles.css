@@ -1496,3 +1496,6 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .fd-mydel { display: block; margin: 12px auto 0; font-size: 13px; }
 .fd-rcadd { display: grid; grid-template-columns: 1fr 70px 1fr auto; gap: 6px; align-items: center; margin-block-start: 8px; }
 @media (max-width: 480px) { .fd-rcadd { grid-template-columns: 76px 1fr auto; } .fd-rcadd #rcI { grid-column: 1 / -1; } }
+.fd-ovlink { display: flex; gap: 6px; align-items: center; margin: 0 auto 12px; font-size: 13.5px; }
+.fd-ov h3 { margin: 0 0 8px; font-size: 15px; }
+.fd-ovadd { gap: 6px; margin-block: 10px 4px; }

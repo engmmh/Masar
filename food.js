@@ -35,11 +35,18 @@
     var p = key.split(":"), id = p.slice(1).join(":");
     if (p[0] === "my") {
       var m = fdD().my.filter(function (x) { return x.id === id; })[0]; if (!m) return null;
-      return { key: key, n: m.n, units: [[m.u || "حصة", m.kc, m.p, 0]], c: false, sg: null, F: null, out: false, my: m };
+      return fdApplyOv({ key: key, n: m.n, units: [[m.u || "حصة", m.kc, m.p, 0]], c: false, sg: null, F: null, out: false, my: m });
     }
     var f = FOOD_BY_ID[id]; if (!f) return null;
     var fl = f[4] || "", sm = /s(\d)/.exec(fl), Fm = /F([og])/.exec(fl);
-    return { key: key, n: f[1], cat: f[2], units: f[3], c: fl.indexOf("c") >= 0, sg: sm ? Number(sm[1]) : null, F: Fm ? Fm[1] : null, out: fl.indexOf("o") >= 0, my: null };
+    return fdApplyOv({ key: key, n: f[1], cat: f[2], units: f[3], c: fl.indexOf("c") >= 0, sg: sm ? Number(sm[1]) : null, F: Fm ? Fm[1] : null, out: fl.indexOf("o") >= 0, my: null });
+  }
+  // The person's own corrections: ov[key][unitIndex] = [kcal, protein] for one unit.
+  function fdApplyOv(it) {
+    var ov = state.food.ov && state.food.ov[it.key]; if (!ov) return it;
+    it.base = it.units; it.ovd = {};
+    it.units = it.units.map(function (u, i) { if (!ov[i]) return u; it.ovd[i] = 1; return [u[0], ov[i][0], ov[i][1], u[3]]; });
+    return it;
   }
   function fdDefFat(it, ui, q, out) { return it.c ? Math.round(q * it.units[ui][3] * (out ? 1.5 : 1) * 2) / 2 : 0; }
   function fdCfgNew(key) {
@@ -142,13 +149,20 @@
   function fdRow(key) {
     var it = fdItem(key); if (!it) return "";
     var u = it.units[0];
-    return '<button class="fd-row" data-act="fd-pick" data-k="' + esc(key) + '"><span class="grow"><b>' + esc(it.n) + "</b><small class=\"muted\">" + esc(u[0]) + (it.units.length > 1 ? " وأحجام تانية" : "") + (it.my && it.my.rc ? " · وصفتك" : "") + '</small></span><span class="num">' + u[1] + " سعر</span></button>";
+    return '<button class="fd-row" data-act="fd-pick" data-k="' + esc(key) + '"><span class="grow"><b>' + esc(it.n) + "</b><small class=\"muted\">" + esc(u[0]) + (it.units.length > 1 ? " وأحجام تانية" : "") + (it.my && it.my.rc ? " · وصفتك" : "") + (it.ovd && it.ovd[0] ? " · رقمك" : "") + '</small></span><span class="num">' + u[1] + " سعر</span></button>";
   }
   function fdAddHTML(now) {
-    var u = fdUi(), D = fdD(), meal = (FOOD_MEALS.filter(function (m) { return m[0] === u.meal; })[0] || FOOD_MEALS[0])[1];
-    var cats = [["rec", "الأخيرة"], ["my", "أكلاتي"]].concat(FOOD_CATS);
-    var chips = '<div class="fd-cats">' + cats.map(function (c) { return '<button class="chipbtn' + (u.cat === c[0] && !u.q ? " on" : "") + '" data-act="fd-cat" data-v="' + c[0] + '">' + c[1] + "</button>"; }).join("") + "</div>";
-    var keys;
+    var u = fdUi(), meal = (FOOD_MEALS.filter(function (m) { return m[0] === u.meal; })[0] || FOOD_MEALS[0])[1];
+    return '<button class="linkbtn" data-act="fd-back">← رجوع</button><div class="sec-h">ضيف لـ ' + meal + "</div>" +
+      '<input class="inp fd-search" id="fdQ" type="search" placeholder="دوّر: فول، رز، شاي…" value="' + esc(u.q) + '" autocomplete="off" autocorrect="off" spellcheck="false">' +
+      '<div class="fd-cats" id="fdCats">' + fdCatsHTML(u) + '</div><div class="card fd-results" id="fdRes">' + fdResultsHTML(u) + "</div>" +
+      '<div class="row wrapr fd-more"><button class="btn sm alt" data-act="fd-custom">' + ic("pen") + ' رقم تقريبي أو أكلة مش موجودة</button><button class="btn sm alt" data-act="fd-rc">' + ico("food") + " اعمل وصفة من البيت</button></div>";
+  }
+  function fdCatsHTML(u) {
+    return [["rec", "الأخيرة"], ["my", "أكلاتي"]].concat(FOOD_CATS).map(function (c) { return '<button class="chipbtn' + (u.cat === c[0] && !u.q ? " on" : "") + '" data-act="fd-cat" data-v="' + c[0] + '">' + c[1] + "</button>"; }).join("");
+  }
+  function fdResultsHTML(u) {
+    var D = fdD(), keys;
     if (u.q) {
       var q = fdNorm(u.q).trim();
       keys = D.my.filter(function (m) { return fdNorm(m.n).indexOf(q) >= 0; }).map(function (m) { return "my:" + m.id; })
@@ -157,10 +171,7 @@
     else if (u.cat === "my") keys = D.my.map(function (m) { return "my:" + m.id; });
     else keys = FOODS.filter(function (f) { return f[2] === u.cat; }).map(function (f) { return "db:" + f[0]; });
     var empty = u.q ? "مش لاقيه؟ سجّله برقم تقريبي أو اعمله وصفة من تحت." : u.cat === "rec" ? "لسه مفيش — اختار من الأقسام أو دوّر." : u.cat === "my" ? "أكلاتك والوصفات اللي بتعملها هتظهر هنا." : "";
-    return '<button class="linkbtn" data-act="fd-back">← رجوع</button><div class="sec-h">ضيف لـ ' + meal + "</div>" +
-      '<input class="inp fd-search" id="fdQ" type="search" placeholder="دوّر: فول، رز، شاي…" value="' + esc(u.q) + '" autocomplete="off">' + chips +
-      '<div class="card fd-results">' + (keys.length ? keys.slice(0, 60).map(fdRow).join("") : '<p class="muted fd-small">' + empty + "</p>") + "</div>" +
-      '<div class="row wrapr fd-more"><button class="btn sm alt" data-act="fd-custom">' + ic("pen") + ' رقم تقريبي أو أكلة مش موجودة</button><button class="btn sm alt" data-act="fd-rc">' + ico("food") + " اعمل وصفة من البيت</button></div>";
+    return keys.length ? keys.slice(0, 60).map(fdRow).join("") : '<p class="muted fd-small">' + empty + "</p>";
   }
   function fdStep(act, val, lbl, unit) {
     return '<div class="fd-step"><span>' + lbl + '</span><div class="row"><button class="chipbtn" data-act="' + act + '" data-d="-1" aria-label="أقل">−</button><b class="num">' + val + "</b>" + (unit ? "<small>" + unit + "</small>" : "") + '<button class="chipbtn" data-act="' + act + '" data-d="1" aria-label="أكتر">+</button></div></div>';
@@ -176,10 +187,22 @@
     var sug = it.sg != null ? fdStep("fd-sg", c.sg, "سكر", "معلقة صغيرة") : "";
     return '<button class="linkbtn" data-act="fd-back">← رجوع</button><div class="sec-h">' + esc(it.n) + "</div>" +
       '<div class="card">' + units + fdStep("fd-q", fdQtxt(c.q), "الكمية", "") + fat + sug + "</div>" +
-      '<div class="card fd-total"><span>الإجمالي</span><b class="num">' + e.kc + ' سعر</b><span class="num">' + e.p + " جم بروتين</span></div>" +
+      '<div class="card fd-total"><span>الإجمالي</span><b class="num">' + e.kc + ' سعر</b><span class="num">' + e.p + " جم بروتين</span></div>" + fdOvHTML(it, c) +
       '<button class="btn" style="width:100%" data-act="fd-save">' + ic("plus") + " ضيف لـ " + meal + "</button>" +
       (it.my ? '<button class="linkbtn fd-mydel" data-act="fd-my-del" data-id="' + esc(it.my.id) + '">امسحها من «أكلاتي»</button>' : "");
   }
+  function fdOvHTML(it, c) {
+    var un = it.units[c.ui], mine = it.ovd && it.ovd[c.ui];
+    if (!c.ov) return '<button class="linkbtn fd-ovlink" data-act="fd-ov-open">' + ic("pen") + " الرقم مش مظبوط؟ عدّل سعرات «" + esc(un[0]) + "» الواحد" + (mine ? " (معدّل بإيدك)" : "") + "</button>";
+    var base = it.base && it.base[c.ui];
+    return '<div class="card fd-ov"><h3>سعرات «' + esc(un[0]) + '» الواحد</h3>' +
+      '<div class="fit-form grid"><label class="field">سعرات<input class="inp" id="ovK" type="number" inputmode="numeric" min="0" max="5000" value="' + esc(String(c.ov.kc)) + '"></label>' +
+      '<label class="field">بروتين (جم)<input class="inp" id="ovP" type="number" inputmode="decimal" min="0" max="300" step="0.1" value="' + esc(String(c.ov.p)) + '"></label></div>' +
+      '<div class="row wrapr fd-ovadd">' + [-50, -25, 25, 50, 100].map(function (n) { return '<button class="chipbtn" data-act="fd-ov-add" data-n="' + n + '">' + (n > 0 ? "+" : "−") + Math.abs(n) + "</button>"; }).join("") + "</div>" +
+      '<p class="muted fd-small">من غير الزيت والسكر — دول بيتحسبوا لوحدهم فوق. الرقم بيتحفظ للصنف ده في المرات الجاية.' + (base ? " الرقم الأصلي: " + base[1] + " سعر." : "") + "</p>" +
+      '<div class="row wrapr"><button class="btn sm" data-act="fd-ov-save">احفظ الرقم</button>' + (mine ? '<button class="btn sm alt" data-act="fd-ov-reset">رجّع الأصلي</button>' : "") + '<button class="linkbtn" data-act="fd-ov-close">إلغاء</button></div></div>';
+  }
+  function fdCapOv() { var c = fdUi().cfg; if (!c || !c.ov) return; var k = $("#ovK"), p = $("#ovP"); if (k) c.ov.kc = k.value; if (p) c.ov.p = p.value; }
   function fdCustomHTML(now) {
     var u = fdUi(), c = u.cu || (u.cu = { n: "", kc: "", p: "", keep: true });
     var est = [["سناك صغير", 150], ["وجبة خفيفة", 300], ["وجبة عادية", 550], ["وجبة كبيرة", 850], ["عزومة", 1200]];
@@ -228,8 +251,19 @@
   function fdGo(v) { fdUi().v = v; var p = $("#p-fit"); if (p) p.scrollTop = 0; render(); }
 
   /* =================== events =================== */
+  // Typing in the search box only refreshes the results and chips — re-rendering the whole
+  // panel on every keystroke recreated the input and dropped letters, especially while an
+  // Arabic keyboard was still composing a word.
+  function fdSearchUpdate(el) {
+    var u = fdUi(); u.q = el.value;
+    var r = document.getElementById("fdRes"), c = document.getElementById("fdCats");
+    if (r) r.innerHTML = fdResultsHTML(u); if (c) c.innerHTML = fdCatsHTML(u);
+  }
   document.addEventListener("input", function (e) {
-    if (e.target && e.target.id === "fdQ") { fdUi().q = e.target.value; render(); }
+    if (e.target && e.target.id === "fdQ" && !e.isComposing) fdSearchUpdate(e.target);
+  });
+  document.addEventListener("compositionend", function (e) {
+    if (e.target && e.target.id === "fdQ") fdSearchUpdate(e.target);
   });
   document.addEventListener("change", function (e) {
     var t = e.target; if (!t) return;
@@ -249,12 +283,25 @@
       case "fd-back": if (u.v === "cfg" || u.v === "custom" || u.v === "rc") fdGo("add"); else fdGo("day"); break;
       case "fd-cat": u.cat = el.getAttribute("data-v"); u.q = ""; render(); break;
       case "fd-pick": u.cfg = fdCfgNew(el.getAttribute("data-k")); if (u.cfg) fdGo("cfg"); break;
-      case "fd-u": it = fdItem(c.key); c.ui = Number(el.getAttribute("data-i")); if (!c.fatT) c.fat = fdDefFat(it, c.ui, c.q, c.out); render(); break;
+      case "fd-u": it = fdItem(c.key); c.ui = Number(el.getAttribute("data-i")); c.ov = null; if (!c.fatT) c.fat = fdDefFat(it, c.ui, c.q, c.out); render(); break;
       case "fd-q": it = fdItem(c.key); c.q = Math.max(0.5, Math.min(20, c.q + 0.5 * Number(el.getAttribute("data-d")))); if (!c.fatT) c.fat = fdDefFat(it, c.ui, c.q, c.out); if (it.sg != null && !c.sgT) c.sg = Math.round(it.sg * c.q); render(); break;
       case "fd-fat": c.fat = Math.max(0, Math.min(20, c.fat + 0.5 * Number(el.getAttribute("data-d")))); c.fatT = true; render(); break;
       case "fd-ft": c.ft = el.getAttribute("data-v"); render(); break;
       case "fd-out": it = fdItem(c.key); c.out = !c.out; if (!c.fatT) c.fat = fdDefFat(it, c.ui, c.q, c.out); render(); break;
       case "fd-sg": c.sg = Math.max(0, Math.min(30, c.sg + Number(el.getAttribute("data-d")))); c.sgT = true; render(); break;
+      case "fd-ov-open": { it = fdItem(c.key); c.ov = { kc: it.units[c.ui][1], p: it.units[c.ui][2] }; render(); break; }
+      case "fd-ov-close": c.ov = null; render(); break;
+      case "fd-ov-add": fdCapOv(); c.ov.kc = Math.max(0, (parseFloat(c.ov.kc) || 0) + Number(el.getAttribute("data-n"))); render(); break;
+      case "fd-ov-save": {
+        fdCapOv(); var okc = Math.round(parseFloat(c.ov.kc)), op = Math.round((parseFloat(c.ov.p) || 0) * 10) / 10;
+        if (!(okc >= 0 && okc <= 5000)) { toast("اكتب رقم السعرات"); break; }
+        var OV = state.food.ov || (state.food.ov = {}); if (!OV[c.key]) OV[c.key] = {};
+        OV[c.key][c.ui] = [okc, op]; c.ov = null; saveMeta("food", 0); render(); toast("اتحفظ رقمك للصنف ده"); break;
+      }
+      case "fd-ov-reset": {
+        var OV2 = state.food.ov || {}; if (OV2[c.key]) { delete OV2[c.key][c.ui]; if (!Object.keys(OV2[c.key]).length) delete OV2[c.key]; }
+        c.ov = null; saveMeta("food", 0); render(); toast("رجع الرقم الأصلي"); break;
+      }
       case "fd-save": {
         var en = fdEntry(c); en.m = u.meal; fdDay(k).it.push(en); fdPushRecent(c.key);
         saveMeta("food", 0); u.cfg = null; fdGo("day"); toast(en.n + " — " + en.kc + " سعر"); break;

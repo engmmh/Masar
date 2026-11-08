@@ -223,17 +223,14 @@
     return pad(h) + ":" + pad(m) + ":" + pad(s);
   }
   var brandMarkN = 0;
+  // The brand: a crystal-brown crescent (cream tile behind it for app-icon style uses).
   function brandMark(size, tile) {
     brandMarkN++;
-    var gid = "bmg" + brandMarkN;
-    if (!tile) {
-      return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true" style="color:var(--teal)"><path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="currentColor" transform="translate(0,2)"/></svg>';
-    }
-    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0DA66B"/><stop offset="1" stop-color="#087A4F"/></linearGradient></defs>' +
-      '<rect width="100" height="100" rx="22" fill="url(#' + gid + ')"/>' +
-      '<path d="M 56 22 A 24 24 0 1 0 56 68 A 19 19 0 1 1 56 22 Z" fill="#FFFFFF" transform="translate(0,2)"/>' +
-      '<g fill="#F5B942"><circle cx="30" cy="71" r="2.6"/><circle cx="41" cy="76" r="3"/><circle cx="55" cy="77.5" r="3.4"/><circle cx="69" cy="75" r="2.8"/><circle cx="79" cy="70" r="2.2"/></g></svg>';
+    var p = "bm" + brandMarkN, c = "<defs><linearGradient id=\"__P__g\" x1=\"0.12\" y1=\"0.08\" x2=\"0.88\" y2=\"0.96\"><stop offset=\"0\" stop-color=\"#E8B784\"/><stop offset=\"0.32\" stop-color=\"#B9773F\"/><stop offset=\"0.62\" stop-color=\"#7C431B\"/><stop offset=\"1\" stop-color=\"#3D1D09\"/></linearGradient><radialGradient id=\"__P__h\" cx=\"0.3\" cy=\"0.24\" r=\"0.42\"><stop offset=\"0\" stop-color=\"#FFFFFF\" stop-opacity=\"0.6\"/><stop offset=\"1\" stop-color=\"#FFFFFF\" stop-opacity=\"0\"/></radialGradient><mask id=\"__P__m\"><rect width=\"100\" height=\"100\" fill=\"#fff\"/><circle cx=\"67\" cy=\"39\" r=\"24\" fill=\"#000\"/></mask></defs><g mask=\"url(#__P__m)\"><circle cx=\"50\" cy=\"52\" r=\"31\" fill=\"url(#__P__g)\"/><polygon points=\"19,44 44,21 37,58\" fill=\"#fff\" opacity=\".2\"/><polygon points=\"37,58 19,44 21,70\" fill=\"#3A1A06\" opacity=\".12\"/><polygon points=\"37,58 21,70 47,84\" fill=\"#fff\" opacity=\".12\"/><polygon points=\"37,58 47,84 72,76\" fill=\"#3A1A06\" opacity=\".16\"/><polygon points=\"37,58 72,76 81,58\" fill=\"#fff\" opacity=\".07\"/><circle cx=\"50\" cy=\"52\" r=\"31\" fill=\"url(#__P__h)\"/><circle cx=\"50\" cy=\"52\" r=\"30.3\" fill=\"none\" stroke=\"#FFEBD0\" stroke-opacity=\".55\" stroke-width=\"1.3\"/></g>".replace(/__P__/g, p);
+    if (!tile) return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true">' + c + "</svg>";
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 100 100" aria-hidden="true"><defs><linearGradient id="' + p + 't" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFAF3"/><stop offset="1" stop-color="#EFDDC6"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#' + p + 't)"/><g transform="translate(8 4) scale(.9)">' + c + "</g></svg>";
   }
+
   function ico(name) {
     var s = {
       moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
