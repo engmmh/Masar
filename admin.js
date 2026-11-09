@@ -637,7 +637,7 @@
         return '<button class="chipbtn' + (ADM.nPick[st.acc.uid] ? " on" : "") + '" data-adm="npick" data-uid="' + esc(st.acc.uid) + '">' + esc(st.acc.label) + "</button>";
       }).join("") + "</div>" : '<p class="muted" style="font-size:13px;margin-block-start:10px">' + (targets.length ? targets.map(function (s) { return esc(s.acc.label); }).join("، ") : "مفيش حد في المجموعة دي دلوقتي.") + "</p>") +
       '<div class="adm-save"><button class="btn" data-adm="nsend"' + (!targets.length || ADM.sending ? " disabled" : "") + ">" + (ADM.sending ? "جارٍ الإرسال…" : "📤 ابعت لـ " + targets.length + (targets.length === 1 ? " حساب" : " حسابات")) + '</button><span class="muted" id="nmsg"></span></div></div></div>' +
-      '<p class="muted" style="font-size:12.5px">الإشعار بيوصل بس للأجهزة اللي صاحبها فعّل «🔔 تذكير يومي» من الإعدادات.</p>';
+      '<p class="muted" style="font-size:12.5px">الإشعار بيوصل بس للأجهزة اللي صاحبها ضغط «اسمح بالإشعارات» في التطبيق.</p>';
   }
 
   function admRowsForReport(now) {
