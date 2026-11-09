@@ -9,7 +9,7 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v39";
+var CACHE_NAME = "masar-v40";
 var INBOX = "masar-inbox";
 function inboxRead() {
   return caches.open(INBOX).then(function (c) { return c.match("inbox.json"); }).then(function (r) { return r ? r.json() : []; }).catch(function () { return []; });

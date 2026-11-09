@@ -815,6 +815,7 @@
   }
   function supaCheck(r) { if (r && r.error) throw r.error; }
   function saveDay(key, delay) {
+    if (state.mode === "supa" && !state.loaded) return;
     if (state.mode === "supa") {
       persist("day:" + key, delay || 0, function () {
         return store.sb.from("masar_days").upsert({ user_id: store.uid, day: key, data: state.days[key] || {}, updated_at: new Date().toISOString() }, { onConflict: "user_id,day" }).then(supaCheck);
@@ -824,7 +825,11 @@
     localSave();
   }
   function metaData(name) { return name === "settings" ? state.settings : name === "exp" ? state.exp : name === "food" ? state.food : state.learn; }
+  // Never write to the cloud before this account's data has finished loading: anything
+  // saved in that window (a screen drawing with the empty starting values, which some
+  // views "migrate" and save) would overwrite the real data on the server.
   function saveMeta(name, delay) {
+    if (state.mode === "supa" && !state.loaded) return;
     if (state.mode === "supa") {
       persist("meta:" + name, delay || 0, function () {
         return store.sb.from("masar_meta").upsert({ user_id: store.uid, name: name, data: metaData(name), updated_at: new Date().toISOString() }, { onConflict: "user_id,name" }).then(supaCheck);
@@ -1808,7 +1813,12 @@
       // revealing the app shell's empty starting values (0 prayers, level 1, ...) for
       // the second or two the fetch takes — that brief flash of an empty-looking
       // account is what used to look like the page "switching" right after login.
-      await loadSupa(true);
+      if (await loadSupa(true) === false) {
+        btn.textContent = "دخول"; store.uid = null;
+        try { await store.sb.auth.signOut(); } catch (e) { }
+        $("#lockmsg").textContent = "تعذّر تحميل بياناتك — تأكد من النت وجرّب تاني.";
+        return;
+      }
       $("#lock").hidden = true; btn.textContent = "دخول";
       clearInterval(store.poll); store.poll = setInterval(function () { if (!document.hidden) loadSupa(false); }, 60000);
   }

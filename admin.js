@@ -962,14 +962,14 @@
   async function loadSupa(first) {
     if (!store.uid) return;
     var before = snap();
-    if (first) await loadNotifyRule();
     var d = await store.sb.from("masar_days").select("day,data");
     var m = await store.sb.from("masar_meta").select("name,data");
     if (d.error || m.error) {
       var err = (d.error || m.error).message || "";
       toast("تعذّر تحميل البيانات: " + err);
-      if (first) { ready.days = ready.settings = ready.learn = ready.exp = true; checkLoaded(); render(); }
-      return;
+      // Don't open the account on empty starting values: any later save would replace
+      // the real data on the server. The sign-in screen stays up so it can be retried.
+      return false;
     }
     (d.data || []).forEach(function (r) { if (!dirty["day:" + r.day]) state.days[r.day] = r.data || {}; });
     var hasSettings = false;
@@ -999,12 +999,13 @@
     if (first) migrateSrsV2(nowR()); // fire-and-forget, once per sign-in is plenty — it's itself idempotent
     ready.days = ready.settings = ready.learn = ready.exp = true;
     var wasLoaded = state.loaded; checkLoaded();
+    if (first) loadNotifyRule();
     if (wasLoaded && snap() !== before) render();
   }
   async function lockNow() {
     clearInterval(store.poll);
     try { await store.sb.auth.signOut(); } catch (e) { }
-    store.uid = null; store.acc = null; state.notify = null; state.days = {}; state.learn = freshLearn(); state.food = freshFood(); state.fd = null; state.fv = null; state.fs = null;
+    Object.keys(dirty).forEach(function (k) { delete dirty[k]; }); store.uid = null; store.acc = null; state.notify = null; state.days = {}; state.learn = freshLearn(); state.food = freshFood(); state.fd = null; state.fv = null; state.fs = null;
     state.settings = { startDate: nowR().key, unit: "page", amount: 5, startPage: 1, certName: "" };
     state.exp = { categories: [], items: [], salary: {}, budgets: {}, recurring: [], goals: [], zakat: {} }; state.expMonth = null; state.expTab = "main"; state.expQ = ""; state.expAdd = false; state.expCat = ""; state.expNewCat = false; state.expSalEdit = false;
     state.loaded = false; ready.days = ready.settings = ready.learn = ready.exp = false;
