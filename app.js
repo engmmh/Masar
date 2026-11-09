@@ -303,7 +303,7 @@
   function notifyQuietTxt(n) { return "ما عدا من " + fmtHourAr(n.quiet_from) + " لـ " + fmtHourAr(n.quiet_to); }
   function fmtHourAr(h) { h = Number(h) || 0; var p = h < 12 ? "الصبح" : h < 15 ? "الضهر" : h < 18 ? "العصر" : "بالليل"; return (h % 12 || 12) + " " + p; }
   function pushNeedsAllow() {
-    return !!(state.notify && state.notify.enabled && pushSupported() && !(Notification.permission === "granted" && pushLocalFlag()));
+    return !!(state.notify && state.notify.enabled && pushSupported() && !(Notification.permission === "granted" && pushLocalFlag() && state.pushSub !== false));
   }
   function pushAllowHTML(compact) {
     var denied = pushSupported() && Notification.permission === "denied";
@@ -327,15 +327,31 @@
     } catch (e) { state.notify = null; }
     pushRefreshTz();
   }
-  // Devices that allowed notifications before the server knew their time zone: quietly
-  // re-send this device's UTC offset so quiet hours land at the right local time.
+  // On every sign-in, when the admin has turned notifications on and this phone already
+  // allows them: make sure the server still has this device. A subscription the push
+  // service expired (e.g. after reinstalling the app) is deleted server-side on the next
+  // send, so it is replaced here with a fresh one — no tap needed. Also refreshes the
+  // device's UTC offset used for quiet hours.
   async function pushRefreshTz() {
     try {
-      if (!pushSupported() || Notification.permission !== "granted" || !pushLocalFlag()) return;
-      var reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription(); if (!sub) return;
+      if (!pushSupported() || !state.notify || !state.notify.enabled) return;
+      if (Notification.permission !== "granted") { state.pushSub = false; render(); return; }
+      var reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        var have = await store.sb.from("masar_push_subs").select("endpoint").eq("endpoint", sub.endpoint);
+        if (!have.error && have.data && have.data.length) {
+          var j0 = sub.toJSON();
+          await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j0.endpoint, p256dh: j0.keys.p256dh, auth: j0.keys.auth, tz: -new Date().getTimezoneOffset() / 60 }, { onConflict: "endpoint" });
+          state.pushSub = true; setPushLocalFlag(true); return;
+        }
+        try { await sub.unsubscribe(); } catch (er) { }
+      }
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY) });
       var j = sub.toJSON();
-      await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, tz: -new Date().getTimezoneOffset() / 60 }, { onConflict: "endpoint" });
-    } catch (e) { }
+      var r = await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, tz: -new Date().getTimezoneOffset() / 60 }, { onConflict: "endpoint" });
+      state.pushSub = !r.error; if (!r.error) setPushLocalFlag(true);
+      render();
+    } catch (e) { state.pushSub = false; render(); }
   }
   async function enablePush() {
     if (!pushSupported()) { toast("الإشعارات مش مدعومة على المتصفح ده."); return; }
@@ -352,7 +368,7 @@
       var r = await store.sb.from("masar_push_subs").upsert(row, { onConflict: "endpoint" });
       if (r.error && /tz/.test(r.error.message || "")) { delete row.tz; r = await store.sb.from("masar_push_subs").upsert(row, { onConflict: "endpoint" }); }
       if (r.error) throw r.error;
-      setPushLocalFlag(true); toast("تمام — الإشعارات هتوصلك."); render();
+      setPushLocalFlag(true); state.pushSub = true; toast("تمام — الإشعارات هتوصلك."); render();
     } catch (e) { toast("تعذّر التفعيل: " + (e && e.message ? e.message : "خطأ غير متوقع")); }
   }
   async function disablePush() {
