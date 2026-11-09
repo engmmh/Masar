@@ -325,6 +325,17 @@
       var r = await store.sb.from("masar_notify").select("enabled,quiet_from,quiet_to").eq("user_id", store.uid).maybeSingle();
       state.notify = (!r.error && r.data) ? r.data : null;
     } catch (e) { state.notify = null; }
+    pushRefreshTz();
+  }
+  // Devices that allowed notifications before the server knew their time zone: quietly
+  // re-send this device's UTC offset so quiet hours land at the right local time.
+  async function pushRefreshTz() {
+    try {
+      if (!pushSupported() || Notification.permission !== "granted" || !pushLocalFlag()) return;
+      var reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription(); if (!sub) return;
+      var j = sub.toJSON();
+      await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, tz: -new Date().getTimezoneOffset() / 60 }, { onConflict: "endpoint" });
+    } catch (e) { }
   }
   async function enablePush() {
     if (!pushSupported()) { toast("الإشعارات مش مدعومة على المتصفح ده."); return; }
