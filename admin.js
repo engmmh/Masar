@@ -569,7 +569,14 @@
       (lims.length ? " · ملاحظات: " + esc(lims.join("، ")) : "") + "<br>سعرات مقترحة ≈ " + N.kcal + " · بروتين " + N.protLo + "–" + N.protHi + " جم" +
       (lastS ? "<br>آخر جولة مقاومة: " + esc(fmtRel(lastS, now)) + " (" + (rpe[F.days[lastS].rpe] || "—") + ")" : "") + " · مشي 30 يوم: " + w30.walk + " د · مقاومة 30 يوم: " + w30.str + "</p></div>";
     var logs = (F.log || []).slice(-8).reverse().map(function (l) { return "<tr><td>" + esc(greg(l.k)) + "</td><td>" + (l.w || "—") + "</td><td>" + (l.waist || "—") + "</td></tr>"; }).join("");
-    return kpi1 + kpi2 +
+    var acts = F.acts || [], a7 = acts.filter(function (x) { return x.k >= addDays(now.key, -6); }), a30 = acts.filter(function (x) { return x.k >= addDays(now.key, -29); });
+    var km7 = Math.round(a7.reduce(function (t, x) { return t + x.km; }, 0) * 10) / 10, km30 = a30.reduce(function (t, x) { return t + x.km; }, 0), sec30 = a30.reduce(function (t, x) { return t + x.sec; }, 0);
+    var lastA = acts.slice().sort(function (x, y) { return x.k < y.k ? 1 : -1; })[0];
+    var kpi3 = acts.length ? '<div class="adm-kpis k4">' + admKpi("كم 7 أيام", km7, "", a7.length + " تمرين بالساعة") +
+      admKpi("متوسط السرعة", km30 ? fxPaceTxt(sec30 / km30) : "—", "", "دقيقة/كم · آخر 30 يوم") +
+      admKpi("آخر تمرين", lastA ? lastA.km + '<small class="muted"> كم</small>' : "—", "", lastA ? fxKind(lastA.ps || lastA.sec / lastA.km).t + " · " + fmtRel(lastA.k, now) : "") +
+      admKpi("كل المسافة", Math.round(acts.reduce(function (t, x) { return t + x.km; }, 0)) + '<small class="muted"> كم</small>', "", acts.length + " تمرين") + "</div>" : "";
+    return kpi1 + kpi2 + kpi3 +
       '<div class="adm-grid2"><div class="card"><div class="adm-card-h"><h3>⚖️ الوزن</h3><small class="muted">' + pts.length + " قياس</small></div>" + (pts.length > 1 ? fitChart(pts) : '<p class="muted">قياس واحد بس لحد دلوقتي.</p>') + "</div>" +
       '<div class="card"><div class="adm-card-h"><h3>🚶 المشي والمقاومة</h3><small class="muted">آخر 14 يوم · الغامق = يوم مقاومة</small></div><div class="week adm-week14">' + bars + "</div></div></div>" +
       info + (logs ? '<div class="card"><div class="adm-card-h"><h3>آخر القياسات</h3></div><div class="adm-table-wrap"><table class="adm-table"><thead><tr><th>التاريخ</th><th>الوزن (كجم)</th><th>الوسط (سم)</th></tr></thead><tbody>' + logs + "</tbody></table></div></div>" : "");

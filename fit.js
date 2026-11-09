@@ -19,6 +19,7 @@
     if (!F.log) F.log = [];
     if (!F.hist) F.hist = [];
     if (!F.sched) F.sched = [6, 1, 3];
+    if (!F.acts) F.acts = [];
     return F;
   }
   function fitDay(F, k) { return F.days[k] || (F.days[k] = { wm: 0 }); }
@@ -133,6 +134,7 @@
     var F = state.learn.fit;
     if (!F || !F.prof || fitUi().v === "setup") return fitSetupHTML(now);
     if (state.fv.v === "sess") return fitSessHTML(now);
+    if (state.fv.v === "act") return fitActHTML(now);
     if (state.fv.v === "food" && fdUi().v !== "day") return foodHTML(now);
     var tabs = [["today", "النهارده"], ["food", "أكلي"], ["prog", "تقدّمي"], ["plan", "الخطة"]];
     var seg = '<div class="seg2 fit-seg">' + tabs.map(function (t) { return '<button data-act="fit-v" data-v="' + t[0] + '" aria-pressed="' + (state.fv.v === t[0]) + '">' + t[1] + "</button>"; }).join("") + "</div>";
@@ -169,7 +171,10 @@
       '<div class="row wrapr fit-wbtns"><button class="btn" data-act="fit-walk">' + (running ? ic("pause") + " وقّف" : ic("play") + " " + (wm > 0 ? "كمّل" : "ابدأ")) + "</button>" +
       '<button class="chipbtn" data-act="fit-add" data-n="5">+5 د</button><button class="chipbtn" data-act="fit-add" data-n="10">+10 د</button><button class="chipbtn" data-act="fit-add" data-n="15">+15 د</button>' +
       (wm > 0 && !running ? '<button class="linkbtn" data-act="fit-add" data-n="-5">−5 د</button>' : "") + "</div>" +
-      '<p class="muted fit-small">مشيت من غير التطبيق؟ زوّد الدقايق بالزراير.</p></div>';
+      fitActsTodayHTML(F, k) +
+      '<div class="row wrapr fit-actbtns"><button class="btn sm alt" data-act="fit-img">' + ic("download") + ' صورة تمرين من الساعة</button><button class="btn sm alt" data-act="fit-act-new">' + ic("pen") + " سجّل مسافة بإيدك</button></div>" +
+      '<p class="muted fit-small">مشيت أو جريت بالساعة أو بتطبيق تاني؟ ارفع صورة الشاشة وهنقرا المسافة والوقت منها — الصورة مش بتتحفظ.</p>' +
+      '<input type="file" id="fitImg" accept="image/*" hidden></div>';
 
     var ex = fitExList(F), str;
     if (due) {
@@ -223,7 +228,7 @@
         return "<li><span>" + esc(greg(l.k)) + '</span><b class="num">' + (l.w ? l.w + " كجم" : "") + (l.waist ? " · " + l.waist + " سم" : "") + '</b><button class="linkbtn" data-act="fit-log-del" data-k="' + esc(l.k) + '" aria-label="امسح">✕</button></li>';
       }).join("") + "</ul>" : "") + "</div>";
     var totals = '<div class="card"><h3>من أول يوم</h3><div class="fit-kpis">' + kpi("دقايق مشي", Math.round(tot)) + kpi("جولات مقاومة", sess) + kpi("أطول سلسلة الحالية", fitStreak(F, now) + " يوم") + kpi("المستوى", (F.st + 1) + "/6", FIT_PHASES[fitStage(F).ph]) + "</div></div>";
-    return head + chart + log + totals;
+    return head + fitActsProgHTML(F, now) + chart + log + totals;
   }
   function fitChart(pts) {
     var W = 320, H = 150, pl = 30, pr = 8, pt = 10, pb = 22, vs = pts.map(function (x) { return x.v; });
@@ -276,6 +281,86 @@
       '<button class="btn sm alt" data-act="fit-edit">' + ic("gear") + " عدّل بياناتك وأيامك</button></div>" +
       nums + tips + health;
   }
+
+  /* -------- workouts from a screenshot (fit-ocr.js) or typed in -------- */
+  function fitActsOf(F, from, to) { return (F.acts || []).filter(function (a) { return a.k >= from && a.k <= to; }); }
+  // Pace: the watch's own figure when it was read from the screenshot (it rounds the
+  // distance on screen, so recomputing from km can be a second off), else sec/km.
+  function fitActPace(a) { return a.ps || a.sec / a.km; }
+  function fitActLine(a) { return a.km + " كم · " + fxDurTxt(a.sec) + " · " + fxPaceTxt(fitActPace(a)) + "/كم · " + fxKind(fitActPace(a)).t; }
+  function fitActsTodayHTML(F, k) {
+    var l = fitActsOf(F, k, k); if (!l.length) return "";
+    return '<ul class="fit-acts">' + l.map(function (a) { return "<li>" + ic("run") + "<span>" + esc(fitActLine(a)) + "</span></li>"; }).join("") + "</ul>";
+  }
+  function fitActsProgHTML(F, now) {
+    var all = (F.acts || []).slice().sort(function (a, b) { return a.k < b.k ? -1 : a.k > b.k ? 1 : (a.tm || "") < (b.tm || "") ? -1 : 1; });
+    if (!all.length) return '<div class="card"><h3>' + ic("run") + ' تمارين الساعة</h3><p class="muted fit-small">ارفع صورة تمرين من «النهارده» وهتلاقي هنا مسافاتك وسرعتك وهي بتتحسن.</p></div>';
+    var wk = fitActsOf(F, addDays(now.key, -6), now.key), km7 = Math.round(wk.reduce(function (t, a) { return t + a.km; }, 0) * 10) / 10;
+    var best = all.reduce(function (b, a) { return !b || fitActPace(a) < fitActPace(b) ? a : b; }, null), far = all.reduce(function (b, a) { return !b || a.km > b.km ? a : b; }, null);
+    var kpi = function (l, v, s) { return '<div class="fit-kpi"><small>' + l + '</small><b class="num">' + v + "</b>" + (s ? "<span>" + s + "</span>" : "") + "</div>"; };
+    var pts = all.slice(-12).map(function (a) { return { k: a.k, v: Math.round(fitActPace(a) / 60 * 100) / 100 }; });
+    return '<div class="card"><h3>' + ic("run") + ' تمارين الساعة</h3><div class="fit-kpis">' + kpi("كم الأسبوع ده", km7, wk.length + " تمرين") + kpi("أسرع سرعة", fxPaceTxt(fitActPace(best)), "دقيقة/كم · " + esc(greg(best.k))) +
+      kpi("أطول مسافة", far.km + " كم", esc(greg(far.k))) + kpi("كل التمارين", all.length, Math.round(all.reduce(function (t, a) { return t + a.km; }, 0)) + " كم") + "</div>" +
+      (pts.length > 1 ? '<p class="muted fit-small">سرعتك (دقيقة لكل كيلو) — كل ما الخط ينزل يبقى بقيت أسرع:</p>' + fitChart(pts) : "") +
+      '<ul class="fit-hist">' + all.slice(-8).reverse().map(function (a) {
+        return "<li><span>" + esc(greg(a.k)) + (a.tm ? " " + esc(a.tm) : "") + '</span><b class="num">' + esc(fitActLine(a)) + '</b><button class="linkbtn" data-act="fit-act-del" data-id="' + esc(a.id) + '" aria-label="امسح">✕</button></li>';
+      }).join("") + "</ul></div>";
+  }
+  function fitActHTML(now) {
+    var X = state.fx || { phase: "confirm" }, F = fitD();
+    var head = '<button class="linkbtn" data-act="fit-v" data-v="today">← رجوع</button><div class="sec-h">تمرين من الساعة</div>';
+    if (X.phase === "read") return head + '<div class="card fx-read"><div class="fx-spin"></div><b>بقرا الصورة…</b><p class="muted fit-small" id="fxProg">' + (X.msg || "أول مرة بتاخد ثواني زيادة عشان تجهّز القارئ") + "</p></div>";
+    return head + (X.note ? '<p class="fd-hint">' + ic("bulb") + " " + esc(X.note) + "</p>" : "") +
+      '<div class="card"><div class="fit-form grid">' +
+      '<label class="field">التاريخ<input class="inp" id="fxDate" type="date" max="' + now.key + '" value="' + esc(X.date || now.key) + '"></label>' +
+      '<label class="field">المسافة (كم)<input class="inp" id="fxKm" type="number" inputmode="decimal" step="0.01" min="0" value="' + esc(X.km != null ? String(X.km) : "") + '"></label>' +
+      '<label class="field">المدة (دقايق:ثواني)<input class="inp" id="fxDur" inputmode="numeric" placeholder="27:36" value="' + esc(X.sec ? fxDurTxt(X.sec) : "") + '"></label>' +
+      '<label class="field">سعرات الساعة (اختياري)<input class="inp" id="fxDk" type="number" inputmode="numeric" min="0" value="' + esc(X.dk != null ? String(X.dk) : "") + '"></label></div>' +
+      '<div id="fxSum" class="fx-sum">' + fitActSummary(F, X.km, X.sec, X.dk, X.ps) + "</div></div>" +
+      '<button class="btn" style="width:100%" data-act="fit-act-save">' + ic("check") + " سجّل التمرين</button>";
+  }
+  // ps = pace read from the watch; used only while it still agrees with km/time (±3%).
+  function fitPsOk(ps, km, sec) { return ps > 0 && km > 0 && sec > 0 && Math.abs(ps - sec / km) / (sec / km) < 0.03; }
+  function fitActSummary(F, km, sec, dk, ps) {
+    km = Number(km); sec = Number(sec);
+    if (!(km > 0 && sec > 0)) return '<p class="muted fit-small">اكتب المسافة والمدة وهنحسب السرعة ونوع الحركة.</p>';
+    var pace = fitPsOk(ps, km, sec) ? ps : sec / km, kind = fxKind(pace), kc = fxKcal(km, sec, F.prof ? fitCurW(F) : 80);
+    return '<div class="fx-kind ' + kind.k + '">' + kind.t + '</div><ul class="fit-nums">' +
+      '<li><span>السرعة</span><b class="num">' + fxPaceTxt(pace) + " دقيقة لكل كم</b></li>" +
+      '<li><span>يعني</span><b class="num">' + Math.round(km / (sec / 3600) * 10) / 10 + " كم في الساعة</b></li>" +
+      '<li><span>السعرات (حسب وزنك)</span><b class="num">≈ ' + kc + "</b></li>" + (Number(dk) > 0 ? '<li><span>الساعة قالت</span><b class="num">' + Number(dk) + "</b></li>" : "") + "</ul>" +
+      (kind.k === "walk" ? '<p class="muted fit-small">عشان يبقى «مشي سريع» محتاج توصل لحوالي ٩–١٠ دقايق للكيلو: خطوة أسرع لدرجة إنك تقدر تتكلم بس متقدرش تغني.</p>' : "");
+  }
+  function fitActCapture() {
+    var X = state.fx || (state.fx = { phase: "confirm" });
+    var d = $("#fxDate"), km = $("#fxKm"), du = $("#fxDur"), dk = $("#fxDk");
+    if (d) X.date = d.value; if (km) X.km = km.value === "" ? null : parseFloat(km.value);
+    if (du) X.sec = fxParseDur(du.value) || null; if (dk) X.dk = dk.value === "" ? null : parseFloat(dk.value);
+    return X;
+  }
+  document.addEventListener("input", function (e) {
+    var id = e.target && e.target.id; if (!/^fx(Km|Dur|Dk)$/.test(id || "")) return;
+    var X = fitActCapture(), s = document.getElementById("fxSum"); if (s) s.innerHTML = fitActSummary(fitD(), X.km, X.sec, X.dk, X.ps);
+  });
+  document.addEventListener("change", function (e) {
+    if (!e.target || e.target.id !== "fitImg" || !e.target.files || !e.target.files[0]) return;
+    var file = e.target.files[0]; e.target.value = "";
+    state.fx = { phase: "read" }; fitUi().v = "act"; $("#p-fit").scrollTop = 0; render();
+    fxRecognize(file, function (st, p) {
+      var el = document.getElementById("fxProg");
+      if (el) el.textContent = (/recogniz/i.test(st) ? "بقرا الأرقام… " : "بجهّز القارئ… ") + Math.round(p * 100) + "%";
+    }).then(function (text) {
+      var r = fxParse(text), now = nowR();
+      var date = r.date && r.date <= now.key && r.date >= addDays(now.key, -60) ? r.date : now.key;
+      var got = [r.km, r.sec].filter(function (x) { return x; }).length;
+      state.fx = { phase: "confirm", src: "img", date: date, tm: r.time, km: r.km, sec: r.sec, dk: r.kcal, ps: r.pace,
+        note: got === 2 ? "راجع الأرقام بنظرة واضغط سجّل." : "مقدرتش أقرا كل الأرقام من الصورة — كمّل الناقص." };
+      if (fitUi().v === "act") render();
+    }).catch(function () {
+      state.fx = { phase: "confirm", src: "img", note: "مقدرتش أقرا الصورة — اكتب المسافة والمدة بإيدك." };
+      if (fitUi().v === "act") render();
+    });
+  });
 
   /* -------- setup -------- */
   function fitDraft() {
@@ -428,6 +513,30 @@
       case "fit-add": {
         F = fitD(); d = fitDay(F, k); d.wm = Math.max(0, Math.round(((d.wm || 0) + Number(el.getAttribute("data-n"))) * 10) / 10);
         fitWalkXp(F, k, Date.now()); saveMeta("learn", 400); render(); break;
+      }
+      case "fit-img": { var fi = document.getElementById("fitImg"); if (fi) fi.click(); break; }
+      case "fit-act-new": state.fx = { phase: "confirm", src: "manual" }; fitUi().v = "act"; $("#p-fit").scrollTop = 0; render(); break;
+      case "fit-act-save": {
+        F = fitD(); var X = fitActCapture(), akm = Number(X.km), asec = Number(X.sec), ak = X.date || k;
+        if (!(akm >= 0.05 && akm <= 100)) { toast("اكتب المسافة بالكيلو (مثلًا 2.59)"); break; }
+        if (!(asec >= 60 && asec <= 6 * 3600)) { toast("اكتب المدة بالشكل ده: 27:36"); break; }
+        if (ak > k) ak = k;
+        if (F.acts.some(function (a) { return a.k === ak && Math.abs(a.km - akm) < 0.01 && Math.abs(a.sec - asec) < 5; })) { toast("التمرين ده متسجّل قبل كده"); break; }
+        var aps = fitPsOk(X.ps, akm, asec) ? X.ps : 0, kind = fxKind(aps || asec / akm);
+        var act = { id: "a" + Date.now().toString(36), k: ak, tm: X.tm || "", km: Math.round(akm * 100) / 100, sec: Math.round(asec), dk: X.dk > 0 ? Math.round(X.dk) : 0, kc: fxKcal(akm, asec, fitCurW(F)), kind: kind.k, src: X.src || "manual" };
+        if (aps) act.ps = aps;
+        F.acts.push(act);
+        var ad = fitDay(F, ak); ad.wm = Math.round(((ad.wm || 0) + asec / 60) * 10) / 10;
+        if (ak === k) fitWalkXp(F, k, Date.now());
+        state.fx = null; fitUi().v = "today"; saveMeta("learn", 0); $("#p-fit").scrollTop = 0; render();
+        toast("تم أخذ البيانات ✓ " + act.km + " كم · " + kind.t); break;
+      }
+      case "fit-act-del": {
+        F = fitD(); var aid = el.getAttribute("data-id"), ga = F.acts.filter(function (a) { return a.id === aid; })[0]; if (!ga) break;
+        if (!confirm("تمسح تمرين " + greg(ga.k) + " (" + ga.km + " كم)؟")) break;
+        F.acts = F.acts.filter(function (a) { return a.id !== aid; });
+        var gd = fitDay(F, ga.k); gd.wm = Math.max(0, Math.round(((gd.wm || 0) - ga.sec / 60) * 10) / 10);
+        saveMeta("learn", 0); render(); break;
       }
       case "fit-sess": state.fs = {}; fitUi().v = "sess"; $("#p-fit").scrollTop = 0; render(); break;
       case "fit-sess-exit": state.fs = {}; fitUi().v = "today"; $("#p-fit").scrollTop = 0; render(); break;

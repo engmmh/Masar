@@ -1572,3 +1572,15 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .push-allow { border-inline-start: 4px solid var(--teal); }
 .push-allow .pa-ic { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: var(--teal-ink); background: linear-gradient(160deg, var(--teal), var(--teal-deep)); }
 .push-allow .pa-ic .i { width: 20px; height: 20px; }
+/* workouts from the watch (fit-ocr.js) */
+.fit-actbtns { gap: 8px; margin-block-start: 12px; }
+.fit-acts { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 6px; }
+.fit-acts li { display: flex; gap: 8px; align-items: center; font-size: 13.5px; padding: 8px 10px; border-radius: 12px; background: var(--surface2); }
+.fit-acts .i { width: 18px; height: 18px; color: var(--teal-deep); flex: none; }
+.fx-read { display: grid; justify-items: center; gap: 10px; text-align: center; padding-block: 28px; }
+.fx-spin { width: 36px; height: 36px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--teal); animation: qspin .9s linear infinite; }
+@keyframes qspin { to { transform: rotate(360deg); } }
+.fx-sum { margin-block-start: 12px; }
+.fx-kind { display: inline-block; font-weight: 700; font-size: 14px; padding: 4px 12px; border-radius: 999px; color: var(--teal-ink); background: linear-gradient(160deg, var(--teal), var(--teal-deep)); margin-block-end: 4px; }
+.fx-kind.walk { background: var(--surface2); color: var(--text); }
+.fx-kind.run { background: linear-gradient(160deg, var(--amber), var(--amber-deep)); color: #2B1C02; }
