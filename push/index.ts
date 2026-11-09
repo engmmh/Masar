@@ -378,10 +378,16 @@ async function sendNudge(supa: ReturnType<typeof createClient>) {
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const token = url.searchParams.get("token") || req.headers.get("x-push-token");
-  if (!PUSH_SHARED_SECRET || token !== PUSH_SHARED_SECRET) {
-    return new Response("unauthorized", { status: 401 });
-  }
   const supa = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+  // Accepted: the PUSH_SHARED_SECRET secret, or the token that push/fix-cron.sql generated
+  // and stored in masar_push_cfg (readable only with the service role) — so the schedule
+  // never needs a secret copied by hand.
+  let ok = !!PUSH_SHARED_SECRET && token === PUSH_SHARED_SECRET;
+  if (!ok && token) {
+    const { data } = await supa.from("masar_push_cfg").select("value").eq("key", "cron_token").maybeSingle();
+    ok = !!data && data.value === token;
+  }
+  if (!ok) return new Response("unauthorized", { status: 401 });
   const result = url.searchParams.get("mode") === "weekly" ? await sendWeeklyDigest(supa) : await sendNudge(supa);
   return new Response(JSON.stringify(result), { headers: { "content-type": "application/json" } });
 });
