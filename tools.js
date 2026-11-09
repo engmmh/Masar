@@ -131,6 +131,44 @@
     }, function () { toast("تعذّر تحديد الموقع. اسمح للموقع بالوصول أو اختار مدينة."); }, { enableHighAccuracy: false, timeout: 15000, maximumAge: 3600000 });
   }
 
+  /* ---------------- recover from this device's local copy ----------------
+     When the app ever ran in local mode on this phone (cloud unreachable), it kept a full
+     copy in localStorage ("masar:v1"). If that copy holds progress the cloud account no
+     longer has, offer to merge it back: empty parts take the device's copy, filled parts
+     are merged (cloud wins on conflicts), XP takes the larger. */
+  function devCopy() { try { var o = JSON.parse(localStorage.getItem("masar:v1") || "null"); return o && o.learn ? o : null; } catch (e) { return null; } }
+  function learnScore(L) {
+    if (!L) return { units: 0, fit: 0, hz: 0, dose: 0, xp: 0, acts: 0 };
+    var units = Object.keys(L.units || {}).filter(function (k) { return L.units[k] && L.units[k].done; }).length;
+    var hz = ((L.hifz && L.hifz.mem) || []).reduce(function (t, r) { return t + (r[1] - r[0] + 1); }, 0);
+    return { units: units, fit: L.fit && L.fit.prof ? 1 : 0, hz: hz, dose: Object.keys((L.coach && L.coach.days) || {}).length, xp: L.xp || 0, acts: ((L.fit && L.fit.acts) || []).length };
+  }
+  function isEmptyVal(v) { return v == null || v === 0 || v === "" || (Array.isArray(v) && !v.length) || (typeof v === "object" && !Array.isArray(v) && !Object.keys(v).length); }
+  function recoverCardHTML() {
+    if (state.mode !== "supa") return "";
+    var d = devCopy(); if (!d) return "";
+    var a = learnScore(d.learn), b = learnScore(state.learn);
+    if (!(a.units > b.units || (a.fit && !b.fit) || a.hz > b.hz || a.dose > b.dose || a.xp > b.xp || a.acts > b.acts)) return "";
+    var bits = [];
+    if (a.units) bits.push(a.units + " وحدة خلصتها"); if (a.fit) bits.push("خطة التمارين"); if (a.acts) bits.push(a.acts + " تمرين");
+    if (a.hz) bits.push(a.hz + " آية محفوظة"); if (a.dose) bits.push(a.dose + " يوم في مساري"); if (a.xp) bits.push(a.xp + " نقطة");
+    return '<div class="card push-allow"><h3 style="margin:0 0 4px">' + ic("refresh") + ' نسخة قديمة على الجهاز ده</h3><p class="muted" style="font-size:13px">لقيت على الموبايل ده نسخة محفوظة فيها: ' + esc(bits.join("، ")) +
+      '. تقدر ترجّعها لحسابك — اللي موجود دلوقتي مش هيتمسح.</p><button class="btn sm" style="margin-block-start:8px" data-act="recover-dev">رجّعها</button></div>';
+  }
+  function recoverFromDevice() {
+    var d = devCopy(); if (!d) return;
+    if (!confirm("ترجّع البيانات اللي على الجهاز ده لحسابك؟")) return;
+    var L = state.learn, D = d.learn;
+    Object.keys(D).forEach(function (k) {
+      if (k === "__proto__" || k === "constructor") return;
+      if (k === "xp") { L.xp = Math.max(L.xp || 0, D.xp || 0); return; }
+      if (isEmptyVal(L[k])) L[k] = D[k];
+      else if (L[k] && D[k] && typeof L[k] === "object" && typeof D[k] === "object" && !Array.isArray(L[k])) L[k] = Object.assign({}, D[k], L[k]);
+    });
+    if (d.food && isEmptyVal((state.food || {}).days)) { state.food = Object.assign(freshFood(), d.food); saveMeta("food", 0); }
+    saveMeta("learn", 0); render(); toast("رجعت البيانات ✓");
+  }
+
   /* ---------------- backup (export / import) ---------------- */
   function backupCardHTML() {
     return '<div class="card"><h3 style="margin:0 0 6px">نسخة احتياطية</h3><p class="muted" style="font-size:13px;margin-block-end:10px">نزّل كل بياناتك (الصلاة، القرآن، الكورسات، المصروفات) في ملف، وترجّعها وقت ما تحب.</p>' +
@@ -206,6 +244,7 @@
       case "loc-city": var c = CITY_PRESETS[Number(el.getAttribute("data-v"))]; if (c) saveLocation(c); break;
       case "loc-gps": useGps(); break;
       case "backup-export": exportBackup(); break;
+      case "recover-dev": recoverFromDevice(); break;
       case "backup-import": var f = document.getElementById("backupFile"); if (f) { f.value = ""; f.click(); } break;
     }
   });

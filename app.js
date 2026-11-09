@@ -1171,11 +1171,11 @@
   function homeView(now) {
     if (state.settingsOpen) return settingsHTML(now);
     if (state.hv === "weekly") return weeklyReportHTML(now);
-    return greetingHTML(now) + bannerHTML() + enCardHTML(now) + (pushNeedsAllow() ? pushAllowHTML() : "") + planCardHTML(now) +
+    return greetingHTML(now) + bannerHTML() + recoverCardHTML() + enCardHTML(now) + (pushNeedsAllow() ? pushAllowHTML() : "") + planCardHTML(now) +
       '<button class="card home-week" data-act="weekly-open">' + ic("chart") + '<span class="grow"><b>تقرير الأسبوع</b><small class="muted">صلواتك وقرآنك ومذاكرتك آخر ٧ أيام</small></span><span>←</span></button>';
   }
   function settingsHTML(now) {
-    return '<button class="linkbtn" data-act="settings-close">← رجوع</button><div class="sec-h">الإعدادات</div>' + pushCardHTML() +
+    return '<button class="linkbtn" data-act="settings-close">← رجوع</button><div class="sec-h">الإعدادات</div>' + recoverCardHTML() + pushCardHTML() +
       locationCardHTML() + backupCardHTML() +
       '<div class="card"><h3 style="margin:0 0 6px">سرعة النطق</h3><p class="muted" style="font-size:13px;margin-block-end:10px">سرعة زرار 🔊 العادي — الضغطة الطويلة على 🔊 دايمًا بتنطق ببطء زيادة عن كده.</p>' +
       '<div class="row wrapr">' + SPEECH_RATES.map(function (r) {
