@@ -6,18 +6,43 @@
 
 
 
+  // Daily counts per dhikr: t.today = {presetIndex: count} for t.day; when a new day
+  // starts, yesterday's counts move into the archive t.log[day] (last 120 days kept)
+  // and today's start from zero. t.total stays the all-time total.
   function tasbihState() {
     var t = state.settings.tasbih;
     if (!t || typeof t !== "object") t = state.settings.tasbih = { dhikr: 0, count: 0, target: 33, total: 0 };
+    if (!t.today || typeof t.today !== "object") t.today = {};
+    if (!t.log || typeof t.log !== "object") t.log = {};
+    var k = nowR().key;
+    if (t.day !== k) {
+      if (t.day && tasbihSum(t.today) > 0) t.log[t.day] = t.today;
+      var keys = Object.keys(t.log).sort(); while (keys.length > 120) delete t.log[keys.shift()];
+      var had = !!t.day; t.day = k; t.today = {}; t.count = 0;
+      if (had && state.loaded) saveMeta("settings", 800);
+    }
     return t;
+  }
+  function tasbihSum(o) { return Object.keys(o || {}).reduce(function (a, i) { return a + (Number(o[i]) || 0); }, 0); }
+  function tasbihBreakdown(o, cls) {
+    return Object.keys(o || {}).filter(function (i) { return o[i] > 0; }).sort(function (a, b) { return o[b] - o[a]; }).map(function (i) {
+      return '<span class="' + cls + '">' + esc(TASBIH_PRESETS[i] || "ذكر") + ' <b class="num">' + o[i] + "</b></span>";
+    }).join("");
   }
   function tasbihHTML() {
     var t = tasbihState(), target = t.target || 0;
-    var pct = target ? Math.min(100, Math.round(t.count / target * 100)) : 0;
+    var pct = target ? Math.min(100, Math.round(t.count / target * 100)) : 0, todaySum = tasbihSum(t.today);
+    var days = Object.keys(t.log).sort().reverse();
+    var arch = days.length ? '<details class="card tb-arch"><summary><b>الأرشيف</b><span class="muted">' + days.length + " يوم</span></summary>" +
+      days.slice(0, 60).map(function (k) {
+        return '<div class="tb-day"><div class="row between"><span>' + esc(greg(k)) + '</span><b class="num">' + tasbihSum(t.log[k]) + "</b></div>" +
+          '<div class="tb-break">' + tasbihBreakdown(t.log[k], "tb-chip") + "</div></div>";
+      }).join("") + "</details>" : "";
     return '<button class="linkbtn" data-act="tool-close">← رجوع</button>' +
-      '<div class="card"><div class="row between"><h2 style="margin:0">السبحة</h2><span class="chip">الإجمالي ' + t.total + '</span></div>' +
+      '<div class="card"><div class="row between"><h2 style="margin:0">السبحة</h2><span class="chip">النهارده <b class="num">' + todaySum + "</b></span></div>" +
       '<div class="row wrapr" style="margin-block:12px">' + TASBIH_PRESETS.map(function (d, i) {
-        return '<button class="chipbtn' + (t.dhikr === i ? " on" : "") + '" data-act="tasbih-dhikr" data-v="' + i + '">' + esc(d) + "</button>";
+        var n = t.today[i] || 0;
+        return '<button class="chipbtn' + (t.dhikr === i ? " on" : "") + '" data-act="tasbih-dhikr" data-v="' + i + '">' + esc(d) + (n ? ' <span class="tb-n num">' + n + "</span>" : "") + "</button>";
       }).join("") + "</div>" +
       '<button class="tasbih-btn" data-act="tasbih-tap" aria-label="تسبيحة" style="--p:' + pct + '">' +
       '<span class="tasbih-n num">' + t.count + "</span>" +
@@ -25,7 +50,11 @@
       '<span class="muted">' + (target ? "من " + target : "بدون هدف") + "</span></button>" +
       '<div class="row wrapr" style="margin-block-start:12px;justify-content:center">' + TASBIH_TARGETS.map(function (n) {
         return '<button class="chipbtn' + (target === n ? " on" : "") + '" data-act="tasbih-target" data-v="' + n + '">' + (n ? n : "∞") + "</button>";
-      }).join("") + '<button class="chipbtn" data-act="tasbih-reset">تصفير</button></div></div>';
+      }).join("") + '<button class="chipbtn" data-act="tasbih-reset">تصفير</button></div>' +
+      '<p class="muted tb-note">«تصفير» بيصفّر العدّاد اللي قدامك بس — عدد النهارده بيفضل محسوب.</p></div>' +
+      '<div class="card"><div class="row between"><h3 style="margin:0">ذِكر النهارده</h3><b class="num">' + todaySum + "</b></div>" +
+      (todaySum ? '<div class="tb-break">' + tasbihBreakdown(t.today, "tb-chip") + "</div>" : '<p class="muted tb-note">لسه مفيش — اختار ذكر واضغط على الدايرة.</p>') +
+      '<p class="muted tb-note">بيتصفّر مع أول اليوم الجديد ويتحفظ في الأرشيف. الإجمالي من أول ما بدأت: <b class="num">' + (t.total || 0) + "</b></p></div>" + arch;
   }
 
   function qiblaBearing() {
@@ -165,7 +194,7 @@
       case "tool-close": state.tool = null; render(); break;
       case "tasbih-tap": {
         var t = tasbihState();
-        t.count++; t.total++;
+        t.count++; t.total++; t.today[t.dhikr] = (t.today[t.dhikr] || 0) + 1;
         if (t.target && t.count === t.target) { if (navigator.vibrate) navigator.vibrate([60, 60, 60]); toast("أتممت " + t.target + " ✨"); }
         else if (navigator.vibrate) navigator.vibrate(12);
         saveMeta("settings", 1500); render(); break;

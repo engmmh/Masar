@@ -1584,3 +1584,12 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .fx-kind { display: inline-block; font-weight: 700; font-size: 14px; padding: 4px 12px; border-radius: 999px; color: var(--teal-ink); background: linear-gradient(160deg, var(--teal), var(--teal-deep)); margin-block-end: 4px; }
 .fx-kind.walk { background: var(--surface2); color: var(--text); }
 .fx-kind.run { background: linear-gradient(160deg, var(--amber), var(--amber-deep)); color: #2B1C02; }
+/* tasbih: today per dhikr + archive */
+.tb-n { display: inline-block; min-width: 20px; padding: 0 6px; margin-inline-start: 4px; border-radius: 999px; font-size: 12px; background: color-mix(in srgb, var(--teal) 18%, transparent); }
+.chipbtn.on .tb-n { background: rgba(255, 255, 255, .25); }
+.tb-break { display: flex; flex-wrap: wrap; gap: 6px; margin-block-start: 10px; }
+.tb-chip { font-size: 13px; padding: 4px 10px; border-radius: 999px; background: var(--surface2); }
+.tb-note { font-size: 12.5px; margin: 8px 0 0; text-align: center; }
+.tb-arch summary { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+.tb-day { padding-block: 10px; border-top: 1px dashed var(--line); margin-block-start: 8px; }
+.tb-day .tb-break { margin-block-start: 6px; }
