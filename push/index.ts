@@ -1,5 +1,5 @@
 // Edge Function: masar-send-notification
-// كل 15 دقيقة: جملة إنجليزي يومية أو ذكر (60% إنجليزي / 40% ذكر) — للحسابات اللي الأدمن فعّل لها
+// جملة إنجليزي يومية أو ذِكر — بالنسبة والتكرار اللي الأدمن حددهم لكل حساب (الافتراضي 60% إنجليزي كل 15 دقيقة) — للحسابات اللي الأدمن فعّل لها
 // الإشعارات في جدول masar_notify، وبيتخطّى ساعات الراحة بتوقيت كل جهاز.
 // ومع ?mode=weekly بيبعت التقرير الأسبوعي زي الأول.
 // انشرها من لوحة Supabase: Edge Functions → masar-send-notification → الصق الكود ده كله مكان القديم → Deploy.
@@ -245,8 +245,6 @@ const DHIKR: [string, string][] = [
   ]
 ];
 
-// في كل 5 خانات (كل خانة 15 دقيقة): 3 إنجليزي و2 ذكر بالتبادل
-const PATTERN = ["en", "dhikr", "en", "en", "dhikr"];
 const SLOT_MS = 15 * 60 * 1000;
 
 function inQuiet(hour: number, from: number, to: number): boolean {
@@ -335,36 +333,50 @@ async function sendWeeklyDigest(supa: ReturnType<typeof createClient>) {
   return { ok: true, mode: "weekly", users, sent, removed, failed };
 }
 
+// Per account: en_pct = share of English (the rest dhikr), every_min = 15 / 30 / 60.
+// The account's own step counter s = slot / (every_min / 15) decides the kind:
+// English when floor((s+1)·p) > floor(s·p) — this spreads the two kinds evenly
+// (e.g. 50% alternates) — and the running counts pick which sentence / dhikr is next.
+function nudgeFor(slot: number, pct: number, every: number) {
+  const step = Math.max(1, Math.round((every || 15) / 15));
+  if (slot % step !== 0) return null;
+  const s = Math.floor(slot / step), p = Math.max(0, Math.min(100, pct ?? 60)) / 100;
+  const isEn = Math.floor((s + 1) * p) > Math.floor(s * p);
+  const nEn = Math.floor(s * p), nDh = s - nEn;
+  if (isEn) {
+    const e = EN[nEn % EN.length];
+    return { kind: "en", payload: JSON.stringify({ title: "جملة إنجليزي 💬", body: e[0] + "\n" + e[1], en: e[0], ar: e[1], type: "en", tag: "masar-nudge", go: "en", id: "s" + slot }) };
+  }
+  const d = DHIKR[nDh % DHIKR.length];
+  return { kind: "dhikr", payload: JSON.stringify({ title: "ذِكر 📿", body: d[0] + "\n" + d[1], type: "dhikr", tag: "masar-nudge", go: "tasbih" }) };
+}
+
 async function sendNudge(supa: ReturnType<typeof createClient>) {
   const slot = Math.floor(Date.now() / SLOT_MS);
-  const kind = PATTERN[slot % PATTERN.length];
-  const nEn = Math.floor(slot / 5) * 3 + [0, 0, 1, 2, 2][slot % 5];
-  const nDh = Math.floor(slot / 5) * 2 + [0, 0, 1, 1, 1][slot % 5];
-  let payload: string, pick: unknown;
-  if (kind === "en") {
-    const p = EN[nEn % EN.length]; pick = p;
-    payload = JSON.stringify({ title: "جملة إنجليزي 💬", body: p[0] + "\n" + p[1], en: p[0], type: "en", tag: "masar-nudge", go: "coach" });
-  } else {
-    const d = DHIKR[nDh % DHIKR.length]; pick = d;
-    payload = JSON.stringify({ title: "ذِكر 📿", body: d[0] + "\n" + d[1], type: "dhikr", tag: "masar-nudge", go: "tasbih" });
+  let { data: rules, error: e1 } = await supa.from("masar_notify").select("user_id,enabled,quiet_from,quiet_to,en_pct,every_min").eq("enabled", true);
+  if (e1) { // before notify-ratio.sql was run: same behaviour as before (60% / every 15)
+    const r2 = await supa.from("masar_notify").select("user_id,enabled,quiet_from,quiet_to").eq("enabled", true);
+    rules = r2.data as typeof rules; e1 = r2.error;
   }
-
-  const { data: rules, error: e1 } = await supa.from("masar_notify").select("user_id,enabled,quiet_from,quiet_to").eq("enabled", true);
   if (e1) return { ok: false, error: e1.message };
   const rule = new Map((rules || []).map((r) => [r.user_id, r]));
-  if (!rule.size) return { ok: true, kind, sent: 0, note: "no enabled accounts" };
+  if (!rule.size) return { ok: true, sent: 0, note: "no enabled accounts" };
 
   const { data: subs, error: e2 } = await supa.from("masar_push_subs").select("id,endpoint,p256dh,auth,user_id,tz").in("user_id", [...rule.keys()]);
   if (e2) return { ok: false, error: e2.message };
 
-  let sent = 0, quiet = 0, removed = 0, failed = 0;
+  let sent = 0, quiet = 0, skipped = 0, removed = 0, failed = 0;
+  const kinds: Record<string, string> = {};
   for (const s of subs || []) {
     const r = rule.get(s.user_id)!;
     const tz = typeof s.tz === "number" ? s.tz : Number(s.tz ?? 3);
     const hour = new Date(Date.now() + (isFinite(tz) ? tz : 3) * 3600000).getUTCHours();
     if (inQuiet(hour, r.quiet_from ?? 6, r.quiet_to ?? 14)) { quiet++; continue; }
+    const n = nudgeFor(slot, r.en_pct ?? 60, r.every_min ?? 15);
+    if (!n) { skipped++; continue; }
+    kinds[s.user_id] = n.kind;
     try {
-      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, payload, { TTL: 600, urgency: "normal" });
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, n.payload, { TTL: 600, urgency: "normal" });
       sent++;
     } catch (e) {
       const code = (e as { statusCode?: number })?.statusCode;
@@ -372,7 +384,7 @@ async function sendNudge(supa: ReturnType<typeof createClient>) {
       else failed++;
     }
   }
-  return { ok: true, kind, pick, sent, quiet, removed, failed };
+  return { ok: true, slot, kinds, sent, quiet, skipped, removed, failed };
 }
 
 Deno.serve(async (req) => {

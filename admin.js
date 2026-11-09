@@ -775,10 +775,11 @@
       case "ntoggle": var non = el.classList.toggle("on"); el.setAttribute("aria-checked", String(non)); break;
       case "nsave": {
         var nmsg = document.getElementById("nmsg"), row = { user_id: uid, enabled: document.getElementById("nOn").classList.contains("on"),
-          quiet_from: Number(document.getElementById("nQf").value), quiet_to: Number(document.getElementById("nQt").value), updated_at: new Date().toISOString() };
+          quiet_from: Number(document.getElementById("nQf").value), quiet_to: Number(document.getElementById("nQt").value),
+          en_pct: Number(document.getElementById("nPct").value), every_min: Number(document.getElementById("nEvery").value), updated_at: new Date().toISOString() };
         nmsg.textContent = "جارٍ الحفظ…"; el.disabled = true;
-        var nr2 = await store.sb.rpc("masar_set_notify", { p_user: uid, p_enabled: row.enabled, p_from: row.quiet_from, p_to: row.quiet_to }); el.disabled = false;
-        if (nr2.error) { nmsg.textContent = "تعذّر الحفظ: " + nr2.error.message + (/function|schema cache/i.test(nr2.error.message || "") ? " — شغّل notify-rpc.sql في Supabase." : ""); break; }
+        var nr2 = await store.sb.rpc("masar_set_notify2", { p_user: uid, p_enabled: row.enabled, p_from: row.quiet_from, p_to: row.quiet_to, p_pct: row.en_pct, p_every: row.every_min }); el.disabled = false;
+        if (nr2.error) { nmsg.textContent = "تعذّر الحفظ: " + nr2.error.message + (/function|schema cache/i.test(nr2.error.message || "") ? " — شغّل notify-ratio.sql في Supabase." : ""); break; }
         ADM.notify[uid] = row; nmsg.textContent = row.enabled ? "اتشغّلت ✓" : "اتقفلت ✓"; break;
       }
       case "psave": {
@@ -885,14 +886,18 @@
     } catch (e) { ADM.notifyErr = "err"; }
   }
   function admNotifyCard(acc) {
-    var nr = (ADM.notify || {})[acc.uid] || { enabled: false, quiet_from: 6, quiet_to: 14 }, devs = (ADM.subs || {})[acc.uid] || 0;
+    var nr = (ADM.notify || {})[acc.uid] || { enabled: false, quiet_from: 6, quiet_to: 14, en_pct: 60, every_min: 15 }, devs = (ADM.subs || {})[acc.uid] || 0;
+    var pct = nr.en_pct == null ? 60 : Number(nr.en_pct), ev = Number(nr.every_min) || 15;
+    var pctSel = '<select class="inp" id="nPct">' + [100, 80, 60, 50, 40, 20, 0].map(function (v) { return '<option value="' + v + '"' + (v === pct ? " selected" : "") + ">" + v + "٪ إنجليزي · " + (100 - v) + "٪ ذِكر</option>"; }).join("") + "</select>";
+    var evSel = '<select class="inp" id="nEvery">' + [[15, "كل ١٥ دقيقة"], [30, "كل ٣٠ دقيقة"], [60, "كل ساعة"]].map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === ev ? " selected" : "") + ">" + o[1] + "</option>"; }).join("") + "</select>";
     var hours = function (id, v) {
       var o = ""; for (var h = 0; h < 24; h++) o += '<option value="' + h + '"' + (h === Number(v) ? " selected" : "") + ">" + esc(fmtHourAr(h)) + "</option>";
       return '<select class="inp" id="' + id + '">' + o + "</select>";
     };
-    return '<div class="card"><div class="adm-card-h"><h3>🔔 إشعارات كل ١٥ دقيقة</h3><small class="muted">٦٠٪ جملة إنجليزي · ٤٠٪ ذِكر</small></div>' +
+    return '<div class="card"><div class="adm-card-h"><h3>🔔 إشعارات الجمل والذِكر</h3><small class="muted">' + pct + "٪ إنجليزي · " + (100 - pct) + "٪ ذِكر</small></div>" +
       (ADM.notifyErr ? '<p class="muted" style="font-size:13px">' + (/function|schema cache/i.test(ADM.notifyErr) ? "محتاج تشغّل ملف push/notify-rpc.sql في Supabase الأول." : "تعذّر تحميل الإعدادات: " + esc(ADM.notifyErr)) + "</p>" :
       '<div class="adm-switch-row"><span>تشغيل الإشعارات للحساب ده</span><button class="adm-switch' + (nr.enabled ? " on" : "") + '" id="nOn" data-adm="ntoggle" role="switch" aria-checked="' + !!nr.enabled + '" aria-label="تشغيل الإشعارات"><i></i></button></div>' +
+      '<div class="row wrapr" style="gap:10px;margin-block-start:10px"><label class="field" style="max-width:220px">النسبة' + pctSel + '</label><label class="field" style="max-width:170px">التكرار' + evSel + "</label></div>" +
       '<div class="row wrapr" style="gap:10px;margin-block-start:10px"><label class="field" style="max-width:170px">راحة من' + hours("nQf", nr.quiet_from) + '</label><label class="field" style="max-width:170px">لحد' + hours("nQt", nr.quiet_to) + "</label></div>" +
       '<p class="muted" style="font-size:12.5px;margin:8px 0 0">' + (devs ? "أجهزة سمحت بالإشعارات: " + devs : "لسه مفيش جهاز سمح بالإشعارات — أول ما تشغّلها، صاحب الحساب هيلاقي زرار «اسمح» في التطبيق.") + "</p>" +
       '<div class="adm-save"><button class="btn sm" data-adm="nsave" data-uid="' + esc(acc.uid) + '">حفظ</button><span class="muted" id="nmsg"></span></div>') + "</div>";

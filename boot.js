@@ -83,21 +83,37 @@
   // Opening a notification: «جملة إنجليزي» → مساري, «ذِكر» → the tasbih counter. Comes as
   // ?go= when the app was closed (acted on once the account is open) or as a message
   // from the service worker when it was already open.
-  function goFromNotification(go) {
+  function goFromNotification(go, id) {
+    if (go === "en") { enOpen(id); return; }
     if (go === "coach" && typeof coGo === "function") { coGo("hub"); return; }
     if (go === "tasbih") { state.tool = "tasbih"; goTab("prayer"); $("#p-prayer").scrollTop = 0; render(); }
   }
   (function () {
-    var m = /[?&]go=(coach|tasbih)\b/.exec(location.search); if (!m) return;
+    var m = /[?&]go=(coach|tasbih|en)\b/.exec(location.search); if (!m) return;
+    var idm = /[?&]id=([^&]+)/.exec(location.search), nid = idm ? decodeURIComponent(idm[1]) : "";
     try { history.replaceState(null, "", location.pathname); } catch (e) { }
     var tries = 0, iv = setInterval(function () {
       if (++tries > 240) { clearInterval(iv); return; }
-      if (state.loaded && $("#lock").hidden) { clearInterval(iv); goFromNotification(m[1]); }
+      if (state.loaded && $("#lock").hidden) { clearInterval(iv); goFromNotification(m[1], nid); }
     }, 500);
   })();
   if ("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message", function (e) {
-    if (e.data && e.data.masarGo && state.loaded && $("#lock").hidden) goFromNotification(e.data.masarGo);
+    if (e.data && e.data.masarGo && state.loaded && $("#lock").hidden) goFromNotification(e.data.masarGo, e.data.id);
   });
+  // Today's sentences list stays current: re-read the phone's inbox when the app comes back.
+  enInboxLoad().then(function () { if (enCardGet()) render(); });
+  // Cover the screen with the logo whenever the app goes to the background, so the
+  // snapshot the phone shows while reopening it later is the logo, not old content.
+  (function () {
+    var cv = document.getElementById("cover"); if (!cv) return;
+    function hide() { cv.classList.add("on"); }
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) hide();
+      else { enInboxLoad().then(function () { if (enCardGet()) render(); }); setTimeout(function () { cv.classList.remove("on"); }, 180); }
+    });
+    window.addEventListener("pagehide", hide);
+    window.addEventListener("pageshow", function () { setTimeout(function () { cv.classList.remove("on"); }, 180); });
+  })();
 
   // First-run welcome screen: shown once before the lock screen, then
   // dismissed for good via a localStorage flag.

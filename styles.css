@@ -1593,3 +1593,25 @@ input[type="search"].inp { padding-inline-start: 38px; background-repeat: no-rep
 .tb-arch summary { cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
 .tb-day { padding-block: 10px; border-top: 1px dashed var(--line); margin-block-start: 8px; }
 .tb-day .tb-break { margin-block-start: 6px; }
+/* English sentence from notifications (home) */
+.en-card { border-inline-start: 4px solid var(--teal); }
+.en-top { align-items: center; }
+.en-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted); }
+.en-tag .i { width: 16px; height: 16px; }
+.en-x { font-size: 18px; padding: 2px 8px; }
+.en-main { display: flex; align-items: center; gap: 12px; margin-block-start: 6px; }
+.en-txt { flex: 1; margin: 0; font-family: var(--latin); font-size: 21px; font-weight: 600; line-height: 1.35; text-align: left; }
+.en-ar { margin: 6px 0 0; font-size: 15px; }
+.en-hint { font-size: 12px; margin: 6px 0 0; }
+.en-say { flex: none; width: 48px; height: 48px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; color: var(--teal-ink); background: linear-gradient(160deg, var(--teal), var(--teal-deep)); box-shadow: 0 6px 14px -8px rgba(70, 40, 14, .6); }
+.en-say .i { width: 22px; height: 22px; }
+.en-say.sm { width: 38px; height: 38px; }
+.en-say.sm .i { width: 18px; height: 18px; }
+.en-list { margin-block-start: 12px; border-top: 1px solid var(--line); padding-block-start: 8px; }
+.en-list summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.en-row { display: flex; align-items: center; gap: 10px; padding-block: 8px; border-bottom: 1px dashed var(--line); }
+.en-row p { margin: 0; font-family: var(--latin); text-align: left; }
+.en-row small { color: var(--muted); }
+/* logo cover while the app is in the background */
+#cover { position: fixed; inset: 0; z-index: 9500; display: none; place-items: center; background: var(--mesh), var(--bg); }
+#cover.on { display: grid; }

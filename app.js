@@ -301,6 +301,11 @@
   // by the admin (masar_notify); the phone still needs its owner to allow notifications
   // once, so the app asks for that here and on the home screen.
   function notifyQuietTxt(n) { return "ما عدا من " + fmtHourAr(n.quiet_from) + " لـ " + fmtHourAr(n.quiet_to); }
+  function notifyWhatTxt(n) {
+    var p = n.en_pct == null ? 60 : Number(n.en_pct), ev = Number(n.every_min) || 15;
+    var what = p >= 100 ? "جملة إنجليزي" : p <= 0 ? "ذِكر" : "جملة إنجليزي أو ذِكر";
+    return what + " كل " + (ev === 60 ? "ساعة" : ev + " دقيقة");
+  }
   function fmtHourAr(h) { h = Number(h) || 0; var p = h < 12 ? "الصبح" : h < 15 ? "الضهر" : h < 18 ? "العصر" : "بالليل"; return (h % 12 || 12) + " " + p; }
   function pushNeedsAllow() {
     return !!(state.notify && state.notify.enabled && pushSupported() && !(Notification.permission === "granted" && pushLocalFlag() && state.pushSub !== false));
@@ -308,7 +313,7 @@
   function pushAllowHTML(compact) {
     var denied = pushSupported() && Notification.permission === "denied";
     return '<div class="card push-allow"><div class="row" style="gap:10px;align-items:flex-start"><span class="pa-ic">' + ic("bell") + '</span><div class="grow"><b>الأدمن فعّل لك الإشعارات</b>' +
-      '<p class="muted" style="font-size:13px;margin:2px 0 0">جملة إنجليزي أو ذِكر كل ١٥ دقيقة، ' + esc(notifyQuietTxt(state.notify)) + ".</p>" +
+      '<p class="muted" style="font-size:13px;margin:2px 0 0">' + esc(notifyWhatTxt(state.notify)) + "، " + esc(notifyQuietTxt(state.notify)) + ".</p>" +
       (denied ? '<p class="muted" style="font-size:12.5px;margin:6px 0 0">الإشعارات مقفولة للموقع من الموبايل. افتح إعدادات Chrome ← الإشعارات (أو اضغط على القفل جنب العنوان) وسمّح لمسار، وبعدين ارجع هنا.</p>' : "") +
       "</div></div>" + (denied ? "" : '<button class="btn" style="width:100%;margin-block-start:10px" data-act="push-on">اسمح بالإشعارات</button>') + "</div>";
   }
@@ -317,12 +322,46 @@
     var n = state.notify;
     if (!n || !n.enabled) return '<div class="card"><h3 style="margin:0 0 4px">' + ic("bell") + ' الإشعارات</h3><p class="muted" style="font-size:13px">مقفولة — الأدمن هو اللي بيشغّلها لحسابك.</p></div>';
     if (pushNeedsAllow()) return pushAllowHTML();
-    return '<div class="card"><h3 style="margin:0 0 4px">' + ic("bell") + ' الإشعارات شغّالة</h3><p class="muted" style="font-size:13px">جملة إنجليزي أو ذِكر كل ١٥ دقيقة، ' + esc(notifyQuietTxt(n)) +
-      '. صوتها هو صوت إشعارات Chrome — تقدر تخليه أخف من إعدادات الموبايل ← التطبيقات ← Chrome ← الإشعارات.</p></div>';
+    return '<div class="card"><h3 style="margin:0 0 4px">' + ic("bell") + ' الإشعارات شغّالة</h3><p class="muted" style="font-size:13px">' + esc(notifyWhatTxt(n)) + "، " + esc(notifyQuietTxt(n)) +
+      '. صوتها هو صوت إشعارات Chrome — تقدر تخليه أخف من إعدادات الموبايل ← التطبيقات ← Chrome ← الإشعارات.</p>' +
+      '<button class="btn sm alt" style="margin-block-start:8px" data-act="en-today">' + ic("vol") + " جمل النهارده</button></div>";
+  }
+  /* -------- English sentences from notifications: home card + «جمل النهارده» --------
+     The service worker keeps every English sentence that arrives (cache "masar-inbox");
+     tapping one opens the app on this card, where it can be heard (🔊, long-press slower)
+     and dismissed. The list shows today's sentences, newest first. */
+  var EN_CARD_KEY = "masar:encard";
+  function enCardGet() { try { return JSON.parse(localStorage.getItem(EN_CARD_KEY) || "null"); } catch (e) { return null; } }
+  function enCardSet(v) { try { v ? localStorage.setItem(EN_CARD_KEY, JSON.stringify(v)) : localStorage.removeItem(EN_CARD_KEY); } catch (e) { } }
+  function enDayOf(ms) { return keyOf(new Date(ms + TZ * 3600e3)); }
+  function enInboxLoad() {
+    if (!("caches" in window)) return Promise.resolve([]);
+    return caches.open("masar-inbox").then(function (c) { return c.match("inbox.json"); }).then(function (r) { return r ? r.json() : []; })
+      .then(function (l) { state.enInbox = Array.isArray(l) ? l : []; return state.enInbox; }).catch(function () { state.enInbox = []; return []; });
+  }
+  function enToday(now) { return (state.enInbox || []).filter(function (x) { return x && x.en && enDayOf(x.at) === now.key; }).sort(function (a, b) { return b.at - a.at; }); }
+  function enOpen(id) {
+    return enInboxLoad().then(function (l) {
+      var it = (id && l.filter(function (x) { return x.id === id; })[0]) || l.slice().sort(function (a, b) { return b.at - a.at; })[0];
+      if (!it) { toast("مفيش جمل وصلت النهارده لسه"); return; }
+      enCardSet({ id: it.id, en: it.en, ar: it.ar }); state.settingsOpen = false; state.hv = "dashboard";
+      goTab("home"); $("#p-home").scrollTop = 0; render();
+    });
+  }
+  function enCardHTML(now) {
+    var c = enCardGet(); if (!c || !c.en) return "";
+    var list = enToday(now), other = list.filter(function (x) { return x.en !== c.en; });
+    return '<div class="card en-card"><div class="row between en-top"><span class="en-tag">' + ic("chat") + ' جملة من الإشعارات</span><button class="linkbtn en-x" data-act="en-card-x" aria-label="اقفل">✕</button></div>' +
+      '<div class="en-main"><p class="en-txt" dir="ltr" lang="en">' + esc(c.en) + '</p><button class="en-say" data-act="speak" data-txt="' + esc(c.en) + '" aria-label="اسمع">' + ic("vol") + "</button></div>" +
+      '<p class="en-ar">' + esc(c.ar || "") + '</p><p class="muted en-hint">اضغط 🔊 تسمعها — ضغطة طويلة تسمعها أبطأ.</p>' +
+      (other.length ? '<details class="en-list"><summary>جمل النهارده (' + list.length + ")</summary>" + other.map(function (x) {
+        return '<div class="en-row"><div class="grow"><p dir="ltr" lang="en">' + esc(x.en) + "</p><small>" + esc(x.ar || "") + '</small></div><button class="en-say sm" data-act="speak" data-txt="' + esc(x.en) + '" aria-label="اسمع">' + ic("vol") + "</button></div>";
+      }).join("") + "</details>" : "") + "</div>";
   }
   async function loadNotifyRule() {
     try {
-      var r = await store.sb.from("masar_notify").select("enabled,quiet_from,quiet_to").eq("user_id", store.uid).maybeSingle();
+      var r = await store.sb.from("masar_notify").select("enabled,quiet_from,quiet_to,en_pct,every_min").eq("user_id", store.uid).maybeSingle();
+      if (r.error) r = await store.sb.from("masar_notify").select("enabled,quiet_from,quiet_to").eq("user_id", store.uid).maybeSingle();
       state.notify = (!r.error && r.data) ? r.data : null;
     } catch (e) { state.notify = null; }
     pushRefreshTz();
@@ -840,7 +879,7 @@
   async function initStore() {
     if (!window.supabase) await loadSupabaseScript();
     if (window.supabase && CFG.url && CFG.key) { initSupa(); return; }
-    state.mode = "local"; localLoad(); ensureNotesSeed();
+    state.mode = "local"; state.storeReady = true; localLoad(); ensureNotesSeed();
     migrateSrsV2(nowR()); // fire-and-forget; see its own comment
     ready.days = ready.settings = ready.learn = ready.exp = true; checkLoaded(); render();
     var lockEl = document.getElementById("lock"); if (lockEl) lockEl.hidden = true;
@@ -878,7 +917,7 @@
     // nothing" when you try to log in. Reloading is the actual fix once the network
     // settles, so the banner doubles as a one-tap retry instead of leaving the
     // person stuck in guest mode for the rest of the session.
-    return state.mode === "local"
+    return state.mode === "local" && state.storeReady
       ? '<button type="button" class="banner banner-sm" data-act="retry-cloud">مش متصل بالحفظ السحابي: بياناتك على الجهاز ده بس. <u>إعادة المحاولة</u></button>'
       : "";
   }
@@ -1127,7 +1166,7 @@
   function homeView(now) {
     if (state.settingsOpen) return settingsHTML(now);
     if (state.hv === "weekly") return weeklyReportHTML(now);
-    return greetingHTML(now) + bannerHTML() + (pushNeedsAllow() ? pushAllowHTML() : "") + planCardHTML(now) +
+    return greetingHTML(now) + bannerHTML() + enCardHTML(now) + (pushNeedsAllow() ? pushAllowHTML() : "") + planCardHTML(now) +
       '<button class="card home-week" data-act="weekly-open">' + ic("chart") + '<span class="grow"><b>تقرير الأسبوع</b><small class="muted">صلواتك وقرآنك ومذاكرتك آخر ٧ أيام</small></span><span>←</span></button>';
   }
   function settingsHTML(now) {
@@ -1325,6 +1364,8 @@
       case "touch-glow": state.settings.touchGlow = el.getAttribute("data-v") === "1"; saveMeta("settings", 0); render(); break;
       case "speech-rate": state.settings.speechRate = Number(el.getAttribute("data-v")) || 0.92; saveMeta("settings", 0); render(); break;
       case "goal-min-set": state.settings.personalGoalMin = Number(el.getAttribute("data-v")) || 0; saveMeta("settings", 0); render(); break;
+      case "en-card-x": enCardSet(null); render(); break;
+      case "en-today": enOpen(null); break;
       case "push-on": enablePush(); break;
       case "push-off": disablePush(); break;
       case "theme": var cur = getTheme(), nx = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]; try { localStorage.setItem("masar:theme", nx); } catch (er) { } applyTheme(nx); break;

@@ -9,7 +9,19 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v37";
+var CACHE_NAME = "masar-v39";
+var INBOX = "masar-inbox";
+function inboxRead() {
+  return caches.open(INBOX).then(function (c) { return c.match("inbox.json"); }).then(function (r) { return r ? r.json() : []; }).catch(function () { return []; });
+}
+function inboxAdd(item) {
+  return inboxRead().then(function (list) {
+    var cut = Date.now() - 2 * 864e5;
+    list = (list || []).filter(function (x) { return x && x.at > cut && x.id !== item.id; });
+    list.push(item); list = list.slice(-120);
+    return caches.open(INBOX).then(function (c) { return c.put("inbox.json", new Response(JSON.stringify(list), { headers: { "content-type": "application/json" } })); });
+  });
+}
 var PRECACHE = [
   "./",
   "./index.html",
@@ -31,7 +43,7 @@ self.addEventListener("install", function (event) {
 self.addEventListener("activate", function (event) {
   event.waitUntil(
     caches.keys().then(function (names) {
-      return Promise.all(names.filter(function (n) { return n !== CACHE_NAME; }).map(function (n) { return caches.delete(n); }));
+      return Promise.all(names.filter(function (n) { return n !== CACHE_NAME && n !== INBOX; }).map(function (n) { return caches.delete(n); }));
     }).then(function () { return self.clients.claim(); })
   );
 });
@@ -47,20 +59,27 @@ self.addEventListener("push", function (event) {
   var body = data.body || "افتح مسار كمّل.";
   // The every-15-minutes nudges share one tag, so each new one replaces the last
   // instead of piling up; renotify keeps its (soft, system-default) sound.
-  var opts = { body: body, icon: "icons/icon-192.png", badge: "icons/icon-192.png", dir: "rtl", lang: "ar", data: { go: data.go || "" } };
+  var opts = { body: body, icon: "icons/icon-192.png", badge: "icons/icon-192.png", dir: "rtl", lang: "ar", data: { go: data.go || "", id: data.id || "" } };
   if (data.tag) { opts.tag = data.tag; opts.renotify = true; }
-  event.waitUntil(self.registration.showNotification(title, opts));
+  var jobs = [self.registration.showNotification(title, opts)];
+  // English sentences are also kept on the phone so the app can show «جمل النهارده»
+  // (even the ones that weren't tapped). Kept 2 days; the app shows today's.
+  if (data.type === "en" && data.en) {
+    var lines = String(body).split("\n");
+    jobs.push(inboxAdd({ id: data.id || String(Date.now()), en: data.en, ar: data.ar || lines[1] || "", at: Date.now() }));
+  }
+  event.waitUntil(Promise.all(jobs));
 });
 
 self.addEventListener("notificationclick", function (event) {
   event.notification.close();
-  var go = (event.notification.data && event.notification.data.go) || "";
+  var nd = event.notification.data || {}, go = nd.go || "", gid = nd.id || "";
   event.waitUntil(
     self.clients.matchAll({ type: "window" }).then(function (list) {
       for (var i = 0; i < list.length; i++) {
-        if ("focus" in list[i]) { if (go) list[i].postMessage({ masarGo: go }); return list[i].focus(); }
+        if ("focus" in list[i]) { if (go) list[i].postMessage({ masarGo: go, id: gid }); return list[i].focus(); }
       }
-      if (self.clients.openWindow) return self.clients.openWindow("./" + (go ? "?go=" + go : ""));
+      if (self.clients.openWindow) return self.clients.openWindow("./" + (go ? "?go=" + go + (gid ? "&id=" + encodeURIComponent(gid) : "") : ""));
     })
   );
 });
