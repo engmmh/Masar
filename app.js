@@ -348,14 +348,51 @@
       goTab("home"); $("#p-home").scrollTop = 0; render();
     });
   }
+  /* word-by-word meanings (gloss-data.js) + the words the person already knows */
+  function glossSegs(sentence) {
+    var toks = [], re = /[A-Za-z0-9'’-]+/g, m;
+    while ((m = re.exec(sentence))) toks.push({ t: m[0], k: m[0].toLowerCase().replace(/’/g, "'") });
+    var out = [], i = 0;
+    while (i < toks.length) {
+      var hit = null;
+      for (var n = Math.min(8, toks.length - i); n >= 1; n--) {
+        var key = toks.slice(i, i + n).map(function (x) { return x.k; }).join(" ");
+        if (GLOSS_PHRASES[key]) { hit = { en: toks.slice(i, i + n).map(function (x) { return x.t; }).join(" "), k: key, ar: GLOSS_PHRASES[key], n: n }; break; }
+      }
+      if (!hit) hit = { en: toks[i].t, k: toks[i].k, ar: GLOSS_WORDS[toks[i].k] || "", n: 1 };
+      out.push(hit); i += hit.n;
+    }
+    return out;
+  }
+  var KNOWN_FROM_CARDS = null;
+  function knownFromCards() {
+    // Words already learned in the English course's flashcards (box 3+) count as known.
+    if (KNOWN_FROM_CARDS) return KNOWN_FROM_CARDS;
+    var out = {}, c = COURSES && COURSES.en, cards = state.learn.cards || {};
+    ((c && c.vocab) || []).forEach(function (v) { var cd = cards[v.id]; if (cd && (cd.box || 0) >= 3 && v.en) out[String(v.en).toLowerCase()] = 1; });
+    if (c) KNOWN_FROM_CARDS = out;
+    return out;
+  }
+  function isKnownWord(k) { return !!((state.learn.known || {})[k] || knownFromCards()[k]); }
+  function knownCount() { var a = Object.keys(state.learn.known || {}), b = Object.keys(knownFromCards()).filter(function (k) { return !(state.learn.known || {})[k]; }); return a.length + b.length; }
+  function glossHTML(sentence) {
+    var segs = glossSegs(sentence); if (!segs.length) return "";
+    return '<div class="gl-wrap" dir="ltr">' + segs.map(function (s) {
+      var known = isKnownWord(s.k), plain = !s.ar || s.ar === "—";
+      return '<span class="gl' + (known ? " known" : "") + (plain ? " plain" : "") + '"><button class="gl-w" data-act="speak" data-txt="' + esc(s.en) + '">' + esc(s.en) + "</button>" +
+        (plain ? "" : '<small class="gl-ar" dir="rtl">' + (known ? "✓ عارفها" : esc(s.ar)) + "</small>") +
+        (plain ? "" : '<button class="gl-k" data-act="gl-known" data-k="' + esc(s.k) + '" aria-label="' + (known ? "لسه مش عارفها" : "عارفها") + '">' + (known ? "↺" : "✓") + "</button>") + "</span>";
+    }).join("") + "</div>" +
+      '<p class="muted en-hint">اضغط على أي كلمة تسمعها · ✓ لو عارفها (معناها مش هيظهر تاني) · حصيلتك: <b class="num">' + knownCount() + "</b> كلمة</p>";
+  }
   function enCardHTML(now) {
     var c = enCardGet(); if (!c || !c.en) return "";
     var list = enToday(now), other = list.filter(function (x) { return x.en !== c.en; });
     return '<div class="card en-card"><div class="row between en-top"><span class="en-tag">' + ic("chat") + ' جملة من الإشعارات</span><button class="linkbtn en-x" data-act="en-card-x" aria-label="اقفل">✕</button></div>' +
       '<div class="en-main"><p class="en-txt" dir="ltr" lang="en">' + esc(c.en) + '</p><button class="en-say" data-act="speak" data-txt="' + esc(c.en) + '" aria-label="اسمع">' + ic("vol") + "</button></div>" +
-      '<p class="en-ar">' + esc(c.ar || "") + '</p><p class="muted en-hint">اضغط 🔊 تسمعها — ضغطة طويلة تسمعها أبطأ.</p>' +
+      '<p class="en-ar">' + esc(c.ar || "") + '</p><p class="muted en-hint">اضغط 🔊 تسمعها — ضغطة طويلة تسمعها أبطأ.</p>' + glossHTML(c.en) +
       (other.length ? '<details class="en-list"><summary>جمل النهارده (' + list.length + ")</summary>" + other.map(function (x) {
-        return '<div class="en-row"><div class="grow"><p dir="ltr" lang="en">' + esc(x.en) + "</p><small>" + esc(x.ar || "") + '</small></div><button class="en-say sm" data-act="speak" data-txt="' + esc(x.en) + '" aria-label="اسمع">' + ic("vol") + "</button></div>";
+        return '<div class="en-row"><button class="grow en-pick" data-act="en-pick" data-id="' + esc(x.id) + '"><p dir="ltr" lang="en">' + esc(x.en) + "</p><small>" + esc(x.ar || "") + '</small></button><button class="en-say sm" data-act="speak" data-txt="' + esc(x.en) + '" aria-label="اسمع">' + ic("vol") + "</button></div>";
       }).join("") + "</details>" : "") + "</div>";
   }
   async function loadNotifyRule() {
@@ -1366,6 +1403,12 @@
       case "speech-rate": state.settings.speechRate = Number(el.getAttribute("data-v")) || 0.92; saveMeta("settings", 0); render(); break;
       case "goal-min-set": state.settings.personalGoalMin = Number(el.getAttribute("data-v")) || 0; saveMeta("settings", 0); render(); break;
       case "en-card-x": enCardSet(null); render(); break;
+      case "en-pick": { var pid = el.getAttribute("data-id"), pit = (state.enInbox || []).filter(function (x) { return x.id === pid; })[0]; if (pit) { enCardSet({ id: pit.id, en: pit.en, ar: pit.ar }); $("#p-home").scrollTop = 0; render(); } break; }
+      case "gl-known": {
+        var gk = el.getAttribute("data-k"); if (!state.learn.known) state.learn.known = {};
+        if (isKnownWord(gk)) { delete state.learn.known[gk]; if (KNOWN_FROM_CARDS) delete KNOWN_FROM_CARDS[gk]; } else state.learn.known[gk] = 1;
+        saveMeta("learn", 400); render(); break;
+      }
       case "en-today": enOpen(null); break;
       case "push-on": enablePush(); break;
       case "push-off": disablePush(); break;

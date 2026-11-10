@@ -9,7 +9,7 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v43";
+var CACHE_NAME = "masar-v44";
 var INBOX = "masar-inbox";
 function inboxRead() {
   return caches.open(INBOX).then(function (c) { return c.match("inbox.json"); }).then(function (r) { return r ? r.json() : []; }).catch(function () { return []; });
@@ -66,7 +66,7 @@ self.addEventListener("push", function (event) {
   // (even the ones that weren't tapped). Kept 2 days; the app shows today's.
   if (data.type === "en" && data.en) {
     var lines = String(body).split("\n");
-    jobs.push(inboxAdd({ id: data.id || String(Date.now()), en: data.en, ar: data.ar || lines[1] || "", at: Date.now() }));
+    jobs.push(inboxAdd({ id: data.id || String(Date.now()), en: data.en, ar: data.ar || lines[1] || "", hint: data.hint || "", at: Date.now() }));
   }
   event.waitUntil(Promise.all(jobs));
 });
