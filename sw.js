@@ -1,15 +1,49 @@
-// مسار — service worker: makes the app installable on the phone's home screen
-// and lets it still open (with the last-known content) when offline.
-// Strategy: network-first for same-origin files (always prefer fresh content —
-// this covers the course json files under courses/, which are fetched directly
-// from this same-origin folder, not from Supabase; progress/settings/account data
-// is the only thing that comes from Supabase, and that's untouched by this file),
-// falling back to the cache only when the network is unavailable.
-// jspdf.umd.min.js is intentionally NOT precached here: it's ~420KB and only
-// loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
-// actually downloaded, so precaching it would waste bandwidth on every install
-// for a feature most sessions never use.
-var CACHE_NAME = "masar-v44";
+// مسار — service worker.
+// The app shell (every file index.html loads) is precached as ONE versioned set and
+// served straight from that set, so the app opens instantly and always shows a single,
+// consistent version. CACHE_NAME and PRECACHE are written by scripts/build-sw.js from a
+// hash of those files: any change to the app gives a new name, the new set is fetched
+// fresh (bypassing the browser cache), and on activation every older set is deleted.
+// Other same-origin files (courses, Quran text, OCR data) are network-first with the
+// cache as offline fallback.
+// BUILD:START
+var CACHE_NAME = "masar-1dbc459afb";
+var PRECACHE = [
+  "./index.html",
+  "./admin.js",
+  "./app.js",
+  "./boot.js",
+  "./coach-data.js",
+  "./coach.js",
+  "./fit-data.js",
+  "./fit-ocr.js",
+  "./fit.js",
+  "./food-data.js",
+  "./food.js",
+  "./games.js",
+  "./gloss-data.js",
+  "./hifz.js",
+  "./icons/apple-touch-icon.png",
+  "./icons/favicon-32.png",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
+  "./intro.js",
+  "./learn.js",
+  "./manifest.webmanifest",
+  "./money-plus.js",
+  "./money.js",
+  "./prayer.js",
+  "./quran-plus.js",
+  "./styles.css",
+  "./talk-data.js",
+  "./talk.js",
+  "./theme-init.js",
+  "./tools.js",
+  "./touch-glow.js",
+  "./vendor/supabase.js",
+  "./welcome.js"
+];
+// BUILD:END
 var INBOX = "masar-inbox";
 function inboxRead() {
   return caches.open(INBOX).then(function (c) { return c.match("inbox.json"); }).then(function (r) { return r ? r.json() : []; }).catch(function () { return []; });
@@ -22,20 +56,17 @@ function inboxAdd(item) {
     return caches.open(INBOX).then(function (c) { return c.put("inbox.json", new Response(JSON.stringify(list), { headers: { "content-type": "application/json" } })); });
   });
 }
-var PRECACHE = [
-  "./",
-  "./index.html",
-  "./vendor/supabase.js",
-  "./manifest.webmanifest",
-  "./icons/icon-192.png",
-  "./icons/icon-512.png",
-  "./icons/apple-touch-icon.png"
-];
-
 self.addEventListener("install", function (event) {
   event.waitUntil(
     caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(PRECACHE).catch(function () { /* ignore individual failures */ });
+      // All or nothing: if any file can't be fetched, this version doesn't install and
+      // the previous one keeps serving — never a half-updated app.
+      return Promise.all(PRECACHE.map(function (u) {
+        return fetch(new Request(u, { cache: "reload" })).then(function (r) {
+          if (!r.ok) throw new Error("precache " + u);
+          return cache.put(u, r);
+        });
+      }));
     }).then(function () { return self.skipWaiting(); })
   );
 });
@@ -93,25 +124,32 @@ self.addEventListener("notificationclick", function (event) {
   );
 });
 
+var SHELL = {};
+PRECACHE.forEach(function (u) { SHELL[new URL(u, self.location).pathname] = 1; });
 self.addEventListener("fetch", function (event) {
   var req = event.request;
   if (req.method !== "GET") return;
   var url = new URL(req.url);
-  if (url.origin !== self.location.origin) return; // leave Supabase/CDN/font requests alone
+  if (url.origin !== self.location.origin) return; // Supabase, fonts, CDNs: untouched
 
+  // Page loads and app files: from this version's set (instant, consistent).
+  if (req.mode === "navigate" || SHELL[url.pathname]) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(function (c) {
+        return c.match(req.mode === "navigate" ? "./index.html" : url.pathname, { ignoreSearch: true }).then(function (hit) {
+          return hit || fetch(req);
+        });
+      })
+    );
+    return;
+  }
+  // Everything else: fresh from the network (revalidated), cache as offline fallback.
   event.respondWith(
-    fetch(req).then(function (res) {
-      if (res && res.ok) {
-        var copy = res.clone();
-        caches.open(CACHE_NAME).then(function (cache) { cache.put(req, copy); });
-      }
+    fetch(req, { cache: "no-cache" }).then(function (res) {
+      if (res && res.ok) { var copy = res.clone(); caches.open(CACHE_NAME).then(function (c) { c.put(req, copy); }); }
       return res;
     }).catch(function () {
-      // Only a page navigation falls back to the app shell; a missing script or data
-      // file must fail as itself, not be answered with index.html.
-      return caches.match(req).then(function (cached) {
-        return cached || (req.mode === "navigate" ? caches.match("./index.html") : Response.error());
-      });
+      return caches.match(req).then(function (cached) { return cached || Response.error(); });
     })
   );
 });

@@ -51,7 +51,20 @@
   // Runs after boot, never blocks it, and failure here is harmless.
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("sw.js").catch(function () { });
+      // updateViaCache "none": the browser always asks the server for sw.js itself, so a
+      // new version is noticed on the next open instead of up to a day later.
+      navigator.serviceWorker.register("sw.js", { updateViaCache: "none" }).then(function (reg) {
+        document.addEventListener("visibilitychange", function () { if (!document.hidden) reg.update().catch(function () { }); });
+      }).catch(function () { });
+      // A new version just took over: if nobody is signed in yet (still on the code
+      // screen, nothing typed), reload into it right away; otherwise it applies on the
+      // next open, so nothing in progress is interrupted.
+      var hadController = !!navigator.serviceWorker.controller;
+      navigator.serviceWorker.addEventListener("controllerchange", function () {
+        if (!hadController) return;
+        var lock = document.getElementById("lock"), pin = document.getElementById("pin");
+        if (lock && !lock.hidden && !store.uid && !(pin && pin.value)) location.reload();
+      });
     });
   }
 
@@ -62,7 +75,7 @@
     var box = document.getElementById("instBox"), btn = document.getElementById("installBtn"), help = document.getElementById("installHelp");
     if (!box || !btn) return;
     function standalone() { return (window.matchMedia && matchMedia("(display-mode: standalone)").matches) || navigator.standalone === true; }
-    box.hidden = standalone();
+    box.hidden = standalone(); // starts hidden in the HTML, so the installed app never flashes it
     var ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
     if (ios) btn.querySelector(".inst-t").innerHTML = "<small>أضف التطبيق على</small><b>iPhone</b>";
     window.addEventListener("appinstalled", function () { window.__masarInstall = null; box.hidden = true; toast("التطبيق اتثبت — افتحه من أيقونته"); });
