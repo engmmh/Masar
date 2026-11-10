@@ -9,7 +9,7 @@
 // loaded on-demand (see loadJspdfScript() in index.html) when a certificate is
 // actually downloaded, so precaching it would waste bandwidth on every install
 // for a feature most sessions never use.
-var CACHE_NAME = "masar-v42";
+var CACHE_NAME = "masar-v43";
 var INBOX = "masar-inbox";
 function inboxRead() {
   return caches.open(INBOX).then(function (c) { return c.match("inbox.json"); }).then(function (r) { return r ? r.json() : []; }).catch(function () { return []; });
@@ -69,6 +69,15 @@ self.addEventListener("push", function (event) {
     jobs.push(inboxAdd({ id: data.id || String(Date.now()), en: data.en, ar: data.ar || lines[1] || "", at: Date.now() }));
   }
   event.waitUntil(Promise.all(jobs));
+});
+
+// The browser can rotate a subscription on its own; subscribe again with the same key
+// right away so pushes keep arriving (the app saves the new one to the server the next
+// time it's opened).
+self.addEventListener("pushsubscriptionchange", function (event) {
+  var key = event.oldSubscription && event.oldSubscription.options && event.oldSubscription.options.applicationServerKey;
+  if (!key) return;
+  event.waitUntil(self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }).catch(function () { }));
 });
 
 self.addEventListener("notificationclick", function (event) {

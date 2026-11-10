@@ -371,21 +371,17 @@
   // service expired (e.g. after reinstalling the app) is deleted server-side on the next
   // send, so it is replaced here with a fresh one — no tap needed. Also refreshes the
   // device's UTC offset used for quiet hours.
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && state.loaded && state.mode === "supa" && store.uid) pushRefreshTz();
+  });
   async function pushRefreshTz() {
     try {
       if (!pushSupported() || !state.notify || !state.notify.enabled) return;
       if (Notification.permission !== "granted") { state.pushSub = false; render(); return; }
       var reg = await navigator.serviceWorker.ready, sub = await reg.pushManager.getSubscription();
-      if (sub) {
-        var have = await store.sb.from("masar_push_subs").select("endpoint").eq("endpoint", sub.endpoint);
-        if (!have.error && have.data && have.data.length) {
-          var j0 = sub.toJSON();
-          await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j0.endpoint, p256dh: j0.keys.p256dh, auth: j0.keys.auth, tz: -new Date().getTimezoneOffset() / 60 }, { onConflict: "endpoint" });
-          state.pushSub = true; setPushLocalFlag(true); return;
-        }
-        try { await sub.unsubscribe(); } catch (er) { }
-      }
-      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY) });
+      // Keep the phone's existing subscription and just (re)save it — unsubscribing here
+      // would invalidate it and make the server drop the device on its next send.
+      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY) });
       var j = sub.toJSON();
       var r = await store.sb.from("masar_push_subs").upsert({ user_id: store.uid, endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, tz: -new Date().getTimezoneOffset() / 60 }, { onConflict: "endpoint" });
       state.pushSub = !r.error; if (!r.error) setPushLocalFlag(true);
